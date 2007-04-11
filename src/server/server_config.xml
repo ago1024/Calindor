@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <bindIP value="0.0.0.0"/>
+    <bindPort value ="4242"/>
+    <readBufferSize value="8192"/>
+    <openingScreen value="Welcome to Calindor..."/>
+    <checkProtocolVersion value="true"/>
+    <logNormalOperation value="false"/>
+    <dataStoragePath value="E:\Calindor_storage"/>
+    <mapsPath value="E:\EL_maps"/>
+    <startingMap name="startmap.elm" startX="101" startY="146" deviation="5"/>
+</configuration>

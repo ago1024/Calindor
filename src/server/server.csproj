@@ -1,0 +1,80 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9B14DC47-A7A8-4F5D-9144-9F254BC9734E}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Calindor.Server</RootNamespace>
+    <AssemblyName>Calindor</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entity.cs" />
+    <Compile Include="EntityAppearance.cs" />
+    <Compile Include="EntityAttributes.cs" />
+    <Compile Include="CommunicationManager.cs" />
+    <Compile Include="EntityLocation.cs" />
+    <Compile Include="IncommingMessages.cs" />
+    <Compile Include="InPlaceBitConverter.cs" />
+    <Compile Include="MapManager.cs" />
+    <Compile Include="OutgoingMessages.cs" />
+    <Compile Include="Pathfinder.cs" />
+    <Compile Include="PlayerCharacter.cs" />
+    <Compile Include="PlayerCharacterDataStoreAccess.cs" />
+    <Compile Include="PredefinedValues.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProtocolVersion.cs" />
+    <Compile Include="ServerClientConnection.cs" />
+    <Compile Include="ServerConfiguration.cs" />
+    <Compile Include="ServerListeningThread.cs" />
+    <Compile Include="ServerLogger.cs" />
+    <Compile Include="TimeBasedActions.cs" />
+    <Compile Include="WorldCalendar.cs" />
+    <Compile Include="WorldSimulation.cs" />
+    <Compile Include="WorldSimulationEntityVinicityEventsHandling.cs" />
+    <Compile Include="WorldSimulationGlobalEventsHandling.cs" />
+    <Compile Include="WorldSimulationLoginSynchronizationHandling.cs" />
+    <Compile Include="WorldSimulationMapObjectsUsageHandling.cs" />
+    <Compile Include="WorldSimulationMessagingHandling.cs" />
+    <Compile Include="WorldSimulationMovementHandling.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="server_config.xml" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PostBuildEvent>copy $(ProjectDir)\server_config.xml $(TargetDir)\server_config.xml</PostBuildEvent>
+  </PropertyGroup>
+</Project>
