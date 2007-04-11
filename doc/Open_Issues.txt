@@ -1,0 +1,12 @@
+This document lists major functionalities that are either hacked 
+or only basic implemented in order to continue on the development.
+These functionalities need to be fully implemented eventually.
+
+1. Server side scripting - scripts external to server code used for 
+programming behaviour - for example: reaction to map object clicking,
+reaction to NPC messages, quests
+
+2. Pathfinding - current algorith is very simple and not efficient
+
+3. Following - with current implementation it is very easy to break 
+following. The algorithm should be update to avoid obstacles better.

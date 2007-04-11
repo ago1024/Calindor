@@ -1,0 +1,17 @@
+This software is developed with Microsoft Visual C# 2005 Express Edition.
+It can be downloaded from: 
+http://msdn.microsoft.com/vstudio/express/visualcsharp/default.aspx
+
+The solution file is located in:
+/src/calindor.sln
+
+In order to run this software you need .NET Framework 2.0.
+It can be downloaded from:
+http://www.microsoft.com/downloads/details.aspx?familyid=0856EACB-4362-4B0D-8EDD-AAB15C5E04F5&displaylang=en
+
+
+
+Remarks:
+
+Mono Platform - this software should also be able to run on Mono 1.2, however no
+test have been performed.

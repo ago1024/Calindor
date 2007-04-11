@@ -1,0 +1,27 @@
+ver. 0.1.0:
+ - initial
+ver. 0.2.0:
+ - create character support
+ - login character support
+ - network thread/data exchange framework support
+ - basic world model support
+ - basic character persistency support
+ver. 0.2.1 (13.03.2007):
+ - support for view sight of character(add/remove actors)
+ver. 0.3.0:
+ - auto log off at disconnect
+ - loading maps .elm
+ - findind walkable tiles
+ - changing maps - IP/IP insides hardcoded event handling
+ - implementing path generation algorithm
+ - support for movement messages (delayed/time based actions at server)
+ - player following
+ver. 0.4.0:
+ - attributes/skills model for all entites
+ - basic stationary animal characters
+ - basic fighting implementation
+ver. 0.5.0:
+ - atributes/skills model refinement
+ - implementing harvesting skill
+
+
