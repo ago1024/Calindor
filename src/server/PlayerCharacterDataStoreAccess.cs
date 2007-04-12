@@ -49,10 +49,28 @@ namespace Calindor.Server
             this.storagePath = storagePath;
         }
 
-        // TODO: Not safe. Might throw an exception
+        // TODO: Not safe. May throw an exception
         public bool Exists(string playerName)
         {
             return exists(playerName);
+        }
+
+        public bool IsStorageAccessible()
+        {
+            try
+            {
+                if (storagePath == null)
+                    return false;
+
+                if (!Directory.Exists(storagePath))
+                    return false;
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected string readPassword(string playerName)

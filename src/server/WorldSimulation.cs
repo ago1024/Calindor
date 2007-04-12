@@ -23,6 +23,7 @@ namespace Calindor.Server
     public partial class WorldSimulation
     {
         private Thread innerThread = null;
+        private bool isWorking = false;
 
         private ILogger logger = new DummyLogger();
         public ILogger Logger
@@ -131,24 +132,42 @@ namespace Calindor.Server
             pcAuthentication = new PlayerCharacterAuthentication(serverConfiguration.DataStoragePath);
         }
 
-        public void StartSimulation()
+        public bool StartSimulation()
         {
+            Logger.LogProgress(LogSource.World, "WorldSimulation starting");
+            
+            // Check access to storage
+            if (!pcAuthentication.IsStorageAccessible())
+            {
+                Logger.LogError(LogSource.World, "Storage at path " + serverConfiguration.DataStoragePath +
+                    " is not accessible.", null);
+                return false;
+            }
+
             // Creating thread
             ThreadStart ts = new ThreadStart(threadMain);
             innerThread = new Thread(ts);
+            isWorking = true;
             innerThread.Start();
+
+            return true;
+        }
+
+        public void StopSimulation()
+        {
+            isWorking = false;
         }
 
 
 
         private void threadMain()
         {
-            Logger.LogProgress(LogSource.World, "WorldSimulation starting");
+            
 
             // Initialize standard messages
             createStandardMessages();
         
-            while (true)
+            while (isWorking)
             {
                 // Perform world simulation/update players state
                 // 1. Global events (time)
@@ -246,6 +265,8 @@ namespace Calindor.Server
                 // Sleep
                 Thread.Sleep(50);
             }
+
+            Logger.LogProgress(LogSource.World, "WorldSimulation stopping");
         }
 
         private void processMessage(PlayerCharacter pc, IncommingMessage msg)

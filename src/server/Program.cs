@@ -34,6 +34,9 @@ namespace Calindor.Server
             catch
             {
                 // Logger not created... exiting
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Logger not created...");
+                Console.ReadLine();
                 return;
             }
 
@@ -46,7 +49,8 @@ namespace Calindor.Server
             conf.Logger = logger;
             if (!conf.Load("./server_config.xml"))
             {
-                logger.LogProgress(LogSource.Server, "Configuration not loaded. Exiting.");
+                logger.LogError(LogSource.Server, "Configuration not loaded. Exiting (press ENTER).", null);
+                Console.ReadLine();
                 return;
             }
 
@@ -55,12 +59,14 @@ namespace Calindor.Server
             mapManager.Logger = logger;
             if (!mapManager.LoadMaps())
             {
-                logger.LogProgress(LogSource.Server, "Maps not scanned. Exiting.");
+                logger.LogError(LogSource.Server, "Maps not scanned. Exiting (press ENTER).", null);
+                Console.ReadLine();
                 return;
             }
             if (!mapManager.IsStartingMapLoaded())
             {
-                logger.LogProgress(LogSource.Server, "Default map not loaded. Exiting.");
+                logger.LogError(LogSource.Server, "Default map not loaded. Exiting (press ENTER).", null);
+                Console.ReadLine();
                 return;
             }
 
@@ -68,7 +74,12 @@ namespace Calindor.Server
             // Creating world simulation thread
             worldSim = new WorldSimulation(conf, mapManager);
             worldSim.Logger = logger;
-            worldSim.StartSimulation();
+            if (!worldSim.StartSimulation())
+            {
+                logger.LogError(LogSource.Server, "WorldSimuation not started. Exiting  (press ENTER).", null);
+                Console.ReadLine();
+                return;
+            }
 
             // Creating communication manager thread
             commManager = new CommunicationManager();
@@ -79,7 +90,16 @@ namespace Calindor.Server
             // Creating server listening thread
             slThread = new ServerListeningThread(conf, commManager, worldSim);
             slThread.Logger = logger;
-            slThread.StartListening();
+            if (!slThread.StartListening())
+            {
+                logger.LogError(LogSource.Server, "Listener not started. Exiting  (press ENTER).", null);
+                worldSim.StopSimulation();
+                commManager.StopManager();
+                Console.ReadLine();
+                return;
+            }
+
+            logger.LogProgress(LogSource.Server, "Server started.");
         }
     }
 

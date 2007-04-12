@@ -59,18 +59,37 @@ namespace Calindor.Server
             serverWorldSimulation = worldSim;
         }
 
-        public void StartListening()
+        public bool StartListening()
         {
             Logger.LogProgress(LogSource.Listener, "ListeningThread starting");
 
-            IPAddress address = IPAddress.Parse(serverConfiguration.BindIP);
-            EndPoint ep = new IPEndPoint(address, serverConfiguration.BindPort);
-            serverSocket.Bind(ep);
-            serverSocket.Listen(100);
+            // Bind listening socket
+            try
+            {
+                IPAddress address = IPAddress.Parse(serverConfiguration.BindIP);
+                EndPoint ep = new IPEndPoint(address, serverConfiguration.BindPort);
+                serverSocket.Bind(ep);
+                serverSocket.Listen(100);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(LogSource.Listener, "Failed to bind listener socket (" 
+                    + serverConfiguration.BindIP + ":" + serverConfiguration.BindPort + ")", ex);
+                return false;
+            }
+
+            // Check buffer size
+            if (!ServerClientConnection.IsBufferSizeInRange(serverConfiguration.ConnectionReadBufferSize))
+            {
+                Logger.LogError(LogSource.Listener, "Buffer size must be in range (0, 32768).", null);
+                return false;
+            }
 
             ThreadStart ts = new ThreadStart(this.threadMain);
             innerThread = new Thread(ts);
             innerThread.Start();
+
+            return true;
         }
 
         protected void threadMain()

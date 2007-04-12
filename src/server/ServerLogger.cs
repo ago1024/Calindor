@@ -36,6 +36,7 @@ namespace Calindor.Server
     {
         void LogProgress(LogSource src, string message);
         void LogProgress(LogSource src, string message, Exception ex);
+        void LogProgress(LogSource src, string message, Exception ex, bool writeToConsole);
         void LogWarning(LogSource src, string message, Exception ex);
         void LogError(LogSource src, string message, Exception ex);
     }
@@ -90,7 +91,7 @@ namespace Calindor.Server
             sw = new StreamWriter(Path.Combine(logFilePath, fileName), false);
         }
 
-        private void writeMessage(StreamWriter sw, LogType type, LogSource src, string message, Exception ex)
+        private void writeMessage(StreamWriter sw, LogType type, LogSource src, string message, Exception ex, bool writeToConsole)
         {
             string line = getTimeString() + " : " + type.ToString() + " : " + src.ToString() + " : " + message;
             
@@ -100,8 +101,25 @@ namespace Calindor.Server
             sw.WriteLine(line);
             sw.Flush();
 
-            // TODO: Remove, test only
-            Console.WriteLine(line);
+            if (writeToConsole)
+            {
+                switch (type)
+                {
+                    case (LogType.Error):
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    case (LogType.Warning):
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        break;
+                    case (LogType.Progress):
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        break;
+                    default:
+                        throw new NotImplementedException("Type " + type + " is not handled");
+                }
+
+                Console.WriteLine(line);
+            }
         }
 
         #region ILogger Members
@@ -113,11 +131,16 @@ namespace Calindor.Server
 
         public void LogProgress(LogSource src, string message, Exception ex)
         {
+            LogProgress(src, message, ex, true);
+        }
+
+        public void LogProgress(LogSource src, string message, Exception ex, bool writeToConsole)
+        {
             Monitor.TryEnter(swProgress, 10);
 
             try
             {
-                writeMessage(swProgress, LogType.Progress, src, message, ex);
+                writeMessage(swProgress, LogType.Progress, src, message, ex, writeToConsole);
             }
             catch
             { 
@@ -144,7 +167,7 @@ namespace Calindor.Server
 
             try
             {
-                writeMessage(swWarning, LogType.Warning, src, message, ex);
+                writeMessage(swWarning, LogType.Warning, src, message, ex, true);
             }
             catch
             {
@@ -154,7 +177,7 @@ namespace Calindor.Server
                 Monitor.Exit(swWarning);
             }
 
-            LogProgress(src, message, ex);
+            LogProgress(src, message, ex, false);
         }
 
         public void LogError(LogSource src, string message, Exception ex)
@@ -173,7 +196,7 @@ namespace Calindor.Server
 
             try
             {
-                writeMessage(swError, LogType.Error, src, message, ex);
+                writeMessage(swError, LogType.Error, src, message, ex, true);
             }
             catch
             {
@@ -183,7 +206,7 @@ namespace Calindor.Server
                 Monitor.Exit(swError);
             }
 
-            LogProgress(src, message, ex);
+            LogProgress(src, message, ex, false);
         }
 
         #endregion
@@ -198,6 +221,10 @@ namespace Calindor.Server
         }
 
         public void LogProgress(LogSource src, string message, Exception ex)
+        {
+        }
+
+        public void LogProgress(LogSource src, string message, Exception ex, bool writeToConsole)
         {
         }
 

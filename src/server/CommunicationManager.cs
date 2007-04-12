@@ -19,6 +19,7 @@ namespace Calindor.Server
     public class CommunicationManager
     {
         protected Thread innerThread = null;
+        protected bool isWorking = false;
 
         protected ILogger logger = new DummyLogger();
         public ILogger Logger
@@ -45,17 +46,25 @@ namespace Calindor.Server
 
         public void StartManager()
         {
+            Logger.LogProgress(LogSource.Communication, "CommunicationManager starting");
+
             // Creating thread
             ThreadStart ts = new ThreadStart(threadMain);
             innerThread = new Thread(ts);
+            isWorking = true;
             innerThread.Start();
+        }
+
+        public void StopManager()
+        {
+            isWorking = false;
         }
 
         protected void threadMain()
         {
-            Logger.LogProgress(LogSource.Communication, "CommunicationManager starting");
 
-            while (true)
+
+            while (isWorking)
             {
                 // Process messages from existing connections
                 foreach (ServerClientConnection conn in activeConnections)
@@ -128,6 +137,8 @@ namespace Calindor.Server
                 // Sleep
               Thread.Sleep(100);
             }
+
+            Logger.LogProgress(LogSource.Communication, "CommunicationManager stopping");
         }
 
         public bool AddNewConnection(ServerClientConnection conn)

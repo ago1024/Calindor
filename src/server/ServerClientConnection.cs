@@ -82,8 +82,8 @@ namespace Calindor.Server
             if (toClientSocket == null)
                 throw new ArgumentNullException("toClientSocket");
 
-            if (readBufferSize < 1)
-                throw new ArgumentException("Buffer size must be greater than 0", "readBufferSize");
+            if (!IsBufferSizeInRange(readBufferSize))
+                throw new ArgumentException("Buffer size must be in range (0, 32768).", "readBufferSize");
 
             readBuffer = new byte[readBufferSize];
             connectionSocket = toClientSocket;
@@ -91,6 +91,17 @@ namespace Calindor.Server
             this.readBufferSize = readBufferSize;
 
             updateLastCommunicationTime();
+        }
+
+        public static bool IsBufferSizeInRange(int readBufferSize)
+        {
+            if (readBufferSize < 1)
+                return false;
+
+            if (readBufferSize > 32768)
+                return false;
+
+            return true;
         }
 
         public void ForceClose()
