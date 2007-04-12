@@ -45,9 +45,7 @@ namespace Calindor.Server
                                         msgToSender.Text = "The world blurs... and you are taken to a place you didn't expect...";
                                         pc.PutMessageIntoMyQueue(msgToSender);
 
-                                        mapManager.ChangeMapForPlayer(pc, "cont2map5_insides.elm");
-                                        pc.Location.X = 606;
-                                        pc.Location.Y = 133;
+                                        mapManager.ChangeMapForPlayer(pc, "cont2map5_insides.elm",606,133);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -64,9 +62,7 @@ namespace Calindor.Server
                                         msgToSender.Text = "This land seems deserted and dead...";
                                         pc.PutMessageIntoMyQueue(msgToSender);
 
-                                        mapManager.ChangeMapForPlayer(pc, "map2.elm");
-                                        pc.Location.X = 707;
-                                        pc.Location.Y = 162;
+                                        mapManager.ChangeMapForPlayer(pc, "map2.elm",707,162);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -76,9 +72,7 @@ namespace Calindor.Server
                                     }
                                 case (1137): // IP cave
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "misc1.elm");
-                                        pc.Location.X = 60;
-                                        pc.Location.Y = 138;
+                                        mapManager.ChangeMapForPlayer(pc, "misc1.elm",60,133);
                                         msgChangeMap = 
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -87,9 +81,7 @@ namespace Calindor.Server
                                     }
                                 case (73): // IP House, near veggies
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm");
-                                        pc.Location.X = 57;
-                                        pc.Location.Y = 13;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm",57,13);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -98,9 +90,7 @@ namespace Calindor.Server
                                     }
                                 case (63): // IP House, grandma
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm");
-                                        pc.Location.X = 15;
-                                        pc.Location.Y = 55;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm",15,55);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -109,9 +99,7 @@ namespace Calindor.Server
                                     }
                                 case (72): // IP Tavern
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm");
-                                        pc.Location.X = 18;
-                                        pc.Location.Y = 13;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm",18,13);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -130,9 +118,7 @@ namespace Calindor.Server
                                     }
                                 case (97): // IP hause - south of closed hause
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm");
-                                        pc.Location.X = 52;
-                                        pc.Location.Y = 49;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap_insides.elm",52,49);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -141,9 +127,7 @@ namespace Calindor.Server
                                     }
                                 case (1023): // IP tower
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "map7_insides.elm");
-                                        pc.Location.X = 19;
-                                        pc.Location.Y = 66;
+                                        mapManager.ChangeMapForPlayer(pc, "map7_insides.elm",19,66);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -162,9 +146,7 @@ namespace Calindor.Server
                             {
                                 case (110): // IP House, near veggies
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 98;
-                                        pc.Location.Y = 162;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",98,162);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -173,9 +155,7 @@ namespace Calindor.Server
                                     }
                                 case (108): // IP House, grandma
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 74;
-                                        pc.Location.Y = 150;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",74,150);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -184,9 +164,7 @@ namespace Calindor.Server
                                     }
                                 case (107): // IP Tavern
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 66;
-                                        pc.Location.Y = 132;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",66,132);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -195,9 +173,7 @@ namespace Calindor.Server
                                     }
                                 case (109): // IP House, hause near locked hause
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 89;
-                                        pc.Location.Y = 106;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",89,106);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -216,9 +192,7 @@ namespace Calindor.Server
                             {
                                 case (1309): // IP Tower
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 122;
-                                        pc.Location.Y = 154;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",122,154);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -235,9 +209,7 @@ namespace Calindor.Server
                             {
                                 case (459): // IP cave
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 41;
-                                        pc.Location.Y = 69;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",41,69);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -254,9 +226,7 @@ namespace Calindor.Server
                             {
                                 case (1015): // Movement from WS
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 25;
-                                        pc.Location.Y = 25;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",25,25);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
@@ -273,9 +243,7 @@ namespace Calindor.Server
                             {
                                 case (2309): // Return from secret place
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm");
-                                        pc.Location.X = 101;
-                                        pc.Location.Y = 147;
+                                        mapManager.ChangeMapForPlayer(pc, "startmap.elm",101,147);
                                         msgChangeMap =
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;

@@ -73,6 +73,27 @@ namespace Calindor.Server
             }
         }
 
+        public bool IsAcceptablePlayerName(string playerName)
+        {
+            if ((playerName == null) || (playerName == ""))
+                return false;
+
+            if (playerName.Length < 3)
+                return false;
+
+            if (playerName.Length > 15)
+                return false;
+
+            if (!Char.IsLetter(playerName, 0))
+                return false;
+
+            for (int i = 0; i < playerName.Length; i++)
+                if (!(Char.IsLetterOrDigit(playerName, i) || playerName[i] == '_'))
+                    return false;
+
+            return true;
+        }
+
         protected string readPassword(string playerName)
         {
             playerName = playerName.ToLower();

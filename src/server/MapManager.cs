@@ -102,6 +102,14 @@ namespace Calindor.Server.Maps
                 return true;
         }
 
+        public bool IsStartPointWalkable()
+        {
+            if (!IsStartingMapLoaded())
+                return false;
+
+            return StartPointMap.IsLocationWalkable(StartPointX, StartPointY);
+        }
+
         public string StartPointMapName
         {
             get { return serverConfiguration.StartingPoint.MapName; }
@@ -126,24 +134,39 @@ namespace Calindor.Server.Maps
             get { return serverConfiguration.StartingPoint.Deviation; }
         }
 
-        private void addPlayerToNewMap(PlayerCharacter pc, string newMapName)
+        private void addPlayerToNewMap(PlayerCharacter pc, string newMapName, short newX, short newY)
         {
             Map newMap = GetMapByName(newMapName);
-            if (newMap == null) /*Should not happen!*/
+
+            if (newMap == null) /*No such map: Should not happen!*/
             {
-                logger.LogWarning(LogSource.World, "MOVE TO MAP (" + newMapName + ") not found. Moving to start map!", null);
+                logger.LogWarning(LogSource.World, "Move " + pc.Name + " to map (" + newMapName + ") failed. Map not found. Moving to start map!", null);
                 newMap = StartPointMap;
+                newX = StartPointX;
+                newY = StartPointY;
             }
+
+            if (!newMap.IsLocationWalkable(newX, newY)) /*Destination location not walkable: Should not happen!*/
+            {
+                logger.LogWarning(LogSource.World, "Move " + pc.Name + " to map (" + newMap.Name + "(" 
+                    + newX + ", " + newY +")) failed. Destination location not walkable. Moving to start map!", null);
+                newMap = StartPointMap;
+                newX = StartPointX;
+                newY = StartPointY;
+            }
+
 
             newMap.AddEntity(pc);
 
             // Change player location
             pc.Location.CurrentMap = newMap;
+            pc.Location.X = newX;
+            pc.Location.Y = newY;
         }
 
-        public void ChangeMapForPlayer(PlayerCharacter pc, string newMapName)
+        public void ChangeMapForPlayer(PlayerCharacter pc, string newMapName, short newX, short newY)
         {
-            ChangeMapForPlayer(pc, newMapName, false);
+            ChangeMapForPlayer(pc, newMapName, false, newX, newY);
         }
 
         /// <summary>
@@ -151,12 +174,15 @@ namespace Calindor.Server.Maps
         /// </summary>
         /// <param name="pc"></param>
         /// <param name="newMapName"></param>
-        public void ChangeMapForPlayer(PlayerCharacter pc, string newMapName, bool isLogIn)
+        /// <param name="isLogIn"></param>
+        /// <param name="newX">Location on new map</param>
+        /// <param name="newY">Location on new map</param>
+        public void ChangeMapForPlayer(PlayerCharacter pc, string newMapName, bool isLogIn, short newX, short newY)
         {
             if ((isLogIn) && pc.Location.CurrentMap == null)
             {
                 // Login, only add (to avoid Warning from RemovePlayerFromHisMap)
-                addPlayerToNewMap(pc, newMapName);
+                addPlayerToNewMap(pc, newMapName, newX, newY);
             }
             else
             {
@@ -164,7 +190,7 @@ namespace Calindor.Server.Maps
                 RemovePlayerFromHisMap(pc);
 
                 // Add to new
-                addPlayerToNewMap(pc, newMapName);
+                addPlayerToNewMap(pc, newMapName, newX, newY);
             }
                 
         }

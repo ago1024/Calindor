@@ -59,6 +59,16 @@ namespace Calindor.Server
             {
                 CreateCharIncommingMessage msgCreateChar = (CreateCharIncommingMessage)msg;
 
+                // Is acceptable character name
+                if (!pcAuthentication.IsAcceptablePlayerName(msgCreateChar.UserName))
+                {
+                    CreateCharNotOkOutgoingMessage msgCreateCharNotOk =
+                        (CreateCharNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CREATE_CHAR_NOT_OK);
+                    msgCreateCharNotOk.Message = "This character name is not acceptable.";
+                    pc.PutMessageIntoMyQueue(msgCreateCharNotOk);
+                    return;
+                }
+
                 // Does character exist?
                 if (pcAuthentication.Exists(msgCreateChar.UserName))
                 {
@@ -70,12 +80,11 @@ namespace Calindor.Server
                     return;
                 }
 
-                // Are msg values within range of accepted values (anti hack)
-                if (false)
-                {
-                    // TODO: Check msg values
-                    return;
-                }
+               
+
+               
+
+                // TODO: Add check for appearace values
 
                 // All ok. Create a character
                 try
@@ -136,112 +145,137 @@ namespace Calindor.Server
             if (pc.LoginState == PlayerCharacterLoginState.ClientVersionCorrect)
             {
                 LogInIncommingMessage msgLogIn = (LogInIncommingMessage)msg;
+
+                // Is acceptable character name
+                if (!pcAuthentication.IsAcceptablePlayerName(msgLogIn.UserName))
+                {
+                    LogInNotOkOutgoingMessage msgLogInNotOk =
+                        (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
+                    msgLogInNotOk.Message = "This character name is not acceptable.";
+                    pc.PutMessageIntoMyQueue(msgLogInNotOk);
+                    return;
+                }
+
+                // Does character exist
                 if (!pcAuthentication.Exists(msgLogIn.UserName))
                 {
                     pc.PutMessageIntoMyQueue(msgStdYouDontExist);
                     return;
                 }
 
-                // Check the password
-                if (pcAuthentication.Authenticate(msgLogIn.UserName, msgLogIn.Password)) 
+                
+                try
                 {
-                    // Check if already logged in
-                    if (getPlayerByName(msgLogIn.UserName) != null)
+                    // Check the password
+                    if (!pcAuthentication.Authenticate(msgLogIn.UserName, msgLogIn.Password))
                     {
                         LogInNotOkOutgoingMessage msgLogInNotOk =
                             (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
-                        msgLogInNotOk.Message = "You are already logged in!";
+                        msgLogInNotOk.Message = "The password is wrong!";
                         pc.PutMessageIntoMyQueue(msgLogInNotOk);
                         return;
                     }
-
-                    pc.Name = msgLogIn.UserName; // Temporary setting user name so that deserialization may work
-
-                    // Deserialize user data
-                    try
-                    {
-                        pc.Deserialize(pcDeserializer);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(LogSource.World, "Failed to deserialize player: " + pc.Name, ex);
-                        LogInNotOkOutgoingMessage msgLogInNotOk =
-                            (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
-                        msgLogInNotOk.Message = "Server could not load the character!";
-                        pc.PutMessageIntoMyQueue(msgLogInNotOk);
-                        return;
-                    }
-
-                    try
-                    {
-                        // Add to dictionaries / Get EntityID
-                        addPlayerToDictionaries(pc);
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(LogSource.World, "Failed to register player: " + pc.Name, ex);
-                        LogInNotOkOutgoingMessage msgLogInNotOk =
-                            (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
-                        msgLogInNotOk.Message = "Server could not register the character!";
-                        pc.PutMessageIntoMyQueue(msgLogInNotOk);
-                        return;
-                    }
-
-                    // All is OK
-                    pc.LoginState = PlayerCharacterLoginState.LoginSuccesfull;
-
-                    // TODO: Send initial data to client
-
-                    // New Minute
-                    NewMinuteOutgoingMessage msgNewMinute =
-                        (NewMinuteOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NEW_MINUTE);
-                    msgNewMinute.MinuteOfTheDay = calendar.MinuteOfTheDay;
-                    pc.PutMessageIntoMyQueue(msgNewMinute);
-
-                    // You Are
-                    YouAreOutgoingMessage msgYouAre =
-                        (YouAreOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.YOU_ARE);
-                    msgYouAre.EntityID = pc.EntityID;
-                    pc.PutMessageIntoMyQueue(msgYouAre);
-
-                    // Change Map
-                    ChangeMapOutgoingMessage msgChangeMap =
-                        (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
-                    mapManager.ChangeMapForPlayer(pc, pc.Location.LoadedMapMame, true);
-                    msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
-                    pc.PutMessageIntoMyQueue(msgChangeMap);
-                    
-
-                    // Here Your Stats //TODO: Reimplement accorting to world model
-                    /*HereYourStatsOutgoingMessage msgHereYourStats =
-                        (HereYourStatsOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.HERE_YOUR_STATS);
-                    msgHereYourStats.FromPlayerCharacter(pc);
-                    pc.PutMessageIntoQueue(msgHereYourStats);*/
-
-                    // Log In Ok
-                    pc.PutMessageIntoMyQueue(msgStdLogInOk);
-
-                    // Teleport In - send to player and all players in vinicity
-                    TeleportInOutgoingMessage msgTeleportIn =
-                        (TeleportInOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.TELEPORT_IN);
-                    msgTeleportIn.X = pc.Location.X;
-                    msgTeleportIn.Y = pc.Location.Y;
-                    pc.PutMessageIntoMyAndObserversQueue(msgTeleportIn);
-
-                    // Add New Enhanced Actor - send to player ONLY
-                    AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                        (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-                    msgAddNewEnhancedActor.FromPlayerCharacter(pc);
-                    pc.PutMessageIntoMyQueue(msgAddNewEnhancedActor);
 
                 }
-                else
+                catch (Exception ex)
+                {
+                    logger.LogError(LogSource.World, "Failed to authenticate player: " + pc.Name, ex);
+                    LogInNotOkOutgoingMessage msgLogInNotOk =
+                        (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
+                    msgLogInNotOk.Message = "Server could not load the character!";
+                    pc.PutMessageIntoMyQueue(msgLogInNotOk);
+                    return;
+                }
+
+
+                // Check if already logged in
+                if (getPlayerByName(msgLogIn.UserName) != null)
                 {
                     LogInNotOkOutgoingMessage msgLogInNotOk =
                         (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
-                    msgLogInNotOk.Message = "The password is wrong!";
+                    msgLogInNotOk.Message = "You are already logged in!";
                     pc.PutMessageIntoMyQueue(msgLogInNotOk);
+                    return;
                 }
+
+                pc.Name = msgLogIn.UserName; // Temporary setting user name so that deserialization may work
+
+                // Deserialize user data
+                try
+                {
+                    pc.Deserialize(pcDeserializer);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(LogSource.World, "Failed to deserialize player: " + pc.Name, ex);
+                    LogInNotOkOutgoingMessage msgLogInNotOk =
+                        (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
+                    msgLogInNotOk.Message = "Server could not load the character!";
+                    pc.PutMessageIntoMyQueue(msgLogInNotOk);
+                    return;
+                }
+
+                try
+                {
+                    // Add to dictionaries / Get EntityID
+                    addPlayerToDictionaries(pc);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(LogSource.World, "Failed to register player: " + pc.Name, ex);
+                    LogInNotOkOutgoingMessage msgLogInNotOk =
+                        (LogInNotOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_NOT_OK);
+                    msgLogInNotOk.Message = "Server could not register the character!";
+                    pc.PutMessageIntoMyQueue(msgLogInNotOk);
+                    return;
+                }
+
+                // All is OK
+                pc.LoginState = PlayerCharacterLoginState.LoginSuccesfull;
+
+                // TODO: Send initial data to client
+
+                // New Minute
+                NewMinuteOutgoingMessage msgNewMinute =
+                    (NewMinuteOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NEW_MINUTE);
+                msgNewMinute.MinuteOfTheDay = calendar.MinuteOfTheDay;
+                pc.PutMessageIntoMyQueue(msgNewMinute);
+
+                // You Are
+                YouAreOutgoingMessage msgYouAre =
+                    (YouAreOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.YOU_ARE);
+                msgYouAre.EntityID = pc.EntityID;
+                pc.PutMessageIntoMyQueue(msgYouAre);
+
+                // Change Map
+                ChangeMapOutgoingMessage msgChangeMap =
+                    (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
+                mapManager.ChangeMapForPlayer(pc, pc.Location.LoadedMapMame, true, pc.Location.X, pc.Location.Y);
+                msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
+                pc.PutMessageIntoMyQueue(msgChangeMap);
+
+
+                // Here Your Stats //TODO: Reimplement accorting to world model
+                /*HereYourStatsOutgoingMessage msgHereYourStats =
+                    (HereYourStatsOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.HERE_YOUR_STATS);
+                msgHereYourStats.FromPlayerCharacter(pc);
+                pc.PutMessageIntoQueue(msgHereYourStats);*/
+
+                // Log In Ok
+                pc.PutMessageIntoMyQueue(msgStdLogInOk);
+
+                // Teleport In - send to player and all players in vinicity
+                TeleportInOutgoingMessage msgTeleportIn =
+                    (TeleportInOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.TELEPORT_IN);
+                msgTeleportIn.X = pc.Location.X;
+                msgTeleportIn.Y = pc.Location.Y;
+                pc.PutMessageIntoMyAndObserversQueue(msgTeleportIn);
+
+                // Add New Enhanced Actor - send to player ONLY
+                AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
+                    (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
+                msgAddNewEnhancedActor.FromPlayerCharacter(pc);
+                pc.PutMessageIntoMyQueue(msgAddNewEnhancedActor);
             }
         }
 

@@ -69,6 +69,12 @@ namespace Calindor.Server
                 Console.ReadLine();
                 return;
             }
+            if (!mapManager.IsStartPointWalkable())
+            {
+                logger.LogError(LogSource.Server, "Default start point not walkable. Exiting (press ENTER).", null);
+                Console.ReadLine();
+                return;
+            }
 
 
             // Creating world simulation thread
