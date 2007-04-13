@@ -23,10 +23,28 @@ namespace Calindor.Server
         private static CommunicationManager commManager = null;
         private static WorldSimulation worldSim = null;
 
+        private static bool shouldExitAfterParsingCommandLine = false;
+
+        public static void parseCMDLine(string[] args)
+        {
+            if (args.Length == 0)
+                return;
+
+            // Display informative product version
+            if (args[0] == "/pv")
+            {
+                string version = ServerVersion.GetVersion();
+                version = version.Replace(".", "_");
+                version = version.Replace(" ", "__");
+                Console.WriteLine(version);
+                shouldExitAfterParsingCommandLine = true;
+            }
+        }
+
         public static void Main(string[] args)
         {
             // Starting server...
-            
+        
             // Setting working directory
             try
             {
@@ -35,13 +53,19 @@ namespace Calindor.Server
             }
             catch (Exception ex)
             {
-                // Logger not created... exiting
+                // Could not set working directory. Exit.
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Working directory not set. Reason: " + ex.ToString());
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.ReadLine();
                 return;
             }
+
+            // Parsing command line
+            parseCMDLine(args);
+
+            if (shouldExitAfterParsingCommandLine)
+                return;
 
             // Creating logger
             ILogger logger = null;
