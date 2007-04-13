@@ -112,13 +112,14 @@ namespace Calindor.Server
                         Console.ForegroundColor = ConsoleColor.Yellow;
                         break;
                     case (LogType.Progress):
-                        Console.ForegroundColor = ConsoleColor.Gray;
                         break;
                     default:
                         throw new NotImplementedException("Type " + type + " is not handled");
                 }
 
                 Console.WriteLine(line);
+
+                Console.ForegroundColor = ConsoleColor.Gray;
             }
         }
 

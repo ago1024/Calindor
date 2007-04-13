@@ -11,7 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.IO;
 using Calindor.Server.Maps;
+
 
 namespace Calindor.Server
 {
@@ -25,17 +27,35 @@ namespace Calindor.Server
         {
             // Starting server...
             
+            // Setting working directory
+            try
+            {
+                string workingDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                Directory.SetCurrentDirectory(workingDirectory);
+            }
+            catch (Exception ex)
+            {
+                // Logger not created... exiting
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Working directory not set. Reason: " + ex.ToString());
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.ReadLine();
+                return;
+            }
+
+            // Creating logger
             ILogger logger = null;
 
             try
             {
-                logger = new MultiThreadedLogger(System.IO.Directory.GetCurrentDirectory());
+                logger = new MultiThreadedLogger(Directory.GetCurrentDirectory());
             }
-            catch
+            catch(Exception ex)
             {
                 // Logger not created... exiting
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Logger not created...");
+                Console.WriteLine("Logger not created. Reason: " + ex.ToString());
+                Console.ForegroundColor = ConsoleColor.Gray;
                 Console.ReadLine();
                 return;
             }

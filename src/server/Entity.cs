@@ -182,8 +182,8 @@ namespace Calindor.Server.Entities
                     {
 
                         // TODO: For now just a simple condition, change for future
-                        if ((Math.Abs(Location.X - testedEntity.Location.X) < 20) &&
-                            (Math.Abs(Location.Y - testedEntity.Location.Y) < 20))
+                        if ((Math.Abs(Location.X - testedEntity.Location.X) < 30) &&
+                            (Math.Abs(Location.Y - testedEntity.Location.Y) < 30))
                         {
                             entitiesVisibleNow.Add(testedEntity); // I can see you
                             testedEntity.AddObserverEntity(this); // You know that I can see you

@@ -18,6 +18,7 @@ namespace Calindor.Server
     {
         // TODO: Temporary implemenation. Must use sripting/configuration external to server for handling actions connected with map objects usage
         // TODO: Add checking distance from object. Execute only if close enough
+        // TODO: If change map fails and player move to IP, display massage and stop script
         private void handleUseMapObject(PlayerCharacter pc, IncommingMessage msg)
         {
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
@@ -72,7 +73,7 @@ namespace Calindor.Server
                                     }
                                 case (1137): // IP cave
                                     {
-                                        mapManager.ChangeMapForPlayer(pc, "misc1.elm",60,133);
+                                        mapManager.ChangeMapForPlayer(pc, "misc1.elm",60,138);
                                         msgChangeMap = 
                                             (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
                                         msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
