@@ -17,11 +17,20 @@ ver. 0.3.0:
  - support for movement messages (delayed/time based actions at server)
  - player following
 ver. 0.4.0:
- - attributes/skills model for all entites
+ - basic attributes/skills model for all entites
  - basic stationary animal characters
  - basic fighting implementation
+ - basic harvesting implementation
+ - stationary NPC buying flowers/skins, selling healing
+ - time (+food) based health increase / decrease
+ - CSU - Calindor Storage Updater
 ver. 0.5.0:
  - atributes/skills model refinement
- - implementing harvesting skill
+ - full implementation of harvesting skill
 
 
+Unasigned:
+- server command line
+- shutdown server command
+- server-side scripting engine
+- basic scripting for changing map

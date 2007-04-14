@@ -2,7 +2,7 @@ cd..
 FOR /F "tokens=1* delims= " %%G IN ('cd') DO SET "top_dir=%%G"
 cd release
 FOR /F "tokens=1 delims= " %%G IN ('Calindor.exe /pv') DO SET "calindor_version=%%G"
-SET "dest_dir=Calindor_%calindor_version%"
+SET "dest_dir=Calindor_%calindor_version%_bin"
 cd..
 cd setup
 rmdir %dest_dir% /S /Q

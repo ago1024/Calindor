@@ -108,10 +108,16 @@ namespace Calindor.Server
         {
             if (isDeserialized || forceSerialization) // Serialize only if it was deserialized or force (create character)
             {
-                sr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
+                try
+                {
+                    sr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
                     sr.WriteValue(this.Name);
                     Appearance.Serialize(sr);
-                sr.End();
+                }
+                finally
+                {
+                    sr.End();
+                }
 
                 /*sr.Start(Name, PlayerCharacterDataType.PCAttributes, "VER.1.0.0");
                     BasicAttributesCurrent.Serialize(sr);
@@ -127,19 +133,31 @@ namespace Calindor.Server
                     sr.WriteValue(this.FoodLevel);
                     sr.WriteValue(this.PickPoints);
                 sr.End();*/
-
-                sr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
+                
+                try
+                {
+                    sr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
                     Location.Serialize(sr);
-                sr.End();
+                }
+                finally
+                {
+                    sr.End();
+                }
             }
         }
 
         public void Deserialize(PlayerCharacterDeserializer dsr)
         {
-            dsr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
+            try
+            {
+                dsr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
                 this.Name = dsr.ReadString();
                 Appearance.Deserialize(dsr);
-            dsr.End();
+            }
+            finally
+            {
+                dsr.End();
+            }
 
             /*/dsr.Start(Name, PlayerCharacterDataType.PCAttributes, "VER.1.0.0");
                 BasicAttributesCurrent.Deserialize(dsr);
@@ -156,9 +174,15 @@ namespace Calindor.Server
                 this.PickPoints = dsr.ReadShort();
             dsr.End();*/
 
-            dsr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
+            try
+            {
+                dsr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
                 Location.Deserialize(dsr);
-            dsr.End();
+            }
+            finally
+            {
+                dsr.End();
+            }
 
             isDeserialized = true;
         }

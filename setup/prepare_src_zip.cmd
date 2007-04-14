@@ -8,16 +8,19 @@ cd setup
 rmdir %dest_dir% /S /Q
 mkdir %dest_dir%
 cd..
-xcopy src\* setup\%dest_dir%\ /E
+xcopy src\* setup\%dest_dir%\src\ /E
 cd setup
 cd %dest_dir%
+cd src
 cd server
 rmdir obj /S /Q
+cd..
 cd..
 cd..
 cd..
 copy doc\Installation.txt setup\%dest_dir%
 copy doc\Compilation.txt setup\%dest_dir%
 copy doc\License.txt setup\%dest_dir%
+copy setup\server_config_default.xml setup\%dest_dir%\src\server\server_config.xml /Y
 cd "%top_dir%\setup"
 7za a -r -tzip %dest_dir%.zip %dest_dir%\*
