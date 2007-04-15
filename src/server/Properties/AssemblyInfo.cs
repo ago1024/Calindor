@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Licensed under terms of LGPL")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyInformationalVersionAttribute ("0.3.0 RC2")]
+[assembly: AssemblyInformationalVersionAttribute ("0.3.0")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 

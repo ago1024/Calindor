@@ -8,7 +8,7 @@ ver. 0.2.0:
  - basic character persistency support
 ver. 0.2.1 (13.03.2007):
  - support for view sight of character(add/remove actors)
-ver. 0.3.0:
+ver. 0.3.0 (15.04.2007):
  - auto log off at disconnect
  - loading maps .elm
  - findind walkable tiles
