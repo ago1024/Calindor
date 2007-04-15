@@ -12,9 +12,10 @@ mkdir maps
 mkdir storage
 cd..
 cd..
-copy release\Calindor.exe setup\%dest_dir%
+copy release\Calindor.exe setup\%dest_dir%\
 copy setup\server_config_default.xml setup\%dest_dir%\server_config.xml
-copy doc\Installation.txt setup\%dest_dir%
-copy doc\License.txt setup\%dest_dir%
+copy doc\Installation.txt setup\%dest_dir%\
+copy doc\License.txt setup\%dest_dir%\
+copy doc\Features.txt setup\%dest_dir%\
 cd "%top_dir%\setup"
 7za a -r -tzip %dest_dir%.zip %dest_dir%\*
