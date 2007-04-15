@@ -34,8 +34,8 @@ namespace Calindor.Server
             if (args[0] == "/pv")
             {
                 string version = ServerVersion.GetVersion();
-                version = version.Replace(".", "_");
-                version = version.Replace(" ", "__");
+                version = version.Replace(" ", ".");
+                version = version.ToLower();
                 Console.WriteLine(version);
                 shouldExitAfterParsingCommandLine = true;
             }
