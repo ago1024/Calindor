@@ -1,0 +1,16 @@
+The release cycle that has been defined for Calindor enables to following:
+
+- developers can fully decide on their free time and work commited
+- community can have constant and predictable updates and can evalute 
+  work done so far
+
+
+The cycle is described as follows:
+
+I.   DECIDE ON THE SCOPE OF WORK FOR VERSION X.Y
+II.  DEVELOPMENT STARTS FOR VERSION X.Y
+III. DEVELOPMENT ENDS FOR VERSION X.Y
+IV.  TESTS START FOR VERSION X.Y
+V.   TESTS END FOR VERSION X.Y
+VI.  RELEASE VERSION X.Y
+VII. POST-RELEASE SUPPORT FOR VERSION X.Y
