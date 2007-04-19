@@ -8,9 +8,63 @@ The release cycle that has been defined for Calindor enables to following:
 The cycle is described as follows:
 
 I.   DECIDE ON THE SCOPE OF WORK FOR VERSION X.Y
+     
+     Each cycle will start with selecting a scope of the features that
+     will be covered in that release. This selection will allow setting
+     up a milestone, a goal to strive for. The features will be then
+     decomposed into smaller tasks, thus allowing for better estimation as
+     well as revealing 'hidden' development that needs to be done to
+     other parts in order to deliver the features
+
+
 II.  DEVELOPMENT STARTS FOR VERSION X.Y
+     
+     Once the scope and smaller tasks are defined, the development can
+     start. There is NO set time that the development will take. Instead,
+     there is a commitment to make a special release for each month of
+     development. This is a CTP release - Community Technology Preview.
+
+     This type of release will contain all new features. The only 
+     requirement is that the features do not crash the software under 
+     first run. These releases will enable the community to track the 
+     progress and give feedback early on.
+
+
 III. DEVELOPMENT ENDS FOR VERSION X.Y
+     
+     Once the planned features are implemented (or canceled), the
+     development ends and a RC_1 (Release Candidate 1) release is made.
+
+
 IV.  TESTS START FOR VERSION X.Y
+
+     The test are performed in cycles starting with releasing a RC,
+     testing, correcting and ending with release of the next RC.
+
+
 V.   TESTS END FOR VERSION X.Y
+
+     Once the level of bugs in RC release is low enough, the tests end
+     and software is ready for official release.
+
+
 VI.  RELEASE VERSION X.Y
+
+     After the tests end, the official release is made. This release must
+     be working, preconfigured and documented so that the widest number
+     of community members can use and evaluate it.
+
+     Also at this point, the branch X.Y and a tag X.Y.0 are created.
+
+
 VII. POST-RELEASE SUPPORT FOR VERSION X.Y
+
+     It may happen that the official version contains a critical bug or
+     lacks a critical feature. If this happens, the correction 
+     or new development must be performed on the X.Y brach.
+
+     The new development must pass the same level of tests as final 
+     release. When the tests are done, a new X.Y.N release is made.
+
+     Also, a X.Y.N tag is created in the repository and the changes from
+     the branch are applied to the trunk.
