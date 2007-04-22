@@ -1,0 +1,34 @@
+Features:
+- skill: Plants Harvesting
+- skill: Attack: Unarmed
+- skill: Defense: Dodge
+- NPC on startmap: buys plants, skins, sells full heal
+- CSU - Calindor Storage Updater
+
+Tasks:
+>MUST HAVE:
+	- HarvestingTimeBasedAction
+	- inventory support (put in, take out, send initial)
+	- inventory serialization
+	- skills model (leveling)
+	- skills serialization
+	- list_skills command
+	- FightingTimeBasedAction
+	- AnimalEntity
+	- death (animal and player)
+	- health
+	- health serialization
+	- NCPEntity
+	- npc dialogs
+	- inventory support (put in, take out, send initial)
+	- inventory serialization
+	- implement CSU
+
+>NICE TO HAVE:
+	- server side statistics
+	- limiting basic resources (max no. of resources, respawn time)
+	- carry limit
+	- server side skills statistics
+	- putting items to bag
+	- getting items from bag
+	- creating bag
