@@ -29,6 +29,7 @@ namespace Calindor.Server.Messaging
         TELEPORT_IN = 12,
         TELEPORT_OUT = 13,
         //HERE_YOUR_STATS = 18,
+        HERE_YOUR_INVENTORY = 19,
         ADD_NEW_ENHANCED_ACTOR = 51,
         UPGRADE_TOO_OLD = 241,
         YOU_DONT_EXIST = 249,
@@ -116,6 +117,7 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.TELEPORT_OUT] = new TeleportOutOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.ADD_ACTOR_COMMAND] = new AddActorCommandOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.KILL_ALL_ACTORS] = new KillAllActorsOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.HERE_YOUR_INVENTORY] = new HereYourInventoryOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -782,5 +784,57 @@ namespace Calindor.Server.Messaging
         {
             return base.ToString() + "(" + EntityID + ", " + Command + ")";
         }
+    }
+
+    public class HereYourInventoryOutgoingMessage : OutgoingMessage
+    {
+        public override ushort Length
+        {
+            get
+            {
+                return (ushort)(4 + itemsCount * 8); /*(3+1+items)*/
+            }
+        }
+
+        protected byte[] itemsBuffer = null;
+        protected byte itemsCount = 0;
+
+        public HereYourInventoryOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.HERE_YOUR_INVENTORY;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new HereYourInventoryOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            // Number of items
+            _return[3] = itemsCount;
+
+            // Items
+            Array.Copy(itemsBuffer, 0, _return, 4, itemsCount * 8);
+        }
+
+        public void FromPlayerCharacter(PlayerCharacter pc)
+        {
+            // TODO: Temporary -> change to correct implementation
+            itemsCount = 1;
+
+            itemsBuffer = new byte[itemsCount * 8];
+            
+            //image id
+            InPlaceBitConverter.GetBytes((short)1, itemsBuffer, 0);
+            // quantity
+            InPlaceBitConverter.GetBytes((int)1, itemsBuffer, 2);
+            // pos
+            itemsBuffer[6] = 0;
+            // flags
+            itemsBuffer[7] = 0;
+            
+        }
+
     }
 }

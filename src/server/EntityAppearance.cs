@@ -10,6 +10,7 @@
 
 using System;
 using Calindor.Misc.Predefines;
+using Calindor.Server.Serialization;
 
 namespace Calindor.Server.Entities
 {

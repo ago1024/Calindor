@@ -254,6 +254,18 @@ namespace Calindor.Server
                 msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
                 pc.PutMessageIntoMyQueue(msgChangeMap);
 
+                // Teleport In - send to player ONLY - no obserwers yet
+                TeleportInOutgoingMessage msgTeleportIn =
+                    (TeleportInOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.TELEPORT_IN);
+                msgTeleportIn.X = pc.Location.X;
+                msgTeleportIn.Y = pc.Location.Y;
+                pc.PutMessageIntoMyQueue(msgTeleportIn);
+
+                // Here Your Inventory
+                HereYourInventoryOutgoingMessage msgHereYourInventory =
+                    (HereYourInventoryOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.HERE_YOUR_INVENTORY);
+                msgHereYourInventory.FromPlayerCharacter(pc);
+                pc.PutMessageIntoMyQueue(msgHereYourInventory);
 
                 // Here Your Stats //TODO: Reimplement accorting to world model
                 /*HereYourStatsOutgoingMessage msgHereYourStats =
@@ -263,13 +275,6 @@ namespace Calindor.Server
 
                 // Log In Ok
                 pc.PutMessageIntoMyQueue(msgStdLogInOk);
-
-                // Teleport In - send to player ONLY - no obserwers yet
-                TeleportInOutgoingMessage msgTeleportIn =
-                    (TeleportInOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.TELEPORT_IN);
-                msgTeleportIn.X = pc.Location.X;
-                msgTeleportIn.Y = pc.Location.Y;
-                pc.PutMessageIntoMyQueue(msgTeleportIn);
 
                 // Add New Enhanced Actor - send to player ONLY - observers will get it with the next round
                 AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =

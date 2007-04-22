@@ -125,6 +125,12 @@ namespace Calindor.Server.Entities
             set { location = value; }
         }
 
+        protected EntityInventory inventory = new EntityInventory();
+        public EntityInventory Inventory
+        {
+            get { return inventory; }
+        }
+
         // Time based action
         // TODO: Probably an entity might have more than one time based action
         protected ITimeBasedAction tbAction = null;
@@ -338,19 +344,4 @@ namespace Calindor.Server.Entities
     public class EntityList : List<Entity>
     {
     }
-
-    public interface ISerializer
-    {
-        void WriteValue(short data);
-        void WriteValue(sbyte data);
-        void WriteValue(string data);
-    }
-
-    public interface IDeserializer
-    {
-        short ReadShort();
-        sbyte ReadSByte();
-        string ReadString();
-    }
-
 }

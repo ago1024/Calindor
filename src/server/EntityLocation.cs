@@ -10,6 +10,7 @@
 
 using System;
 using Calindor.Server.Maps;
+using Calindor.Server.Serialization;
 
 namespace Calindor.Server.Entities
 {
