@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Text;
 using Calindor.Misc.Predefines;
 using Calindor.Misc;
+using Calindor.Server.Items;
 
 namespace Calindor.Server.Messaging
 {
@@ -820,19 +821,30 @@ namespace Calindor.Server.Messaging
 
         public void FromPlayerCharacter(PlayerCharacter pc)
         {
-            // TODO: Temporary -> change to correct implementation
-            itemsCount = 1;
+            if (pc.Inventory.FilledSlotsCount > 255 ||
+              pc.Inventory.Size > 255)
+                throw new ArgumentException("Inventory size greater then 255");
+                
+            itemsCount = (byte)pc.Inventory.FilledSlotsCount; 
 
             itemsBuffer = new byte[itemsCount * 8];
-            
-            //image id
-            InPlaceBitConverter.GetBytes((short)1, itemsBuffer, 0);
-            // quantity
-            InPlaceBitConverter.GetBytes((int)1, itemsBuffer, 2);
-            // pos
-            itemsBuffer[6] = 0;
-            // flags
-            itemsBuffer[7] = 0;
+
+            for (byte i = 0; i < (byte)pc.Inventory.Size; i++)
+            {
+                Item itm = pc.Inventory.GetItemAtPosition(i);
+
+                if (itm == null)
+                    continue;
+
+                //image id
+                InPlaceBitConverter.GetBytes(itm.Definition.ImageID, itemsBuffer, (i*8)+0);
+                // quantity
+                InPlaceBitConverter.GetBytes(itm.Quantity, itemsBuffer, (i * 8) + 2);
+                // pos
+                itemsBuffer[(i * 8) + 6] = (byte)i;
+                // flags
+                itemsBuffer[(i * 8) + 7] = 0;
+            }
             
         }
 

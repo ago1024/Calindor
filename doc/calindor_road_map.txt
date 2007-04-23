@@ -32,3 +32,4 @@ Unasigned:
  - attributes model for all entites
  - server command line
  - shutdown server command
+ - variable characteristics items

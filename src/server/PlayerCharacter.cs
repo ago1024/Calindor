@@ -143,6 +143,16 @@ namespace Calindor.Server
                 {
                     sr.End();
                 }
+
+                try
+                {
+                    sr.Start(Name, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
+                    Inventory.Serialize(sr);
+                }
+                finally
+                {
+                    sr.End();
+                }
             }
         }
 
@@ -178,6 +188,16 @@ namespace Calindor.Server
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
                 Location.Deserialize(dsr);
+            }
+            finally
+            {
+                dsr.End();
+            }
+
+            try
+            {
+                dsr.Start(Name, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
+                Inventory.Deserialize(dsr);
             }
             finally
             {

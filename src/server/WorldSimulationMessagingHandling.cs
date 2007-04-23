@@ -83,7 +83,7 @@ namespace Calindor.Server
                             }
                             
                             pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            break;
+                            return;
                         }
                         if (msgRawText.Text.ToLower() == "#list_commands")
                         {

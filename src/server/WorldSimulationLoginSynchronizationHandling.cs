@@ -15,6 +15,7 @@ using System.Threading;
 using Calindor.Server.Messaging;
 using Calindor.Server.Entities;
 using Calindor.Server.Maps;
+using Calindor.Server.Items;
 
 namespace Calindor.Server
 {
@@ -119,6 +120,18 @@ namespace Calindor.Server
 
 		        // TODO: Apply race specific attributes
 
+                // Add bonus items
+                ItemDefinition itmDef = null;
+                
+                // Sovereigns
+                itmDef = ItemDefinitionCache.GetItemDefinitionByID(1);
+                if (itmDef != null)
+                {
+                    Item itm = new Item(itmDef);
+                    itm.Quantity = 100;
+                    pc.Inventory.AddItemToFreeSlot(itm);
+                }
+                
                 // Store data
                 try
                 {
@@ -230,9 +243,6 @@ namespace Calindor.Server
                     return;
                 }
 
-                // All is OK
-                pc.LoginState = PlayerCharacterLoginState.LoginSuccesfull;
-
                 // TODO: Send initial data to client
 
                 // New Minute
@@ -281,6 +291,9 @@ namespace Calindor.Server
                     (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
                 msgAddNewEnhancedActor.FromPlayerCharacter(pc);
                 pc.PutMessageIntoMyQueue(msgAddNewEnhancedActor);
+
+                // All is OK
+                pc.LoginState = PlayerCharacterLoginState.LoginSuccesfull;
             }
         }
 

@@ -191,6 +191,7 @@ namespace Calindor.Server
         PCAppearance    =   0,
         PCAttributes    =   1,
         PCLocation      =   2,
+        PCInventory     =   3,
     }
 
     public class PlayerCharacterDoesNotExistException : ApplicationException
@@ -242,6 +243,9 @@ namespace Calindor.Server
                 case(PlayerCharacterDataType.PCLocation):
                     extention = ".location";
                     break;
+                case(PlayerCharacterDataType.PCInventory):
+                    extention = ".inventory";
+                    break;
                 default:
                     throw new ArgumentException("Unrecognized type of player data");
             }
@@ -260,12 +264,22 @@ namespace Calindor.Server
             bw.Write(data);
         }
 
+        public void WriteValue(ushort data)
+        {
+            bw.Write(data);
+        }
+        
         public void WriteValue(sbyte data)
         {
             bw.Write(data);
         }
 
         public void WriteValue(string data)
+        {
+            bw.Write(data);
+        }
+
+        public void WriteValue(int data)
         {
             bw.Write(data);
         }
@@ -314,6 +328,9 @@ namespace Calindor.Server
                 case(PlayerCharacterDataType.PCLocation):
                     extention = ".location";
                     break;
+                case(PlayerCharacterDataType.PCInventory):
+                    extention = ".inventory";
+                    break;
                 default:
                     throw new ArgumentException("Unrecognized type of player data");
             }
@@ -334,6 +351,11 @@ namespace Calindor.Server
             return br.ReadInt16();
         }
 
+        public ushort ReadUShort()
+        {
+            return br.ReadUInt16();
+        }
+
         public sbyte ReadSByte()
         {
             return br.ReadSByte();
@@ -342,6 +364,11 @@ namespace Calindor.Server
         public string ReadString()
         {
             return br.ReadString();
+        }
+
+        public int ReadSInt()
+        {
+            return br.ReadInt32();
         }
 
         public void End()

@@ -7,20 +7,33 @@
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  */
+using System;
 
 namespace Calindor.Server.Serialization
 {
     public interface ISerializer
     {
         void WriteValue(short data);
+        void WriteValue(ushort data);
         void WriteValue(sbyte data);
         void WriteValue(string data);
+        void WriteValue(int data);
     }
 
     public interface IDeserializer
     {
         short ReadShort();
+        ushort ReadUShort();
         sbyte ReadSByte();
+        int ReadSInt();
         string ReadString();
+    }
+
+    public class DeserializationException : ApplicationException
+    {
+        public DeserializationException(string message):base(message)
+        {
+            
+        }
     }
 }
