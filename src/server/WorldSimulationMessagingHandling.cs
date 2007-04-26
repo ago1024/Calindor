@@ -11,6 +11,7 @@
 using System;
 using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
+using Calindor.Server.Items;
 
 namespace Calindor.Server
 {
@@ -212,6 +213,54 @@ namespace Calindor.Server
                             }
 
                             return;
+                        }
+                        if (msgRawText.Text.ToLower().IndexOf("#add_item") != -1)
+                        {
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length != 3)
+                                return;
+
+                            ushort itemID = Convert.ToUInt16(tokens[1]);
+                            int quantity = Convert.ToInt32(tokens[2]);
+
+                            ItemDefinition itmDef = ItemDefinitionCache.GetItemDefinitionByID(itemID);
+                            if (itmDef == null)
+                                return;
+                            Item itm = new Item(itmDef);
+                            itm.Quantity = quantity;
+                            short slot = pc.Inventory.AddItem(itm);
+                            if (slot != -1)
+                            {
+                                itm = pc.Inventory.GetItemAtPosition(slot);
+                                GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
+                                    (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
+                                    OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
+                                msgGetNewInventoryItem.FromItem(pc.Inventory.GetItemAtPosition(slot));
+                                pc.PutMessageIntoMyQueue(msgGetNewInventoryItem);
+                            }
+
+                        }
+                        if (msgRawText.Text.ToLower().IndexOf("#remove_item") != -1)
+                        {
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length != 2)
+                                return;
+
+                            ushort itemID = Convert.ToUInt16(tokens[1]);
+                            short slot = pc.Inventory.RemoveItem(itemID);
+
+                            if (slot != -1)
+                            {
+                                RemoveItemFromInventoryOutgoingMessage msgRemoveItemFromInventory =
+                                    (RemoveItemFromInventoryOutgoingMessage)OutgoingMessagesFactory.Create(
+                                OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY);
+                                msgRemoveItemFromInventory.Slot = (byte)slot;
+                                pc.PutMessageIntoMyQueue(msgRemoveItemFromInventory);
+                            }
+
+
+                            
+
                         }
                         break;
                     default:

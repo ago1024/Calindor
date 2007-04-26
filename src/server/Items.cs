@@ -62,7 +62,7 @@ namespace Calindor.Server.Items
             // wegetables
             addItemDefinition(new ItemDefinition(2, 2, "Wegetables"));
             // sunflowers
-            addItemDefinition(new ItemDefinition(3, 25, "Sunflowers"));
+            addItemDefinition(new ItemDefinition(3, 29, "Tiger Lilly"));
         }
 
         private static void addItemDefinition(ItemDefinition itmDef)
@@ -92,6 +92,14 @@ namespace Calindor.Server.Items
         {
             get { return quantity; }
             set { quantity = value; }
+        }
+
+        private short position;
+
+        public short Position
+        {
+            get { return position; }
+            set { position = value; }
         }
 	
 
@@ -135,16 +143,37 @@ namespace Calindor.Server.Items
             filledSlotesCount = 0;
         }
 
-        public bool AddItemToFreeSlot(Item itm)
+        public short AddItemToFreeSlot(Item itm)
         {
             for (short i=0;i<itemSlots.GetLength(0);i++)
                 if (GetItemAtPosition(i) == null)
                 {
                     SetItemAtPosition(i, itm);
-                    return true;
+                    return i;
                 }
 
-            return false;
+            return -1;
+        }
+
+        public short AddItem(Item itm)
+        {
+            Item itmInSlot = null;
+
+            for (short i = 0; i < itemSlots.GetLength(0); i++)
+            {
+                itmInSlot = GetItemAtPosition(i);
+                if (itmInSlot != null)
+                {
+                    if (itmInSlot.Definition.ItemID == itm.Definition.ItemID)
+                    {
+                        // TODO: Check if quantity + quantity < Int32.MaxValue
+                        itmInSlot.Quantity += itm.Quantity;
+                        return i;
+                    }
+                }
+            }
+
+            return AddItemToFreeSlot(itm);
         }
 
         public bool SetItemAtPosition(short pos, Item itm)
@@ -156,6 +185,7 @@ namespace Calindor.Server.Items
                 return false;
 
             itemSlots[pos] = itm;
+            itm.Position = pos;
             filledSlotesCount++;
             return true;
         }
@@ -165,12 +195,32 @@ namespace Calindor.Server.Items
             if ((pos < 0) || (pos >= itemSlots.GetLength(0)))
                 return false;
 
-            if (itemSlots[pos] != null)
+            if (itemSlots[pos] == null)
                 return false;
 
             itemSlots[pos] = null;
             filledSlotesCount--;
             return true;
+        }
+
+        public short RemoveItem(ushort itemID)
+        {
+            Item itmInSlot = null;
+
+            for (short i = 0; i < itemSlots.GetLength(0); i++)
+            {
+                itmInSlot = GetItemAtPosition(i);
+                if (itmInSlot != null)
+                {
+                    if (itmInSlot.Definition.ItemID == itemID)
+                    {
+                        RemoveItemAtPosition(i);
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
         }
 
         public Item GetItemAtPosition(short pos)

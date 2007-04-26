@@ -31,6 +31,8 @@ namespace Calindor.Server.Messaging
         TELEPORT_OUT = 13,
         //HERE_YOUR_STATS = 18,
         HERE_YOUR_INVENTORY = 19,
+        GET_NEW_INVENTORY_ITEM  = 21,
+        REMOVE_ITEM_FROM_INVENTORY = 22,
         ADD_NEW_ENHANCED_ACTOR = 51,
         UPGRADE_TOO_OLD = 241,
         YOU_DONT_EXIST = 249,
@@ -119,6 +121,8 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.ADD_ACTOR_COMMAND] = new AddActorCommandOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.KILL_ALL_ACTORS] = new KillAllActorsOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.HERE_YOUR_INVENTORY] = new HereYourInventoryOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.GET_NEW_INVENTORY_ITEM] = new GetNewInventoryItemOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY] = new RemoveItemFromInventoryOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -821,6 +825,9 @@ namespace Calindor.Server.Messaging
 
         public void FromPlayerCharacter(PlayerCharacter pc)
         {
+            if (pc == null)
+                throw new ArgumentNullException("pc is null");
+
             if (pc.Inventory.FilledSlotsCount > 255 ||
               pc.Inventory.Size > 255)
                 throw new ArgumentException("Inventory size greater then 255");
@@ -841,12 +848,75 @@ namespace Calindor.Server.Messaging
                 // quantity
                 InPlaceBitConverter.GetBytes(itm.Quantity, itemsBuffer, (i * 8) + 2);
                 // pos
-                itemsBuffer[(i * 8) + 6] = (byte)i;
+                itemsBuffer[(i * 8) + 6] = (byte)itm.Position;
                 // flags
                 itemsBuffer[(i * 8) + 7] = 0;
             }
             
         }
 
+    }
+
+    public class GetNewInventoryItemOutgoingMessage : OutgoingMessage
+    {
+        protected byte[] itemBuffer = new byte[8];
+ 
+        public GetNewInventoryItemOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.GET_NEW_INVENTORY_ITEM;
+            length = 11;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new GetNewInventoryItemOutgoingMessage();
+        }
+
+        public void FromItem(Item itm)
+        {
+            if (itm == null)
+                throw new ArgumentNullException("itm is null");
+
+            //image id
+            InPlaceBitConverter.GetBytes(itm.Definition.ImageID, itemBuffer, 0);
+            // quantity
+            InPlaceBitConverter.GetBytes(itm.Quantity, itemBuffer, 2);
+            // pos
+            itemBuffer[6] = (byte)itm.Position;
+            // flags
+            itemBuffer[7] = 0;
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            Array.Copy(itemBuffer, 0, _return, 3, 8);
+        }
+    }
+
+    public class RemoveItemFromInventoryOutgoingMessage : OutgoingMessage
+    {
+        private byte slot;
+
+        public byte Slot
+        {
+            get { return slot; }
+            set { slot = value; }
+        }
+	
+        public RemoveItemFromInventoryOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY;
+            length = 4;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new RemoveItemFromInventoryOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            _return[3] = slot;
+        }
     }
 }
