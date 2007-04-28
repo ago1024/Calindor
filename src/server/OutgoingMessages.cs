@@ -31,6 +31,7 @@ namespace Calindor.Server.Messaging
         TELEPORT_OUT = 13,
         //HERE_YOUR_STATS = 18,
         HERE_YOUR_INVENTORY = 19,
+        INVENTORY_ITEM_TEXT = 20,
         GET_NEW_INVENTORY_ITEM  = 21,
         REMOVE_ITEM_FROM_INVENTORY = 22,
         ADD_NEW_ENHANCED_ACTOR = 51,
@@ -123,6 +124,8 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.HERE_YOUR_INVENTORY] = new HereYourInventoryOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.GET_NEW_INVENTORY_ITEM] = new GetNewInventoryItemOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY] = new RemoveItemFromInventoryOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.INVENTORY_ITEM_TEXT] = new InventoryItemTextOutgoingMessage();
+
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -921,5 +924,44 @@ namespace Calindor.Server.Messaging
             _return[3] = slot;
         }
 
+    }
+
+    public class InventoryItemTextOutgoingMessage : OutgoingMessage
+    {
+        private string text;
+
+        public string Text
+        {
+            get { return text; }
+            set { text = value; }
+        }
+
+        public override ushort Length
+        {
+            get
+            {
+                return (ushort)(3 + Text.Length);
+            }
+        }
+        
+        public InventoryItemTextOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.INVENTORY_ITEM_TEXT;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new InventoryItemTextOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(Text, _return, 3);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + Text + ")";
+        }
     }
 }

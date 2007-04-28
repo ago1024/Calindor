@@ -61,6 +61,7 @@
     <Compile Include="WorldSimulation.cs" />
     <Compile Include="WorldSimulationEntityVinicityEventsHandling.cs" />
     <Compile Include="WorldSimulationGlobalEventsHandling.cs" />
+    <Compile Include="WorldSimulationItemsHandling.cs" />
     <Compile Include="WorldSimulationLoginSynchronizationHandling.cs" />
     <Compile Include="WorldSimulationMapObjectsUsageHandling.cs" />
     <Compile Include="WorldSimulationMessagingHandling.cs" />

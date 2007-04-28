@@ -314,6 +314,15 @@ namespace Calindor.Server
                     case(IncommingMessageType.USE_MAP_OBJECT):
                         handleUseMapObject(pc, msg);
                         break;
+                    case(IncommingMessageType.LOOK_AT_INVENTORY_ITEM):
+                        handleLookAtInventoryItem(pc, msg);
+                        break;
+                    case(IncommingMessageType.DROP_ITEM):
+                        handleDropItem(pc, msg);
+                        break;
+                    case(IncommingMessageType.MOVE_INVENTORY_ITEM):
+                        handleMoveInventoryItem(pc, msg);
+                        break;
                     default:
                         Logger.LogWarning(LogSource.World,
                             string.Format("Message {0} - no action taken", msg.ToString()), null);

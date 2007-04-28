@@ -28,6 +28,9 @@ namespace Calindor.Server.Messaging
         TURN_RIGHT  = 12,
         HEART_BEAT = 14,
         USE_MAP_OBJECT = 16,
+        LOOK_AT_INVENTORY_ITEM = 19,
+        MOVE_INVENTORY_ITEM = 20,
+        DROP_ITEM = 22,
         LOG_IN = 140,
         CREATE_CHAR = 141,
         UNKNOWN = 256 //THIS MESSAGE DOES NOT EXIST
@@ -115,6 +118,9 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)IncommingMessageType.TURN_RIGHT] = new TurnRightIncommingMessage();
             knownMessages[(int)IncommingMessageType.RAW_TEXT] = new RawTextIncommingMessage();
             knownMessages[(int)IncommingMessageType.USE_MAP_OBJECT] = new UseMapObjectIncommingMessage();
+            knownMessages[(int)IncommingMessageType.LOOK_AT_INVENTORY_ITEM] = new LookAtInventoryItemIncommingMessage();
+            knownMessages[(int)IncommingMessageType.DROP_ITEM] = new DropItemIncommingMessage();
+            knownMessages[(int)IncommingMessageType.MOVE_INVENTORY_ITEM] = new MoveInventoryItemIncommingMessage();
         }
         
         /// <summary>
@@ -607,4 +613,108 @@ namespace Calindor.Server.Messaging
             objectdUsedOnTarget = BitConverter.ToInt32(stream, startIndex + 7);
         }
     }
+
+    public class LookAtInventoryItemIncommingMessage : IncommingMessage
+    {
+        private byte slot;
+        public byte Slot
+        {
+            get { return slot; }
+        }
+	
+        public LookAtInventoryItemIncommingMessage()
+        {
+            messageType = IncommingMessageType.LOOK_AT_INVENTORY_ITEM;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new LookAtInventoryItemIncommingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + slot + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            slot = stream[startIndex + 3];
+        }
+    }
+
+    public class DropItemIncommingMessage : IncommingMessage
+    {
+        private byte slot;
+        public byte Slot
+        {
+            get { return slot; }
+        }
+
+        private int quantity;
+        public int Quantity
+        {
+            get { return quantity; }
+        }
+	
+
+        public DropItemIncommingMessage()
+        {
+            messageType = IncommingMessageType.DROP_ITEM;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new DropItemIncommingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + slot + ", " + quantity + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            slot = stream[startIndex + 3];
+            quantity = BitConverter.ToInt32(stream, startIndex + 4);
+        }
+    }
+
+    public class MoveInventoryItemIncommingMessage : IncommingMessage
+    {
+        private byte slot;
+        public byte Slot
+        {
+            get { return slot; }
+        }
+
+        private byte newSlot;
+	    public byte NewSlot
+	    {
+	        get { return newSlot;}
+	    }
+	
+
+        public MoveInventoryItemIncommingMessage()
+        {
+            messageType = IncommingMessageType.MOVE_INVENTORY_ITEM;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new MoveInventoryItemIncommingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + slot + ", " + newSlot + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            slot = stream[startIndex + 3];
+            newSlot = stream[startIndex + 4];
+        }
+    }
+
 }

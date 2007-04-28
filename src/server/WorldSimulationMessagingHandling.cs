@@ -239,28 +239,6 @@ namespace Calindor.Server
                             }
 
                         }
-                        if (msgRawText.Text.ToLower().IndexOf("#remove_item") != -1)
-                        {
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length != 2)
-                                return;
-
-                            ushort definitionID = Convert.ToUInt16(tokens[1]);
-                            Item itm = pc.Inventory.FindItemByDefinitionID(definitionID);
-                            if (itm != null)
-                            {
-                                itm = pc.Inventory.RemoveItemAtSlot(itm.Slot);
-                                RemoveItemFromInventoryOutgoingMessage msgRemoveItemFromInventory =
-                                    (RemoveItemFromInventoryOutgoingMessage)OutgoingMessagesFactory.Create(
-                                OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY);
-                                msgRemoveItemFromInventory.Slot = itm.Slot;
-                                pc.PutMessageIntoMyQueue(msgRemoveItemFromInventory);
-                            }
-
-
-                            
-
-                        }
                         break;
                     default:
                         break;

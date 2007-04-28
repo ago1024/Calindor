@@ -50,6 +50,11 @@ namespace Calindor.Server.Items
             this.clientFlags |= 0x2; // all items resources
             
             // TODO: Item will have weight and cubic size and will fill storage based on those paramaters
+
+            /* 
+             * Warning: code does not support non-stackable items, meaning two items of the same type cannot be
+             * in two different slots in the same storage
+             */
         }
     }
 
@@ -72,7 +77,7 @@ namespace Calindor.Server.Items
             // tiger lilly
             addItemDefinition(new ItemDefinition(3, 29, "Tiger Lilly"));
             // rusted iron sword
-            addItemDefinition(new ItemDefinition(4, 101, "Rusted Iron Sword"));
+            addItemDefinition(new ItemDefinition(4, 101, "Rusty Iron Sword"));
             // royals
             addItemDefinition(new ItemDefinition(5, 100, "Royals"));
             // iron sword
@@ -236,7 +241,7 @@ namespace Calindor.Server.Items
         /// <param name="slot"></param>
         /// <param name="itm"></param>
         /// <returns></returns>
-        private Item InsertItemToSlot(byte slot, Item itm)
+        public Item InsertItemToSlot(byte slot, Item itm)
         {
             if (slot >= totalSlotsCount)
                 throw new ArgumentException("Slot " + slot + " outside the size of storage(" + totalSlotsCount + ")");
@@ -250,7 +255,7 @@ namespace Calindor.Server.Items
             return itm;
         }
 
-        private bool IsSlotFree(byte slot)
+        public bool IsSlotFree(byte slot)
         {
             if (slot >= totalSlotsCount)
                 throw new ArgumentException("Slot " + slot + " outsize the size of storage(" + totalSlotsCount + ")");

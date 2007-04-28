@@ -8,8 +8,8 @@ Features:
 Tasks:
 >MUST HAVE:
 	- HarvestingTimeBasedAction
-	- inventory support (put in, take out, send initial)
-	- inventory serialization
+	+ inventory support (put in, take out, send initial)
+	+ inventory serialization
 	- skills model (leveling)
 	- skills serialization
 	- list_skills command
@@ -20,8 +20,6 @@ Tasks:
 	- health serialization
 	- NCPEntity
 	- npc dialogs
-	- inventory support (put in, take out, send initial)
-	- inventory serialization
 	- implement CSU
 
 >NICE TO HAVE:
