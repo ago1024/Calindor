@@ -18,6 +18,7 @@ namespace Calindor.Server.Serialization
         void WriteValue(sbyte data);
         void WriteValue(string data);
         void WriteValue(int data);
+        void WriteValue(byte data);
     }
 
     public interface IDeserializer
@@ -27,6 +28,7 @@ namespace Calindor.Server.Serialization
         sbyte ReadSByte();
         int ReadSInt();
         string ReadString();
+        byte ReadByte();
     }
 
     public class DeserializationException : ApplicationException

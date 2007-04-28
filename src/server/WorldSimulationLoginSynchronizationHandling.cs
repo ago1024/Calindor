@@ -129,7 +129,7 @@ namespace Calindor.Server
                 {
                     Item itm = new Item(itmDef);
                     itm.Quantity = 100;
-                    pc.Inventory.AddItemToFreeSlot(itm);
+                    pc.Inventory.UpdateItem(itm);
                 }
                 
                 // Store data

@@ -15,10 +15,10 @@ namespace Calindor.Server.Items
 {
     public class ItemDefinition
     {
-        private ushort itemID;
-        public ushort ItemID
+        private ushort definitionID;
+        public ushort ID
         {
-            get { return itemID; }
+            get { return definitionID; }
         }
 
         private ushort imageID;
@@ -32,16 +32,24 @@ namespace Calindor.Server.Items
         {
             get { return name; }
         }
-	
-	
-        // TODO: Flags
+
+        private byte clientFlags;
+        public byte ClientFlags
+        {
+            get { return clientFlags; }
+        }        
 	
         // TODO: Temp?
-        public ItemDefinition(ushort itemID, ushort imageID, string name)
+        public ItemDefinition(ushort id, ushort imageID, string name)
         {
-            this.itemID = itemID;
+            this.definitionID = id;
             this.imageID = imageID;
             this.name = name;
+            this.clientFlags = 0x0;
+            this.clientFlags |= 0x4; // all items are stackable
+            this.clientFlags |= 0x2; // all items resources
+            
+            // TODO: Item will have weight and cubic size and will fill storage based on those paramaters
         }
     }
 
@@ -60,14 +68,22 @@ namespace Calindor.Server.Items
             // soverigns
             addItemDefinition(new ItemDefinition(1, 3, "Sovereigns"));
             // wegetables
-            addItemDefinition(new ItemDefinition(2, 2, "Wegetables"));
-            // sunflowers
+            addItemDefinition(new ItemDefinition(2, 2, "Vegetables"));
+            // tiger lilly
             addItemDefinition(new ItemDefinition(3, 29, "Tiger Lilly"));
+            // rusted iron sword
+            addItemDefinition(new ItemDefinition(4, 101, "Rusted Iron Sword"));
+            // royals
+            addItemDefinition(new ItemDefinition(5, 100, "Royals"));
+            // iron sword
+            addItemDefinition(new ItemDefinition(6, 101, "Iron Sword"));
         }
 
         private static void addItemDefinition(ItemDefinition itmDef)
         {
-            innerDictionary.Add(itmDef.ItemID, itmDef);
+            if (innerDictionary.ContainsKey(itmDef.ID))
+                throw new ArgumentException("ItemID: " + itmDef.ID + " already in cache");
+            innerDictionary.Add(itmDef.ID, itmDef);
         }
 
         public static ItemDefinition GetItemDefinitionByID(ushort itemID)
@@ -94,12 +110,12 @@ namespace Calindor.Server.Items
             set { quantity = value; }
         }
 
-        private short position;
+        private byte slot;
 
-        public short Position
+        public byte Slot
         {
-            get { return position; }
-            set { position = value; }
+            get { return slot; }
+            set { slot = value; }
         }
 	
 
@@ -111,156 +127,171 @@ namespace Calindor.Server.Items
         {
             itemDef = def;
             quantity = 0;
+            slot = 0;
         }
     }
 
     public class ItemStorage
     {
         protected Item[] itemSlots = null;
-        protected short filledSlotesCount = 0;
-        public short FilledSlotsCount
+        protected byte filledSlotsCount = 0;
+        protected byte totalSlotsCount = 0;
+
+        public byte FilledSlotsCount
         {
-            get { return filledSlotesCount; }
+            get { return filledSlotsCount; }
         }
-        public short Size
+        public byte Size
         {
-            get { return (short)itemSlots.GetLength(0); }
+            get { return totalSlotsCount; }
         }
 
         private ItemStorage()
         {
         }
 
-        public ItemStorage(int storageSize)
+        public ItemStorage(byte storageSize)
         {
-            if (storageSize < 0)
-                throw new ArgumentException("storageSize must be greater or equal 0");
-
-            if (storageSize >= short.MaxValue)
-                throw new ArgumentException("storageSize must be lesser then " + short.MaxValue);
+            if (storageSize > 250)
+                throw new ArgumentException("Item storage cannot be larger than 250. Use multile storages");
 
             itemSlots = new Item[storageSize];
-            filledSlotesCount = 0;
+            filledSlotsCount = 0;
+            totalSlotsCount = storageSize;
         }
 
-        public short AddItemToFreeSlot(Item itm)
+        /// <summary>
+        /// Add/Updates/Removes item from storage
+        /// </summary>
+        /// <param name="itm"></param>
+        /// <returns>Modified item or null if item cannot be added to storage</returns>
+        public Item UpdateItem(Item itm)
         {
-            for (short i=0;i<itemSlots.GetLength(0);i++)
-                if (GetItemAtPosition(i) == null)
-                {
-                    SetItemAtPosition(i, itm);
-                    return i;
-                }
-
-            return -1;
-        }
-
-        public short AddItem(Item itm)
-        {
-            Item itmInSlot = null;
-
-            for (short i = 0; i < itemSlots.GetLength(0); i++)
+            if (itm == null)
+                throw new ArgumentNullException("itm cannot be null");
+            
+            // Try to find already existing
+            Item itmInStore = FindItemByDefinitionID(itm.Definition.ID);
+            if (itmInStore != null)
             {
-                itmInSlot = GetItemAtPosition(i);
-                if (itmInSlot != null)
+                itmInStore.Quantity += itm.Quantity;
+                if (itmInStore.Quantity <= 0)
                 {
-                    if (itmInSlot.Definition.ItemID == itm.Definition.ItemID)
-                    {
-                        // TODO: Check if quantity + quantity < Int32.MaxValue
-                        itmInSlot.Quantity += itm.Quantity;
-                        return i;
-                    }
+                    itmInStore.Quantity = 0;
+                    return RemoveItemAtSlot(itmInStore.Slot);
                 }
+                else
+                    return itmInStore;
             }
 
-            return AddItemToFreeSlot(itm);
+            // Not found. Need to add at first free location
+            for (byte i = 0; i < totalSlotsCount; i++)
+                if (IsSlotFree(i))
+                    return InsertItemToSlot(i, itm);
+
+            // If we are here, item cannot be added to storage
+            return null;
         }
 
-        public bool SetItemAtPosition(short pos, Item itm)
+        public Item FindItemByDefinitionID(ushort definitionID)
         {
-            if ((pos < 0) || (pos >= itemSlots.GetLength(0)))
-                return false;
-
-            if (itemSlots[pos] != null)
-                return false;
-
-            itemSlots[pos] = itm;
-            itm.Position = pos;
-            filledSlotesCount++;
-            return true;
-        }
-
-        public bool RemoveItemAtPosition(short pos)
-        {
-            if ((pos < 0) || (pos >= itemSlots.GetLength(0)))
-                return false;
-
-            if (itemSlots[pos] == null)
-                return false;
-
-            itemSlots[pos] = null;
-            filledSlotesCount--;
-            return true;
-        }
-
-        public short RemoveItem(ushort itemID)
-        {
-            Item itmInSlot = null;
-
-            for (short i = 0; i < itemSlots.GetLength(0); i++)
+            Item itmInStore = null;
+            for (byte i = 0; i < totalSlotsCount; i++)
             {
-                itmInSlot = GetItemAtPosition(i);
-                if (itmInSlot != null)
-                {
-                    if (itmInSlot.Definition.ItemID == itemID)
-                    {
-                        RemoveItemAtPosition(i);
-                        return i;
-                    }
-                }
+                itmInStore = GetItemAtSlot(i);
+                if (itmInStore != null)
+                    if (itmInStore.Definition.ID == definitionID)
+                        return itmInStore;
             }
 
-            return -1;
+            return null;
         }
 
-        public Item GetItemAtPosition(short pos)
+        public Item RemoveItemAtSlot(byte slot)
         {
-            if ((pos < 0) || (pos >= itemSlots.GetLength(0)))
-                return null;
+            if (slot >= totalSlotsCount)
+                throw new ArgumentException("Slot " + slot + " outside the size of storage(" + totalSlotsCount + ")");
 
-            return itemSlots[pos];
+            Item _return = GetItemAtSlot(slot);
+
+            if (_return != null)
+            {
+                itemSlots[slot] = null;
+                filledSlotsCount--;
+            }
+
+            return _return;
+        }
+
+        public Item GetItemAtSlot(byte slot)
+        {
+            if (slot >= totalSlotsCount)
+                throw new ArgumentException("Slot " + slot + " outside the size of storage(" + totalSlotsCount + ")");
+
+            return itemSlots[slot];
+        }
+        /// <summary>
+        /// Inserts item to an empty slot. If slot is not empty, throws exception
+        /// </summary>
+        /// <param name="slot"></param>
+        /// <param name="itm"></param>
+        /// <returns></returns>
+        private Item InsertItemToSlot(byte slot, Item itm)
+        {
+            if (slot >= totalSlotsCount)
+                throw new ArgumentException("Slot " + slot + " outside the size of storage(" + totalSlotsCount + ")");
+
+            if (!IsSlotFree(slot))
+                throw new ArgumentException("Slot " + slot +  " is not free.");
+
+            itemSlots[slot] = itm;
+            itm.Slot = slot;
+            filledSlotsCount++;
+            return itm;
+        }
+
+        private bool IsSlotFree(byte slot)
+        {
+            if (slot >= totalSlotsCount)
+                throw new ArgumentException("Slot " + slot + " outsize the size of storage(" + totalSlotsCount + ")");
+
+            return itemSlots[slot] == null;
         }
 
         private void clear()
         {
-            for (int i = 0; i < itemSlots.GetLength(0); i++)
+            for (byte i = 0; i < totalSlotsCount; i++)
                 itemSlots[i] = null;
-            filledSlotesCount = 0;
+            filledSlotsCount = 0;
         }
 
         #region Storage
         public virtual void Serialize(ISerializer sr)
         {
             // size
-            sr.WriteValue((short)itemSlots.GetLength(0));
+            sr.WriteValue(totalSlotsCount);
 
             // actual number of slots filled
-            sr.WriteValue(filledSlotesCount);
+            sr.WriteValue(filledSlotsCount);
+
+            Item itm = null;
 
             // items
-            for (int i = 0; i < itemSlots.GetLength(0); i++)
+            for (byte i = 0; i < totalSlotsCount; i++)
             {
-                if (itemSlots[i] == null)
+                itm = GetItemAtSlot(i);
+
+                if (itm == null)
                     continue;
 
                 // write position
-                sr.WriteValue((short)i);
+                sr.WriteValue(itm.Slot);
 
                 // write item id
-                sr.WriteValue(itemSlots[i].Definition.ItemID);
+                sr.WriteValue(itm.Definition.ID);
 
                 // write quantity
-                sr.WriteValue(itemSlots[i].Quantity);
+                sr.WriteValue(itm.Quantity);
             }
         }
 
@@ -270,44 +301,49 @@ namespace Calindor.Server.Items
             clear();
 
             // size
-            short sizeStored = dsr.ReadShort();
+            byte sizeStored = dsr.ReadByte();
 
-            if (sizeStored != itemSlots.GetLength(0))
-                throw new DeserializationException("ItemStorage: sizeStored different than size of itemSlots");
+            if (sizeStored != totalSlotsCount)
+                throw new DeserializationException("Deserialized size different than storage size");
 
             // number of filled slots
-            short itemsToBeLoaded = dsr.ReadShort();
+            byte itemsToBeLoaded = dsr.ReadByte();
 
             if (itemsToBeLoaded > sizeStored)
-                throw new DeserializationException("ItemStorage: itemsToBeLoaded greater than sizeStored");
-
-            if (itemsToBeLoaded < 0)
-                throw new DeserializationException("ItemStorage: itemsToBeLoaded lesser than 0");
-
-            short position = -1;
+                throw new DeserializationException("Number of items to deserialize greater than storage size");
+            
+            byte position = 0;
             ushort itemID = 0;
-            for (int i = 0; i < itemsToBeLoaded; i++)
+            for (byte i = 0; i < itemsToBeLoaded; i++)
             {
                 // read position
-                position = dsr.ReadShort();                    
+                position = dsr.ReadByte();
+
+                if (position >= totalSlotsCount)
+                    throw new DeserializationException("Item position greater than storage size, Item: " 
+                        + i + ", Position: " + position);
+
+                if (!IsSlotFree(position))
+                    throw new ArgumentException("Position " + position + " is not free.");
 
                 // get item definition
                 itemID = dsr.ReadUShort();
                 ItemDefinition itmDef = ItemDefinitionCache.GetItemDefinitionByID(itemID);
 
                 if (itmDef == null)
-                    throw new DeserializationException("ItemStorage: itemDef for ID " + itemID + " not found");
+                    throw new DeserializationException("ItemStorage: Item definition for ID " + itemID + " not found, Item: "
+                        + i + ", Position: " + position);
 
                 // create item
                 Item itm = new Item(itmDef);
                 itm.Quantity = dsr.ReadSInt();
-
                 if (itm.Quantity < 0)
-                    throw new DeserializationException("ItemStorage: quantity of item at position " + position + " less than 0");
-
-                // all ok
-                if (!SetItemAtPosition(position, itm))
-                    throw new DeserializationException("ItemStorage: slot " + position + " not accessible");
+                    throw new DeserializationException("ItemStorage: Item quantity less than 0, Item: "
+                        + i + ", Position: " + position);
+                                
+                // all ok (itm.Position set here)
+                InsertItemToSlot(position, itm);
+                    
             }
         }
         #endregion

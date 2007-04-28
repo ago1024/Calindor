@@ -832,25 +832,27 @@ namespace Calindor.Server.Messaging
               pc.Inventory.Size > 255)
                 throw new ArgumentException("Inventory size greater then 255");
                 
-            itemsCount = (byte)pc.Inventory.FilledSlotsCount; 
+            itemsCount = pc.Inventory.FilledSlotsCount; 
 
             itemsBuffer = new byte[itemsCount * 8];
-
-            for (byte i = 0; i < (byte)pc.Inventory.Size; i++)
+            byte itemsCopied = 0;
+            for (byte i = 0; i < pc.Inventory.Size; i++)
             {
-                Item itm = pc.Inventory.GetItemAtPosition(i);
+                Item itm = pc.Inventory.GetItemAtSlot(i);
 
                 if (itm == null)
                     continue;
 
                 //image id
-                InPlaceBitConverter.GetBytes(itm.Definition.ImageID, itemsBuffer, (i*8)+0);
+                InPlaceBitConverter.GetBytes(itm.Definition.ImageID, itemsBuffer, (itemsCopied*8)+0);
                 // quantity
-                InPlaceBitConverter.GetBytes(itm.Quantity, itemsBuffer, (i * 8) + 2);
+                InPlaceBitConverter.GetBytes(itm.Quantity, itemsBuffer, (itemsCopied * 8) + 2);
                 // pos
-                itemsBuffer[(i * 8) + 6] = (byte)itm.Position;
+                itemsBuffer[(itemsCopied * 8) + 6] = itm.Slot;
                 // flags
-                itemsBuffer[(i * 8) + 7] = 0;
+                itemsBuffer[(itemsCopied * 8) + 7] = itm.Definition.ClientFlags;
+
+                itemsCopied++;
             }
             
         }
@@ -882,9 +884,9 @@ namespace Calindor.Server.Messaging
             // quantity
             InPlaceBitConverter.GetBytes(itm.Quantity, itemBuffer, 2);
             // pos
-            itemBuffer[6] = (byte)itm.Position;
+            itemBuffer[6] = itm.Slot;
             // flags
-            itemBuffer[7] = 0;
+            itemBuffer[7] = itm.Definition.ClientFlags;
         }
 
         protected override void serializeSpecific(byte[] _return)
@@ -917,6 +919,7 @@ namespace Calindor.Server.Messaging
         protected override void serializeSpecific(byte[] _return)
         {
             _return[3] = slot;
-        }
+        }
+
     }
 }

@@ -284,6 +284,11 @@ namespace Calindor.Server
             bw.Write(data);
         }
 
+        public void WriteValue(byte data)
+        {
+            bw.Write(data);
+        }
+
         public void End()
         {
             if (bw != null)
@@ -369,6 +374,11 @@ namespace Calindor.Server
         public int ReadSInt()
         {
             return br.ReadInt32();
+        }
+
+        public byte ReadByte()
+        {
+            return br.ReadByte();
         }
 
         public void End()

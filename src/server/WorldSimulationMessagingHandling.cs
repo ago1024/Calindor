@@ -228,14 +228,13 @@ namespace Calindor.Server
                                 return;
                             Item itm = new Item(itmDef);
                             itm.Quantity = quantity;
-                            short slot = pc.Inventory.AddItem(itm);
-                            if (slot != -1)
+                            itm = pc.Inventory.UpdateItem(itm);
+                            if (itm != null)
                             {
-                                itm = pc.Inventory.GetItemAtPosition(slot);
                                 GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
                                     (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
                                     OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
-                                msgGetNewInventoryItem.FromItem(pc.Inventory.GetItemAtPosition(slot));
+                                msgGetNewInventoryItem.FromItem(itm);
                                 pc.PutMessageIntoMyQueue(msgGetNewInventoryItem);
                             }
 
@@ -246,15 +245,15 @@ namespace Calindor.Server
                             if (tokens.Length != 2)
                                 return;
 
-                            ushort itemID = Convert.ToUInt16(tokens[1]);
-                            short slot = pc.Inventory.RemoveItem(itemID);
-
-                            if (slot != -1)
+                            ushort definitionID = Convert.ToUInt16(tokens[1]);
+                            Item itm = pc.Inventory.FindItemByDefinitionID(definitionID);
+                            if (itm != null)
                             {
+                                itm = pc.Inventory.RemoveItemAtSlot(itm.Slot);
                                 RemoveItemFromInventoryOutgoingMessage msgRemoveItemFromInventory =
                                     (RemoveItemFromInventoryOutgoingMessage)OutgoingMessagesFactory.Create(
                                 OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY);
-                                msgRemoveItemFromInventory.Slot = (byte)slot;
+                                msgRemoveItemFromInventory.Slot = itm.Slot;
                                 pc.PutMessageIntoMyQueue(msgRemoveItemFromInventory);
                             }
 
