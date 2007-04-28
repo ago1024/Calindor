@@ -129,7 +129,7 @@ namespace Calindor.Server
                 {
                     Item itm = new Item(itmDef);
                     itm.Quantity = 100;
-                    pc.Inventory.UpdateItem(itm);
+                    pc.InventoryUpdateItem(itm);
                 }
                 
                 // Store data
@@ -274,7 +274,7 @@ namespace Calindor.Server
                 // Here Your Inventory
                 HereYourInventoryOutgoingMessage msgHereYourInventory =
                     (HereYourInventoryOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.HERE_YOUR_INVENTORY);
-                msgHereYourInventory.FromPlayerCharacter(pc);
+                pc.FillOutgoingMessage(msgHereYourInventory);
                 pc.PutMessageIntoMyQueue(msgHereYourInventory);
 
                 // Here Your Stats //TODO: Reimplement accorting to world model

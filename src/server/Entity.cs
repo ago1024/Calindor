@@ -13,13 +13,14 @@ using System.Collections.Generic;
 using System.Text;
 using Calindor.Server.Maps;
 using Calindor.Server.TimeBasedActions;
+using Calindor.Server.Items;
 
 namespace Calindor.Server.Entities
 {
     /// <summary>
     /// Represents a single, living(or undead :P) entity in the game
     /// </summary>
-    public class Entity
+    public abstract class Entity
     {
         protected string name = "";
         public string Name
@@ -126,10 +127,6 @@ namespace Calindor.Server.Entities
         }
 
         protected EntityInventory inventory = new EntityInventory();
-        public EntityInventory Inventory
-        {
-            get { return inventory; }
-        }
 
         // Time based action
         // TODO: Probably an entity might have more than one time based action
@@ -334,6 +331,16 @@ namespace Calindor.Server.Entities
             get { return followers.GetEnumerator(); }
         }
 
+        #endregion
+
+        #region Inventory Handling Abstracts
+        public abstract void InventoryUpdateItem(Item itm);
+        public abstract void InventoryLookAtItem(byte slot);
+        public abstract void InventoryDropItemToGround(byte slot, int quantity);
+        public abstract void InventoryMoveItemInInventory(byte oldSlot, byte newSlot);
+        #endregion
+
+        #region Movement Abstracts
         #endregion
     }
 

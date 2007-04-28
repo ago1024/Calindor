@@ -228,15 +228,7 @@ namespace Calindor.Server
                                 return;
                             Item itm = new Item(itmDef);
                             itm.Quantity = quantity;
-                            itm = pc.Inventory.UpdateItem(itm);
-                            if (itm != null)
-                            {
-                                GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
-                                    (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
-                                    OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
-                                msgGetNewInventoryItem.FromItem(itm);
-                                pc.PutMessageIntoMyQueue(msgGetNewInventoryItem);
-                            }
+                            pc.InventoryUpdateItem(itm);
 
                         }
                         break;

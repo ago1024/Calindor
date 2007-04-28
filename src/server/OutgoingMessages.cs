@@ -14,6 +14,7 @@ using System.Text;
 using Calindor.Misc.Predefines;
 using Calindor.Misc;
 using Calindor.Server.Items;
+using Calindor.Server.Entities;
 
 namespace Calindor.Server.Messaging
 {
@@ -826,22 +827,18 @@ namespace Calindor.Server.Messaging
             Array.Copy(itemsBuffer, 0, _return, 4, itemsCount * 8);
         }
 
-        public void FromPlayerCharacter(PlayerCharacter pc)
+        public void FromInventory(EntityInventory inv)
         {
-            if (pc == null)
+            if (inv == null)
                 throw new ArgumentNullException("pc is null");
-
-            if (pc.Inventory.FilledSlotsCount > 255 ||
-              pc.Inventory.Size > 255)
-                throw new ArgumentException("Inventory size greater then 255");
                 
-            itemsCount = pc.Inventory.FilledSlotsCount; 
+            itemsCount = inv.FilledSlotsCount; 
 
             itemsBuffer = new byte[itemsCount * 8];
             byte itemsCopied = 0;
-            for (byte i = 0; i < pc.Inventory.Size; i++)
+            for (byte i = 0; i < inv.Size; i++)
             {
-                Item itm = pc.Inventory.GetItemAtSlot(i);
+                Item itm = inv.GetItemAtSlot(i);
 
                 if (itm == null)
                     continue;

@@ -11,9 +11,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 using Calindor.Server.Messaging;
 using Calindor.Server.Entities;
-using System.IO;
+using Calindor.Server.Items;
+
 
 namespace Calindor.Server
 {
@@ -103,6 +105,91 @@ namespace Calindor.Server
             }
         }
 
+        #region Entity Abstracts Implementation
+        public override void InventoryUpdateItem(Item itm)
+        {
+            if (itm != null)
+            {
+                itm = inventory.UpdateItem(itm);
+                if (itm != null)
+                {
+                    GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
+                        (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
+                        OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
+                    msgGetNewInventoryItem.FromItem(itm);
+                    PutMessageIntoMyQueue(msgGetNewInventoryItem);
+                }
+            }
+        }
+
+        public override void InventoryLookAtItem(byte slot)
+        {
+            Item itm = inventory.GetItemAtSlot(slot);
+
+            if (itm != null)
+            {
+                InventoryItemTextOutgoingMessage msgInventoryItemText =
+                    (InventoryItemTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.INVENTORY_ITEM_TEXT);
+                msgInventoryItemText.Text = itm.Definition.Name;
+                PutMessageIntoMyQueue(msgInventoryItemText);
+            }
+        }
+
+        public override void InventoryDropItemToGround(byte slot, int quantity)
+        {
+            Item itm = inventory.GetItemAtSlot(slot);
+
+            if (itm != null)
+            {
+                Item updateItem = new Item(itm.Definition);
+                updateItem.Quantity = -1 * quantity;
+
+                itm = inventory.UpdateItem(updateItem);
+
+                if (itm != null)
+                {
+                    GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
+                        (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
+                        OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
+                    msgGetNewInventoryItem.FromItem(itm);
+                    PutMessageIntoMyQueue(msgGetNewInventoryItem);
+
+                    // TODO: Add putting item to the bad on ground
+                }
+            }
+        }
+
+        public override void InventoryMoveItemInInventory(byte oldSlot, byte newSlot)
+        {
+            if (oldSlot > 35)
+                return; //TODO: Add handling for equipment
+
+            if (newSlot > 35)
+                return; //TODO: Add handling for equipment
+
+            if (inventory.IsSlotFree(newSlot))
+            {
+                Item itmToRemove = inventory.RemoveItemAtSlot(oldSlot);
+
+                if (itmToRemove != null)
+                {
+                    RemoveItemFromInventoryOutgoingMessage msgRemoveItemFromInventory =
+                        (RemoveItemFromInventoryOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY);
+                    msgRemoveItemFromInventory.Slot = itmToRemove.Slot;
+                    PutMessageIntoMyQueue(msgRemoveItemFromInventory);
+
+                    Item itmAdded = inventory.InsertItemToSlot(newSlot, itmToRemove);
+
+                    GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
+                        (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
+                        OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
+                    msgGetNewInventoryItem.FromItem(itmAdded);
+                    PutMessageIntoMyQueue(msgGetNewInventoryItem);
+                }
+            }
+        }
+        #endregion
+
         #region Storage
         public void Serialize(PlayerCharacterSerializer sr)
         {
@@ -147,7 +234,7 @@ namespace Calindor.Server
                 try
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
-                    Inventory.Serialize(sr);
+                    inventory.Serialize(sr);
                 }
                 finally
                 {
@@ -197,7 +284,7 @@ namespace Calindor.Server
             try
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
-                Inventory.Deserialize(dsr);
+                inventory.Deserialize(dsr);
             }
             finally
             {
@@ -263,6 +350,13 @@ namespace Calindor.Server
             PutMessageIntoObserversQueue(msg);
         }
 
+        #endregion
+
+        #region Fill Messages
+        public void FillOutgoingMessage(HereYourInventoryOutgoingMessage msg)
+        {
+            msg.FromInventory(inventory);
+        }
         #endregion
     }
 
