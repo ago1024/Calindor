@@ -28,7 +28,7 @@ namespace Calindor.Server
         LoggingOff
     }
 
-    public class PlayerCharacter : Entity
+    public class PlayerCharacter : EntityImplementation
     {
         // Communication data
         private ServerClientConnection playerConnection = null;
@@ -104,91 +104,6 @@ namespace Calindor.Server
                     playerConnection.ForceClose();
             }
         }
-
-        #region Entity Abstracts Implementation
-        public override void InventoryUpdateItem(Item itm)
-        {
-            if (itm != null)
-            {
-                itm = inventory.UpdateItem(itm);
-                if (itm != null)
-                {
-                    GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
-                        (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
-                        OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
-                    msgGetNewInventoryItem.FromItem(itm);
-                    PutMessageIntoMyQueue(msgGetNewInventoryItem);
-                }
-            }
-        }
-
-        public override void InventoryLookAtItem(byte slot)
-        {
-            Item itm = inventory.GetItemAtSlot(slot);
-
-            if (itm != null)
-            {
-                InventoryItemTextOutgoingMessage msgInventoryItemText =
-                    (InventoryItemTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.INVENTORY_ITEM_TEXT);
-                msgInventoryItemText.Text = itm.Definition.Name;
-                PutMessageIntoMyQueue(msgInventoryItemText);
-            }
-        }
-
-        public override void InventoryDropItemToGround(byte slot, int quantity)
-        {
-            Item itm = inventory.GetItemAtSlot(slot);
-
-            if (itm != null)
-            {
-                Item updateItem = new Item(itm.Definition);
-                updateItem.Quantity = -1 * quantity;
-
-                itm = inventory.UpdateItem(updateItem);
-
-                if (itm != null)
-                {
-                    GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
-                        (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
-                        OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
-                    msgGetNewInventoryItem.FromItem(itm);
-                    PutMessageIntoMyQueue(msgGetNewInventoryItem);
-
-                    // TODO: Add putting item to the bad on ground
-                }
-            }
-        }
-
-        public override void InventoryMoveItemInInventory(byte oldSlot, byte newSlot)
-        {
-            if (oldSlot > 35)
-                return; //TODO: Add handling for equipment
-
-            if (newSlot > 35)
-                return; //TODO: Add handling for equipment
-
-            if (inventory.IsSlotFree(newSlot))
-            {
-                Item itmToRemove = inventory.RemoveItemAtSlot(oldSlot);
-
-                if (itmToRemove != null)
-                {
-                    RemoveItemFromInventoryOutgoingMessage msgRemoveItemFromInventory =
-                        (RemoveItemFromInventoryOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY);
-                    msgRemoveItemFromInventory.Slot = itmToRemove.Slot;
-                    PutMessageIntoMyQueue(msgRemoveItemFromInventory);
-
-                    Item itmAdded = inventory.InsertItemToSlot(newSlot, itmToRemove);
-
-                    GetNewInventoryItemOutgoingMessage msgGetNewInventoryItem =
-                        (GetNewInventoryItemOutgoingMessage)OutgoingMessagesFactory.Create(
-                        OutgoingMessageType.GET_NEW_INVENTORY_ITEM);
-                    msgGetNewInventoryItem.FromItem(itmAdded);
-                    PutMessageIntoMyQueue(msgGetNewInventoryItem);
-                }
-            }
-        }
-        #endregion
 
         #region Storage
         public void Serialize(PlayerCharacterSerializer sr)
@@ -331,23 +246,9 @@ namespace Calindor.Server
             }
         }
 
-        public void PutMessageIntoMyQueue(OutgoingMessage msg)
+        public override void PutMessageIntoMyQueue(OutgoingMessage msg)
         {
             outgoingMessages.Enqueue(msg);
-        }
-
-        public void PutMessageIntoObserversQueue(OutgoingMessage msg)
-        {
-            foreach (Entity en in entitiesObservers)
-                if (en is PlayerCharacter)
-                    (en as PlayerCharacter).PutMessageIntoMyQueue(msg);
-        }
-
-        public void PutMessageIntoMyAndObserversQueue(OutgoingMessage msg)
-        {
-            PutMessageIntoMyQueue(msg);
-
-            PutMessageIntoObserversQueue(msg);
         }
 
         #endregion

@@ -333,15 +333,6 @@ namespace Calindor.Server.Entities
 
         #endregion
 
-        #region Inventory Handling Abstracts
-        public abstract void InventoryUpdateItem(Item itm);
-        public abstract void InventoryLookAtItem(byte slot);
-        public abstract void InventoryDropItemToGround(byte slot, int quantity);
-        public abstract void InventoryMoveItemInInventory(byte oldSlot, byte newSlot);
-        #endregion
-
-        #region Movement Abstracts
-        #endregion
     }
 
     public class EntityIDEntityDictionary : Dictionary<UInt16, Entity>
