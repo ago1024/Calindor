@@ -26,67 +26,7 @@ namespace Calindor.Server
             {
                 MoveToIncommingMessage msgMoveTo = (MoveToIncommingMessage)msg;
 
-                // Check if destination tile is walkable
-                if (!pc.Location.CurrentMap.IsLocationWalkable(msgMoveTo.X, msgMoveTo.Y))
-                    return;
-
-                // Calculate path
-                WalkPath path = 
-                    pc.Location.CurrentMap.CalculatePath(pc.Location.X, pc.Location.Y, msgMoveTo.X, msgMoveTo.Y);
-
-                if (path.State != WalkPathState.VALID)
-                    return;
-                
-                // Cancel current time based action
-                pc.CancelCurrentTimeBasedAction();
-
-                // Add walk time based action
-                timeBasedActionsManager.AddAction(new WalkTimeBasedAction(pc, path));
-
-                
-                
-                // Check followers
-                if (pc.IsFollowedByEntities)
-                {
-                    IEnumerator<Entity> followersEnumerator = pc.Followers;
-                    followersEnumerator.Reset();
-                    
-                    short xMoveToFollower, yMoveToFollower = 0;
-
-                    while (followersEnumerator.MoveNext())
-                    {
-                        // Calculate transition vectors
-                        PlayerCharacter follower = followersEnumerator.Current as PlayerCharacter;
-                        // TODO: For now only player characters can follow
-                        if (follower == null)
-                            continue;
-
-                        xMoveToFollower = (short)(msgMoveTo.X + follower.Location.X - pc.Location.X);
-                        yMoveToFollower = (short)(msgMoveTo.Y + follower.Location.Y - pc.Location.Y);
-
-                        // Repeat path building actions for followers
-                        // If the path cannot be build, the follower will not move and eventually will stop following
-
-                        // Check if destination tile is walkable
-                        if (!follower.Location.CurrentMap.IsLocationWalkable(xMoveToFollower, yMoveToFollower))
-                            continue;
-
-                        // Calculate path
-                        WalkPath followerPath =
-                            follower.Location.CurrentMap.CalculatePath(follower.Location.X, follower.Location.Y, 
-                            xMoveToFollower, yMoveToFollower);
-
-                        if (followerPath.State != WalkPathState.VALID)
-                            continue;
-
-                        // Cancel current time based action
-                        follower.CancelCurrentTimeBasedAction();
-
-                        // Add walk time based action
-                        timeBasedActionsManager.AddAction(new WalkTimeBasedAction(follower, followerPath));
-
-                    }
-                }
+                pc.LocationMoveTo(msgMoveTo.X, msgMoveTo.Y);
             }
             
         }
@@ -99,31 +39,11 @@ namespace Calindor.Server
 
                 if (msgSitDown.ShouldSit)
                 {
-                    if (!pc.Location.IsSittingDown)
-                    {
-                        pc.CancelCurrentTimeBasedAction(); //Cancel current time based action
-
-                        AddActorCommandOutgoingMessage msgAddActorCommand =
-                            (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                        msgAddActorCommand.EntityID = pc.EntityID;
-                        msgAddActorCommand.Command = PredefinedActorCommand.sit_down;
-                        pc.PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                        pc.Location.IsSittingDown = true;
-                    }
+                    pc.LocationSitDown();
                 }
                 else
                 {
-                    if (pc.Location.IsSittingDown)
-                    {
-                        pc.CancelCurrentTimeBasedAction(); //Cancel current time based action
-
-                        AddActorCommandOutgoingMessage msgAddActorCommand =
-                            (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                        msgAddActorCommand.EntityID = pc.EntityID;
-                        msgAddActorCommand.Command = PredefinedActorCommand.stand_up;
-                        pc.PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                        pc.Location.IsSittingDown = false;
-                    }
+                    pc.LocationStandUp();
                 }
             }
         }
@@ -132,17 +52,7 @@ namespace Calindor.Server
         {
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
             {
-                if (!pc.Location.IsSittingDown)
-                {
-                    pc.CancelCurrentTimeBasedAction(); //Cancel current time based action
-
-                    AddActorCommandOutgoingMessage msgAddActorCommand =
-                        (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                    msgAddActorCommand.EntityID = pc.EntityID;
-                    msgAddActorCommand.Command = PredefinedActorCommand.turn_left;
-                    pc.PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                    pc.Location.RatateBy(45);
-                }
+                pc.LocationTurnLeft();
             }
         }
 
@@ -150,17 +60,7 @@ namespace Calindor.Server
         {
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
             {
-                if (!pc.Location.IsSittingDown)
-                {
-                    pc.CancelCurrentTimeBasedAction(); //Cancel current time based action
-
-                    AddActorCommandOutgoingMessage msgAddActorCommand =
-                        (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                    msgAddActorCommand.EntityID = pc.EntityID;
-                    msgAddActorCommand.Command = PredefinedActorCommand.turn_right;
-                    pc.PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                    pc.Location.RatateBy(-45);
-                }
+                pc.LocationTurnRight();
             }
         }
     }

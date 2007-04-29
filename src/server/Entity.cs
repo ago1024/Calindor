@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Calindor.Server.Maps;
-using Calindor.Server.TimeBasedActions;
 using Calindor.Server.Items;
 
 namespace Calindor.Server.Entities
@@ -120,33 +119,20 @@ namespace Calindor.Server.Entities
         }
 
         protected EntityLocation location = new EntityLocation();
-        public EntityLocation Location
+        public short LocationX
         {
-            get { return location; }
-            set { location = value; }
+            get { return location.X; }
+        }
+        public short LocationY
+        {
+            get { return location.Y; }
+        }
+        public Map LocationCurrentMap
+        {
+            get { return location.CurrentMap; }
         }
 
         protected EntityInventory inventory = new EntityInventory();
-
-        // Time based action
-        // TODO: Probably an entity might have more than one time based action
-        protected ITimeBasedAction tbAction = null;
-
-        public void SetTimeBasedAction(ITimeBasedAction actionToSet)
-        {
-            CancelCurrentTimeBasedAction();
-
-            tbAction = actionToSet;
-        }
-
-        public void CancelCurrentTimeBasedAction()
-        {
-            if (tbAction != null)
-            {
-                tbAction.Cancel();
-                tbAction = null;
-            }
-        }
 
         #region Visibility
 
@@ -171,9 +157,9 @@ namespace Calindor.Server.Entities
         {
             entitiesVisibleNow.Clear();
 
-            if (Location.CurrentMap != null)
+            if (location.CurrentMap != null)
             {
-                IEnumerator<Entity> enumEntities = Location.CurrentMap.EntitiesOnMap;
+                IEnumerator<Entity> enumEntities = location.CurrentMap.EntitiesOnMap;
 
                 enumEntities.Reset();
 
@@ -185,8 +171,8 @@ namespace Calindor.Server.Entities
                     {
 
                         // TODO: For now just a simple condition, change for future
-                        if ((Math.Abs(Location.X - testedEntity.Location.X) < 30) &&
-                            (Math.Abs(Location.Y - testedEntity.Location.Y) < 30))
+                        if ((Math.Abs(location.X - testedEntity.location.X) < 30) &&
+                            (Math.Abs(location.Y - testedEntity.location.Y) < 30))
                         {
                             entitiesVisibleNow.Add(testedEntity); // I can see you
                             testedEntity.AddObserverEntity(this); // You know that I can see you
@@ -262,6 +248,9 @@ namespace Calindor.Server.Entities
 
         public bool Follow(Entity entityToFollow)
         {
+            return false;
+            //TODO: CORRECT
+            /*
             if (IsFollowedByEntities || entityToFollow.FollowsEntity)
                 return false;
 
@@ -276,18 +265,19 @@ namespace Calindor.Server.Entities
             else
             {
                 return false;
-            }
-            
+            }*/
         }
 
         public void StopFollowing()
         {
+            //TODO: CORRECT
+            /*
             if (entityToFollow != null)
             {
                 entityToFollow.removeFollower(this);
                 entityToFollow = null;
                 CancelCurrentTimeBasedAction();
-            }
+            }*/
         }
 
         public void ReleaseFollowers()
@@ -309,14 +299,14 @@ namespace Calindor.Server.Entities
                 return;
 
             // TODO: Move the unlink checks into external class implementing a check interface.
-            if (this.entityToFollow.Location.CurrentMap != this.Location.CurrentMap)
+            if (this.entityToFollow.location.CurrentMap != this.location.CurrentMap)
             {
                 StopFollowing();
                 return;
             }
 
-            int xDiff = Math.Abs(this.entityToFollow.Location.X - this.Location.X);
-            int yDiff = Math.Abs(this.entityToFollow.Location.Y - this.Location.Y);
+            int xDiff = Math.Abs(this.entityToFollow.location.X - this.location.X);
+            int yDiff = Math.Abs(this.entityToFollow.location.Y - this.location.Y);
 
             if ((xDiff > 1) || (yDiff > 1))
             {

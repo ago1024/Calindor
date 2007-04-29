@@ -134,13 +134,13 @@ namespace Calindor.Server.Maps
             get { return serverConfiguration.StartingPoint.Deviation; }
         }
 
-        private void addPlayerToNewMap(PlayerCharacter pc, string newMapName, short newX, short newY)
+        private void addEntityToNewMap(Entity en, EntityLocation currentLocation, string newMapName, short newX, short newY)
         {
             Map newMap = GetMapByName(newMapName);
 
             if (newMap == null) /*No such map: Should not happen!*/
             {
-                logger.LogWarning(LogSource.World, "Move " + pc.Name + " to map (" + newMapName + ") failed. Map not found. Moving to start map!", null);
+                logger.LogWarning(LogSource.World, "Move " + en.Name + " to map (" + newMapName + ") failed. Map not found. Moving to start map!", null);
                 newMap = StartPointMap;
                 newX = StartPointX;
                 newY = StartPointY;
@@ -148,7 +148,7 @@ namespace Calindor.Server.Maps
 
             if (!newMap.IsLocationWalkable(newX, newY)) /*Destination location not walkable: Should not happen!*/
             {
-                logger.LogWarning(LogSource.World, "Move " + pc.Name + " to map (" + newMap.Name + "(" 
+                logger.LogWarning(LogSource.World, "Move " + en.Name + " to map (" + newMap.Name + "(" 
                     + newX + ", " + newY +")) failed. Destination location not walkable. Moving to start map!", null);
                 newMap = StartPointMap;
                 newX = StartPointX;
@@ -156,17 +156,17 @@ namespace Calindor.Server.Maps
             }
 
 
-            newMap.AddEntity(pc);
+            newMap.AddEntity(en);
 
             // Change player location
-            pc.Location.CurrentMap = newMap;
-            pc.Location.X = newX;
-            pc.Location.Y = newY;
+            currentLocation.CurrentMap = newMap;
+            currentLocation.X = newX;
+            currentLocation.Y = newY;
         }
 
-        public void ChangeMapForPlayer(PlayerCharacter pc, string newMapName, short newX, short newY)
+        public void ChangeMapForEntity(Entity en, EntityLocation currentLocation, string newMapName, short newX, short newY)
         {
-            ChangeMapForPlayer(pc, newMapName, false, newX, newY);
+            ChangeMapForEntity(en, currentLocation, newMapName, false, newX, newY);
         }
 
         /// <summary>
@@ -177,39 +177,40 @@ namespace Calindor.Server.Maps
         /// <param name="isLogIn"></param>
         /// <param name="newX">Location on new map</param>
         /// <param name="newY">Location on new map</param>
-        public void ChangeMapForPlayer(PlayerCharacter pc, string newMapName, bool isLogIn, short newX, short newY)
+        public void ChangeMapForEntity(Entity en, EntityLocation currentLocation, string newMapName, bool isLogIn, short newX, short newY)
         {
-            if ((isLogIn) && pc.Location.CurrentMap == null)
+            if ((isLogIn) && currentLocation.CurrentMap == null)
             {
                 // Login, only add (to avoid Warning from RemovePlayerFromHisMap)
-                addPlayerToNewMap(pc, newMapName, newX, newY);
+                addEntityToNewMap(en, currentLocation, newMapName, newX, newY);
             }
             else
             {
                 // Remove from old
-                RemovePlayerFromHisMap(pc);
+                RemoveEntityFromItsMap(en, currentLocation);
 
                 // Add to new
-                addPlayerToNewMap(pc, newMapName, newX, newY);
+                addEntityToNewMap(en, currentLocation, newMapName, newX, newY);
             }
                 
         }
 
 
         /// <summary>
-        /// Removes player from his current map
+        /// Removes entity from his current map
         /// </summary>
         /// <param name="?"></param>
-        public void RemovePlayerFromHisMap(PlayerCharacter pc)
+        ///
+        public void RemoveEntityFromItsMap(Entity en, EntityLocation currentLocation)
         {
-            Map oldMap = pc.Location.CurrentMap;
+            Map oldMap = currentLocation.CurrentMap;
                        
             if (oldMap != null)
-                oldMap.RemoveEntity(pc);
+                oldMap.RemoveEntity(en);
             else
-                logger.LogWarning(LogSource.World, "Player (" + pc.Name+ ") not connected with map.", null);
+                logger.LogWarning(LogSource.World, "Player (" + en.Name+ ") not connected with map.", null);
 
-            pc.Location.CurrentMap = null;
+            currentLocation.CurrentMap = null;
         }
     }
 
@@ -315,7 +316,7 @@ namespace Calindor.Server.Maps
         {
             foreach (Entity en in entitiesOnMap)
             {
-                if ((en.Location.X == x) && (en.Location.Y == y))
+                if ((en.LocationX == x) && (en.LocationY == y))
                     return true;
             }
 

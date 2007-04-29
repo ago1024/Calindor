@@ -67,7 +67,7 @@ namespace Calindor.Server.TimeBasedActions
     /// </summary>
     public abstract class TimeBasedAction : ITimeBasedAction
     {
-        protected PlayerCharacter targetPlayerCharacter = null;
+        protected EntityImplementation targetEntityImplementation = null;
         protected long lastExecutedTick = DateTime.Now.Ticks;
         protected bool actionCanceled = false;
 
@@ -99,16 +99,16 @@ namespace Calindor.Server.TimeBasedActions
         private const int WALK_COMMAND_DELAY = 250; // Delay (in milis) of sending commands
         private bool firstStep = true; 
 
-        public WalkTimeBasedAction(PlayerCharacter pc, WalkPath walkPath)
+        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath)
         {
-            if (pc == null)
-                throw new ArgumentNullException("pc");
+            if (enImpl == null)
+                throw new ArgumentNullException("enImpl");
 
             if (walkPath == null)
                 throw new ArgumentNullException("walkPath");
 
-            targetPlayerCharacter = pc;
-            pc.SetTimeBasedAction(this);
+            targetEntityImplementation = enImpl;
+            enImpl.TimeBasedActionSet(this);
             this.walkPath = walkPath;
 
             updateLastExecutionTime();
@@ -117,6 +117,7 @@ namespace Calindor.Server.TimeBasedActions
 
         public override bool Execute()
         {
+            
             if (actionCanceled)
                 return false; // Action canceled. Nothing to do.
 
@@ -133,17 +134,7 @@ namespace Calindor.Server.TimeBasedActions
                     numberOfMoves++; // Add one move
                     firstStep = false; // No longer first step
                     walkPath.GetNext(); // Remove the first item (current location) from path 
-                }
-
-                // If sitting down, stand up
-                if (targetPlayerCharacter.Location.IsSittingDown)
-                {
-                    AddActorCommandOutgoingMessage msgAddActorCommand =
-                        (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                    msgAddActorCommand.EntityID = targetPlayerCharacter.EntityID;
-                    msgAddActorCommand.Command = PredefinedActorCommand.stand_up;
-                    targetPlayerCharacter.PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                    targetPlayerCharacter.Location.IsSittingDown = false;
+                    targetEntityImplementation.LocationStandUp(true); // Stand up
                 }
 
                 for (int i = 0; i < numberOfMoves; i++)
@@ -156,16 +147,13 @@ namespace Calindor.Server.TimeBasedActions
                         return false; //Move finished
 
                     // Check if location is not occupied
-                    if (targetPlayerCharacter.Location.CurrentMap.IsLocationOccupied(itm.X, itm.Y))
+                    if (targetEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y))
                         return false; // TODO: Needs to reroute
 
-                    AddActorCommandOutgoingMessage msgAddActorCommand =
-                        (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                    msgAddActorCommand.EntityID = targetPlayerCharacter.EntityID;
 
                     // Check direction
-                    int xDiff = targetPlayerCharacter.Location.X - itm.X;
-                    int yDiff = targetPlayerCharacter.Location.Y - itm.Y;
+                    int xDiff = targetEntityImplementation.LocationX - itm.X;
+                    int yDiff = targetEntityImplementation.LocationY - itm.Y;
 
                     if (Math.Abs(xDiff) > 1 || Math.Abs(yDiff) > 1)
                         return false; // Error. Stop.
@@ -173,64 +161,36 @@ namespace Calindor.Server.TimeBasedActions
                     if (xDiff == 0)
                     {
                         if (yDiff == -1)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_n;
-                            targetPlayerCharacter.Location.Rotation = 0;
-                        }
-                    
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.N);
+
                         if (yDiff == 1)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_s;
-                            targetPlayerCharacter.Location.Rotation = 180;
-                        }
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.S);
                     }
 
                     if (xDiff == -1)
                     {
                         if (yDiff == -1)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_ne;
-                            targetPlayerCharacter.Location.Rotation = 45;
-                        }
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.NE);
 
                         if (yDiff == 0)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_e;
-                            targetPlayerCharacter.Location.Rotation = 90;
-                        }
-                        
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.E);
+
                         if (yDiff == 1)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_se;
-                            targetPlayerCharacter.Location.Rotation = 135;
-                        }
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.SE);
                     }
 
                     if (xDiff == 1)
                     {
                         if (yDiff == 1)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_sw;
-                            targetPlayerCharacter.Location.Rotation = 225;
-                        }
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.SW);
 
                         if (yDiff == 0)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_w;
-                            targetPlayerCharacter.Location.Rotation = 270;
-                        }
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.W);
 
                         if (yDiff == -1)
-                        {
-                            msgAddActorCommand.Command = PredefinedActorCommand.move_nw;
-                            targetPlayerCharacter.Location.Rotation = 315;
-                        }
+                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.NW);
 
                     }
-
-                    targetPlayerCharacter.PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                    targetPlayerCharacter.Location.X = itm.X;
-                    targetPlayerCharacter.Location.Y = itm.Y;
                 }
 
                 updateLastExecutionTime();

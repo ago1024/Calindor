@@ -457,27 +457,31 @@ namespace Calindor.Server.Messaging
             messageType = OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR;
         }
 
-        public void FromPlayerCharacter(PlayerCharacter pc)
+        public void FromEntity(Entity en)
         {
-            EntityID = pc.EntityID;
-            EntityName = pc.Name;
+            EntityID = en.EntityID;
+            EntityName = en.Name;
 
             // Appearance 
             // TODO:What if wielding items?
-            innerDataAppearance[0] = (byte)pc.Appearance.Skin;
-            innerDataAppearance[1] = (byte)pc.Appearance.Hair;
-            innerDataAppearance[2] = (byte)pc.Appearance.Shirt;
-            innerDataAppearance[3] = (byte)pc.Appearance.Pants;
-            innerDataAppearance[4] = (byte)pc.Appearance.Boots;
-            innerDataAppearance[5] = (byte)pc.Appearance.Type;
-            innerDataAppearance[6] = (byte)pc.Appearance.Head;
+            innerDataAppearance[0] = (byte)en.Appearance.Skin;
+            innerDataAppearance[1] = (byte)en.Appearance.Hair;
+            innerDataAppearance[2] = (byte)en.Appearance.Shirt;
+            innerDataAppearance[3] = (byte)en.Appearance.Pants;
+            innerDataAppearance[4] = (byte)en.Appearance.Boots;
+            innerDataAppearance[5] = (byte)en.Appearance.Type;
+            innerDataAppearance[6] = (byte)en.Appearance.Head;
 
+        }
+
+        public void FromLocation(EntityLocation location)
+        {
             // Location
-            innerDataLocation[0] = pc.Location.X;
-            innerDataLocation[1] = pc.Location.Y;
-            innerDataLocation[2] = pc.Location.Z;
-            innerDataLocation[3] = pc.Location.Rotation;
-            innerDataLocation[4] = pc.Location.IsSittingDown ? (short)1:(short)0;
+            innerDataLocation[0] = location.X;
+            innerDataLocation[1] = location.Y;
+            innerDataLocation[2] = location.Z;
+            innerDataLocation[3] = location.Rotation;
+            innerDataLocation[4] = location.IsSittingDown ? (short)1 : (short)0;
         }
 
         protected override void serializeSpecific(byte[] _return)

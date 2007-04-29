@@ -139,7 +139,7 @@ namespace Calindor.Server
                 try
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
-                    Location.Serialize(sr);
+                    location.Serialize(sr);
                 }
                 finally
                 {
@@ -189,7 +189,7 @@ namespace Calindor.Server
             try
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
-                Location.Deserialize(dsr);
+                location.Deserialize(dsr);
             }
             finally
             {
@@ -253,10 +253,45 @@ namespace Calindor.Server
 
         #endregion
 
-        #region Fill Messages
-        public void FillOutgoingMessage(HereYourInventoryOutgoingMessage msg)
+        #region Movement Handling
+        public virtual void LocationChangeMapAtLogin()
         {
-            msg.FromInventory(inventory);
+            mapManager.ChangeMapForEntity(this, location, location.LoadedMapMame, true, location.X, location.Y);
+
+            ChangeMapOutgoingMessage msgChangeMap =
+                (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
+            msgChangeMap.MapPath = location.CurrentMap.ClientFileName;
+            PutMessageIntoMyQueue(msgChangeMap);
+
+            // Teleport In - send to player ONLY - no obserwers yet
+            TeleportInOutgoingMessage msgTeleportIn =
+                (TeleportInOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.TELEPORT_IN);
+            msgTeleportIn.X = location.X;
+            msgTeleportIn.Y = location.Y;
+            PutMessageIntoMyQueue(msgTeleportIn);
+
+            // Add New Enhanced Actor - send to player ONLY - observers will get it with the next round of visibility
+            AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
+                (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
+            FillOutgoingMessage(msgAddNewEnhancedActor);
+            PutMessageIntoMyQueue(msgAddNewEnhancedActor);
+        }
+
+        public virtual void LocationLeaveMapAtLogoff()
+        {
+            mapManager.RemoveEntityFromItsMap(this, location);
+            
+            // No messages need to be send. Entity will disapear with next round of visibility
+        }
+
+        #endregion
+
+        #region Character Creation Handling
+        public virtual void CreateCharacterSetInitialLocation(EntityLocation location)
+        {
+            if (LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+                throw new InvalidOperationException("Don't use this method if player logged in!");
+            this.location = location;
         }
         #endregion
     }

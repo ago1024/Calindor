@@ -357,7 +357,11 @@ namespace Calindor.Server
                 pc.PutMessageIntoMyQueue(msg);
         }
 
-        private void addPlayerToDictionaries(PlayerCharacter pc)
+        /// <summary>
+        /// Performs all necessary operations to add player to the world
+        /// </summary>
+        /// <param name="pc"></param>
+        private void addPlayerToWorld(PlayerCharacter pc)
         {
             if (loggedInPlayersByName.ContainsKey(pc.Name.ToLower()))
                 // This should not happen. It should be checked before making login successful
@@ -376,6 +380,12 @@ namespace Calindor.Server
 
             if (pc.EntityID == 0)
                 throw new InvalidOperationException("Could not allocate entityID to player.");
+
+            // Connect player to time based actions manager
+            pc.TimeBasedActionSetManager(timeBasedActionsManager);
+
+            // Connecct player to map manager
+            pc.MapManager = mapManager;
         }
 
         private PlayerCharacter getPlayerByName(string playerName)
@@ -400,13 +410,16 @@ namespace Calindor.Server
                 loggedInPlayersByEntityID.Remove(pc.EntityID);
 
             // Cancel time based actions
-            pc.CancelCurrentTimeBasedAction(); 
+            pc.TimeBasedActionCancelCurrent(); 
 
             // Current map active players
-            mapManager.RemovePlayerFromHisMap(pc);
+            pc.LocationLeaveMapAtLogoff();
 
             // Stop following
             pc.StopFollowing();
+
+            pc.TimeBasedActionSetManager(null);
+            pc.MapManager = null;
         }
     }
 

@@ -127,6 +127,8 @@ namespace Calindor.Server
                         if ((msgRawText.Text.ToLower().IndexOf("#take_hand") == 0) ||
                             (msgRawText.Text.ToLower().IndexOf("#follow") == 0))
                         {
+                            //TODO: CORRECT
+                            /*
                             pc.CancelCurrentTimeBasedAction(); //Cancel current time based action
 
                             RawTextOutgoingMessage msgRawTextOut =
@@ -210,7 +212,7 @@ namespace Calindor.Server
 
                                 msgRawTextOut.Color = PredefinedColor.Blue1;
                                 pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            }
+                            }*/
 
                             return;
                         }

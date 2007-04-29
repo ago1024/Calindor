@@ -45,7 +45,7 @@ namespace Calindor.Server
                 {
                     AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
                         (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-                    msgAddNewEnhancedActor.FromPlayerCharacter(en as PlayerCharacter);
+                    (en as PlayerCharacter).FillOutgoingMessage(msgAddNewEnhancedActor);
                     pc.PutMessageIntoMyQueue(msgAddNewEnhancedActor);
                 }
             }

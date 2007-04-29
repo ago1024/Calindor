@@ -111,12 +111,14 @@ namespace Calindor.Server
                 pc.Appearance.Boots = msgCreateChar.Boots;
                 pc.Name = msgCreateChar.UserName;
 
+                EntityLocation location = new EntityLocation();
                 short deviation = mapManager.StartPointDeviation;
-                pc.Location.X = (short)(mapManager.StartPointX + (sbyte)RNG.Next(-deviation, deviation));
-                pc.Location.Y = (short)(mapManager.StartPointY + (sbyte)RNG.Next(-deviation, deviation));
-                pc.Location.Z = 0;
-                pc.Location.Rotation = 0;
-                pc.Location.CurrentMap = mapManager.StartPointMap;
+                location.X = (short)(mapManager.StartPointX + (sbyte)RNG.Next(-deviation, deviation));
+                location.Y = (short)(mapManager.StartPointY + (sbyte)RNG.Next(-deviation, deviation));
+                location.Z = 0;
+                location.Rotation = 0;
+                location.CurrentMap = mapManager.StartPointMap;
+                pc.CreateCharacterSetInitialLocation(location);
 
 		        // TODO: Apply race specific attributes
 
@@ -231,7 +233,7 @@ namespace Calindor.Server
                 try
                 {
                     // Add to dictionaries / Get EntityID
-                    addPlayerToDictionaries(pc);
+                    addPlayerToWorld(pc);
                 }
                 catch (Exception ex)
                 {
@@ -258,18 +260,7 @@ namespace Calindor.Server
                 pc.PutMessageIntoMyQueue(msgYouAre);
 
                 // Change Map
-                ChangeMapOutgoingMessage msgChangeMap =
-                    (ChangeMapOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CHANGE_MAP);
-                mapManager.ChangeMapForPlayer(pc, pc.Location.LoadedMapMame, true, pc.Location.X, pc.Location.Y);
-                msgChangeMap.MapPath = pc.Location.CurrentMap.ClientFileName;
-                pc.PutMessageIntoMyQueue(msgChangeMap);
-
-                // Teleport In - send to player ONLY - no obserwers yet
-                TeleportInOutgoingMessage msgTeleportIn =
-                    (TeleportInOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.TELEPORT_IN);
-                msgTeleportIn.X = pc.Location.X;
-                msgTeleportIn.Y = pc.Location.Y;
-                pc.PutMessageIntoMyQueue(msgTeleportIn);
+                pc.LocationChangeMapAtLogin();
 
                 // Here Your Inventory
                 HereYourInventoryOutgoingMessage msgHereYourInventory =
@@ -285,12 +276,6 @@ namespace Calindor.Server
 
                 // Log In Ok
                 pc.PutMessageIntoMyQueue(msgStdLogInOk);
-
-                // Add New Enhanced Actor - send to player ONLY - observers will get it with the next round
-                AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                    (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-                msgAddNewEnhancedActor.FromPlayerCharacter(pc);
-                pc.PutMessageIntoMyQueue(msgAddNewEnhancedActor);
 
                 // All is OK
                 pc.LoginState = PlayerCharacterLoginState.LoginSuccesfull;

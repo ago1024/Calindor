@@ -235,4 +235,16 @@ namespace Calindor.Misc.Predefines
         frame_attack_down_1 = 22,
         frame_attack_down_2 = 23,
     }
+
+    public enum PredefinedDirection
+    {
+        N = 0,
+        NE = 1,
+        E = 2,
+        SE = 3,
+        S = 4,
+        SW = 5,
+        W = 6,
+        NW = 7
+    }
 }
