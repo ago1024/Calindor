@@ -118,6 +118,7 @@ namespace Calindor.Server.Entities
             set { appearance = value; }
         }
 
+        #region Location
         protected EntityLocation location = new EntityLocation();
         public short LocationX
         {
@@ -131,16 +132,19 @@ namespace Calindor.Server.Entities
         {
             get { return location.CurrentMap; }
         }
+        #endregion
 
+        #region Inventory
         protected EntityInventory inventory = new EntityInventory();
+        #endregion
 
         #region Visibility
 
         // Entities visibility
         protected EntityList entitiesVisibleNow = new EntityList();
         protected EntityList entitiesVisiblePrev = new EntityList();
-        private EntityList entitiesVisibleRemoved = new EntityList();
-        private EntityList entitiesVisibleAdded = new EntityList();
+        protected EntityList entitiesVisibleRemoved = new EntityList();
+        protected EntityList entitiesVisibleAdded = new EntityList();
         // Entities to whom this entity is visible
         protected EntityList entitiesObservers = new EntityList();
 
@@ -174,20 +178,20 @@ namespace Calindor.Server.Entities
                         if ((Math.Abs(location.X - testedEntity.location.X) < 30) &&
                             (Math.Abs(location.Y - testedEntity.location.Y) < 30))
                         {
-                            entitiesVisibleNow.Add(testedEntity); // I can see you
-                            testedEntity.AddObserverEntity(this); // You know that I can see you
+                            addVisibleEntity(testedEntity); // I can see you
+                            testedEntity.addObserverEntity(this); // You know that I can see you
                         }
                     }
                 }
             }
         }
 
-        public void AddVisibleEntity(Entity en)
+        private void addVisibleEntity(Entity en)
         {
             entitiesVisibleNow.Add(en);
         }
 
-        public EntityList GetRemovedVisibleEntities()
+        protected void calculateRemovedVisibleEntities()
         {
             entitiesVisibleRemoved.Clear();
 
@@ -195,10 +199,9 @@ namespace Calindor.Server.Entities
                 if (!entitiesVisibleNow.Contains(en))
                     entitiesVisibleRemoved.Add(en);
 
-            return entitiesVisibleRemoved;
         }
 
-        public EntityList GetAddedVisibleEntities()
+        protected void calculateAddedVisibleEntities()
         {
             entitiesVisibleAdded.Clear();
 
@@ -206,10 +209,9 @@ namespace Calindor.Server.Entities
                 if (!entitiesVisiblePrev.Contains(en))
                     entitiesVisibleAdded.Add(en);
 
-            return entitiesVisibleAdded;
         }
-
-        public void AddObserverEntity(Entity en)
+         
+        private void addObserverEntity(Entity en)
         {
             if (!entitiesObservers.Contains(en))
                 entitiesObservers.Add(en);

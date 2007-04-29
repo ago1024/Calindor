@@ -21,35 +21,8 @@ namespace Calindor.Server
         /// </summary>
         /// <param name="pc"></param>
         public void handleVisibilityChangeEvents(PlayerCharacter pc)
-        { 
-            // Remove entities
-            EntityList entitiesToRemove = pc.GetRemovedVisibleEntities();
-            foreach (Entity en in entitiesToRemove)
-            {
-                //TODO: For now only players, all entities later (when they are actually displayed)
-                if (en is PlayerCharacter)
-                {
-                    RemoveActorOutgoingMessage msgRemoveActor =
-                        (RemoveActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.REMOVE_ACTOR);
-                    msgRemoveActor.EntityID = en.EntityID;
-                    pc.PutMessageIntoMyQueue(msgRemoveActor);
-                }
-            }
-
-            // Added entities
-            EntityList entitiesToAdd = pc.GetAddedVisibleEntities();
-            foreach (Entity en in entitiesToAdd)
-            {
-                //TODO: For now only players, all entities later (when they are actually displayed)
-                if (en is PlayerCharacter)
-                {
-                    AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                        (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-                    (en as PlayerCharacter).FillOutgoingMessage(msgAddNewEnhancedActor);
-                    pc.PutMessageIntoMyQueue(msgAddNewEnhancedActor);
-                }
-            }
-
+        {
+            pc.VisibilityUpdateVisibleEntities();
         }
     }
 }

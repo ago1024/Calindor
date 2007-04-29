@@ -537,5 +537,32 @@ namespace Calindor.Server
         }
         #endregion
 
+        #region Visibility Handling
+        public virtual void VisibilityUpdateVisibleEntities()
+        {
+            // Remove entities
+            calculateRemovedVisibleEntities();
+            foreach (Entity en in entitiesVisibleRemoved)
+            {
+                RemoveActorOutgoingMessage msgRemoveActor =
+                    (RemoveActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.REMOVE_ACTOR);
+                msgRemoveActor.EntityID = en.EntityID;
+                PutMessageIntoMyQueue(msgRemoveActor);
+            }
+
+            // Added entities
+            calculateAddedVisibleEntities();
+            foreach (Entity en in entitiesVisibleAdded)
+            {
+                if (en is EntityImplementation)
+                {
+                    AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
+                        (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
+                    (en as EntityImplementation).FillOutgoingMessage(msgAddNewEnhancedActor);
+                    PutMessageIntoMyQueue(msgAddNewEnhancedActor);
+                }
+            }
+        }
+        #endregion
     }
 }
