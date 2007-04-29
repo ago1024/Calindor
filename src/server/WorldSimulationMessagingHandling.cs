@@ -98,39 +98,16 @@ namespace Calindor.Server
                         }
                         if (msgRawText.Text.ToLower() == "#stop_following")
                         {
-                            if (pc.FollowsEntity)
-                            {
-                                pc.StopFollowing();
-                                RawTextOutgoingMessage msgRawTextOut =
-                                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                msgRawTextOut.Text = "You stopped following...";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            }
+                            pc.FollowingStopFollowing();
                             return;
                         }
                         if (msgRawText.Text.ToLower() == "#release_followers")
                         {
-                            if (pc.IsFollowedByEntities)
-                            {
-                                pc.ReleaseFollowers();
-                                RawTextOutgoingMessage msgRawTextOut =
-                                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                msgRawTextOut.Text = "You are no longer followed...";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            }
+                            pc.FollowingReleaseFollowers();
                             return;
                         }
-                        if ((msgRawText.Text.ToLower().IndexOf("#take_hand") == 0) ||
-                            (msgRawText.Text.ToLower().IndexOf("#follow") == 0))
+                        if (msgRawText.Text.ToLower().IndexOf("#follow") == 0)
                         {
-                            //TODO: CORRECT
-                            /*
-                            pc.CancelCurrentTimeBasedAction(); //Cancel current time based action
-
                             RawTextOutgoingMessage msgRawTextOut =
                                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
                             msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
@@ -154,65 +131,7 @@ namespace Calindor.Server
                                 return;
                             }
 
-                            // Is it different than 'me'
-                            if (pcTakenByHand == pc)
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                msgRawTextOut.Text = "There is no point in doing so...";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            // Is is close enough
-                            int xDiff = pc.Location.X - pcTakenByHand.Location.X;
-                            int yDiff = pc.Location.Y - pcTakenByHand.Location.Y;
-                            if ((Math.Abs(xDiff) > 1) || (Math.Abs(yDiff) > 1) || (pc.Location.CurrentMap != pcTakenByHand.Location.CurrentMap))
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                if (msgRawText.Text.ToLower().IndexOf("#follow") == 0)
-                                    msgRawTextOut.Text = "You need to stand closer...";
-                                else
-                                    msgRawTextOut.Text = "Move closer... don't be shy...";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            // Conditions met. 
-                            if (pc.Follow(pcTakenByHand))
-                            {
-                                // Sending information to pc
-                                RawTextOutgoingMessage msgRawTextOutToPC =
-                                   (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                                msgRawTextOutToPC.Channel = PredefinedChannel.CHAT_LOCAL;
-                                msgRawTextOutToPC.Color = PredefinedColor.Blue1;
-                                if (msgRawText.Text.ToLower().IndexOf("#follow") == 0)
-                                    msgRawTextOutToPC.Text = "You start following " + pcTakenByHand.Name;
-                                else
-                                    msgRawTextOutToPC.Text = "You take " + pcTakenByHand.Name + " by the hand... and surrender your will";
-                                pc.PutMessageIntoMyQueue(msgRawTextOutToPC);
-
-                                // Sendin information to pcTakenByHand
-                                RawTextOutgoingMessage msgRawTextOutToPCTakenByHand =
-                                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                                msgRawTextOutToPCTakenByHand.Channel = PredefinedChannel.CHAT_LOCAL;
-                                msgRawTextOutToPCTakenByHand.Color = PredefinedColor.Blue1;
-                                if (msgRawText.Text.ToLower().IndexOf("#follow") == 0)
-                                    msgRawTextOutToPCTakenByHand.Text = pc.Name + " follows you...";
-                                else
-                                    msgRawTextOutToPCTakenByHand.Text = pc.Name + " takes you by the hand...";
-                                pcTakenByHand.PutMessageIntoMyQueue(msgRawTextOutToPCTakenByHand);
-
-                            }
-                            else
-                            {
-                                if (msgRawText.Text.ToLower().IndexOf("#follow") == 0)
-                                    msgRawTextOut.Text = "You can't follow...";
-                                else
-                                    msgRawTextOut.Text = "It seems you are not destined to be together...";
-
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            }*/
+                            pc.FollowingFollow(pcTakenByHand);
 
                             return;
                         }

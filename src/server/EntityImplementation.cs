@@ -14,6 +14,7 @@ using Calindor.Server.Messaging;
 using Calindor.Server.Maps;
 using Calindor.Server.TimeBasedActions;
 using Calindor.Misc.Predefines;
+using System;
 
 namespace Calindor.Server
 {
@@ -22,7 +23,7 @@ namespace Calindor.Server
     /// </summary>
     public abstract class EntityImplementation : Entity
     {
-        #region Time Based Actions
+        #region Time Based Actions Handling
         // Time based action
         // TODO: Probably an entity might have more than one time based action
         protected ITimeBasedAction tbAction = null;
@@ -40,7 +41,6 @@ namespace Calindor.Server
             tbAction = actionToSet;
         }
 
-        //TODO: CORRECT
         public void TimeBasedActionCancelCurrent()
         {
             if (tbAction != null)
@@ -48,14 +48,6 @@ namespace Calindor.Server
                 tbAction.Cancel();
                 tbAction = null;
             }
-        }
-        #endregion
-
-        #region Map Manager
-        protected MapManager mapManager = null;
-        public MapManager MapManager
-        {
-            set { mapManager = value; }
         }
         #endregion
 
@@ -145,6 +137,9 @@ namespace Calindor.Server
         #endregion
 
         #region Movement Handling
+
+        protected MapManager mapManager = null;
+
         public virtual void LocationMoveTo(short x, short y)
         {
             // Check if destination tile is walkable
@@ -162,49 +157,24 @@ namespace Calindor.Server
             timeBasedActionsManager.AddAction(new WalkTimeBasedAction(this, path));
 
 
-            //TODO: CORRECT
-            // Check followers
-            /*if (pc.IsFollowedByEntities)
+            // Move followers
+            if (isFollowedByEntities)
             {
-                IEnumerator<Entity> followersEnumerator = pc.Followers;
-                followersEnumerator.Reset();
-
                 short xMoveToFollower, yMoveToFollower = 0;
 
-                while (followersEnumerator.MoveNext())
+                foreach (Entity en in followers)
                 {
-                    // Calculate transition vectors
-                    PlayerCharacter follower = followersEnumerator.Current as PlayerCharacter;
-                    // TODO: For now only player characters can follow
+                    EntityImplementation follower = en as EntityImplementation;
                     if (follower == null)
                         continue;
 
-                    xMoveToFollower = (short)(msgMoveTo.X + follower.Location.X - pc.Location.X);
-                    yMoveToFollower = (short)(msgMoveTo.Y + follower.Location.Y - pc.Location.Y);
+                    // Calculate transition vectors
+                    xMoveToFollower = (short)(x + follower.LocationX - location.X);
+                    yMoveToFollower = (short)(y + follower.LocationY - location.Y);
 
-                    // Repeat path building actions for followers
-                    // If the path cannot be build, the follower will not move and eventually will stop following
-
-                    // Check if destination tile is walkable
-                    if (!follower.Location.CurrentMap.IsLocationWalkable(xMoveToFollower, yMoveToFollower))
-                        continue;
-
-                    // Calculate path
-                    WalkPath followerPath =
-                        follower.Location.CurrentMap.CalculatePath(follower.Location.X, follower.Location.Y,
-                        xMoveToFollower, yMoveToFollower);
-
-                    if (followerPath.State != WalkPathState.VALID)
-                        continue;
-
-                    // Cancel current time based action
-                    follower.CancelCurrentTimeBasedAction();
-
-                    // Add walk time based action
-                    timeBasedActionsManager.AddAction(new WalkTimeBasedAction(follower, followerPath));
-
+                    follower.LocationMoveTo(xMoveToFollower, yMoveToFollower);
                 }
-            }*/
+            }
         }
 
         public virtual void LocationStandUp()
@@ -370,7 +340,172 @@ namespace Calindor.Server
             FillOutgoingMessage(msgAddNewEnchangedActor);
             PutMessageIntoMyAndObserversQueue(msgAddNewEnchangedActor);
         }
+
+        public virtual void LocationSetMapManager(MapManager mapMngr)
+        {
+            mapManager = mapMngr;
+        }
         #endregion
+
+        #region Following Handling
+        protected EntityList followers = new EntityList();
+        protected EntityImplementation entityToFollow = null;
+        public virtual void FollowingStopFollowing()
+        {
+            if (isFollowingEntity)
+            {
+                entityToFollow.removeFollower(this);
+
+                TimeBasedActionCancelCurrent();
+                
+                RawTextOutgoingMessage msgRawTextOut =
+                                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Blue1;
+                msgRawTextOut.Text = "You stopped following " + entityToFollow.Name;
+                PutMessageIntoMyQueue(msgRawTextOut);
+
+                entityToFollow = null;
+            }
+        }
+
+        public virtual void FollowingFollow(EntityImplementation enImpl)
+        {
+            RawTextOutgoingMessage msgRawTextOutMe =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawTextOutMe.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawTextOutMe.Color = PredefinedColor.Blue1;
+
+            // Is it different than 'me'
+            if (enImpl == this)
+            {
+                msgRawTextOutMe.Text = "There is no point following yourself...";
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+                return;
+            }
+
+            // Is is close enough
+            int xDiff = location.X - enImpl.LocationX;
+            int yDiff = location.Y - enImpl.LocationY;
+            if ((Math.Abs(xDiff) > 1) || (Math.Abs(yDiff) > 1) || (location.CurrentMap != enImpl.LocationCurrentMap))
+            {
+                msgRawTextOutMe.Text = "You need to stand closer...";
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+                return;
+            }
+
+            if (isFollowedByEntities)
+            {
+                msgRawTextOutMe.Text = "If you want to follow, you can't be followed...";
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+                return;
+            }
+                
+            if (enImpl.isFollowingEntity)
+            {
+                msgRawTextOutMe.Text = enImpl.Name + " can't follow anybody if you want to follow him/her...";
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+                return;
+            }
+
+            FollowingStopFollowing();
+
+            TimeBasedActionCancelCurrent();
+
+            if (enImpl.addFollower(this))
+            {
+                this.entityToFollow = enImpl;
+                TimeBasedActionCancelCurrent();
+                msgRawTextOutMe.Text = "You start following " + enImpl.Name;
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+
+                RawTextOutgoingMessage msgRawTextOutOther = 
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOutOther.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOutOther.Color = PredefinedColor.Blue1;
+                msgRawTextOutOther.Text = Name + " follows you...";
+                enImpl.PutMessageIntoMyQueue(msgRawTextOutOther);
+            }
+            else
+            {
+                msgRawTextOutMe.Color = PredefinedColor.Red2;
+                msgRawTextOutMe.Text = "You can't follow " + enImpl.Name;
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+            }
+        }
+
+        public virtual void FollowingReleaseFollowers()
+        {
+            if (isFollowedByEntities)
+            {
+                EntityList tempFollowers = new EntityList();
+
+                tempFollowers.AddRange(followers);
+
+                foreach (Entity en in tempFollowers)
+                    if (en is EntityImplementation)
+                        (en as EntityImplementation).FollowingStopFollowing();
+
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Blue1;
+                msgRawTextOut.Text = "You are no longer followed...";
+                PutMessageIntoMyQueue(msgRawTextOut);
+            }
+        }
+
+        public virtual void FollowingCheckForStopFollowing()
+        {
+            if (!isFollowingEntity)
+                return;
+
+            // TODO: Move the unlink checks into external class implementing a check interface.
+            if (this.entityToFollow.LocationCurrentMap != this.location.CurrentMap)
+            {
+                FollowingStopFollowing();
+                return;
+            }
+
+            int xDiff = Math.Abs(this.entityToFollow.LocationX - this.location.X);
+            int yDiff = Math.Abs(this.entityToFollow.LocationY - this.location.Y);
+
+            if ((xDiff > 1) || (yDiff > 1))
+            {
+                FollowingStopFollowing();
+                return;
+            }
+        }
+
+        private bool addFollower(EntityImplementation follower)
+        {
+            if (follower.isFollowedByEntities)
+                return false;
+
+            if (!followers.Contains(follower))
+                followers.Add(follower);
+
+            return true;
+        }
+
+        private bool isFollowedByEntities
+        {
+            get { return followers.Count > 0; }
+        }
+
+        private bool isFollowingEntity
+        {
+            get { return entityToFollow != null; }
+        }
+
+
+        private void removeFollower(EntityImplementation en)
+        {
+            if (followers.Contains(en))
+                followers.Remove(en);
+        }
+        #endregion
+
         #region Message Queue
         public virtual void PutMessageIntoObserversQueue(OutgoingMessage msg)
         {

@@ -199,7 +199,7 @@ namespace Calindor.Server
                 // STEP2.6 Entity followers
                 // TODO: Should be done for all entities, not only players
                 foreach (PlayerCharacter pc in activePlayers)
-                    pc.CheckForStopFollowing();
+                    pc.FollowingCheckForStopFollowing();
                 
                 // STEP3. Player events
                 IncommingMessage msg = null;
@@ -385,7 +385,7 @@ namespace Calindor.Server
             pc.TimeBasedActionSetManager(timeBasedActionsManager);
 
             // Connecct player to map manager
-            pc.MapManager = mapManager;
+            pc.LocationSetMapManager(mapManager);
         }
 
         private PlayerCharacter getPlayerByName(string playerName)
@@ -416,10 +416,10 @@ namespace Calindor.Server
             pc.LocationLeaveMapAtLogoff();
 
             // Stop following
-            pc.StopFollowing();
+            pc.FollowingStopFollowing();
 
             pc.TimeBasedActionSetManager(null);
-            pc.MapManager = null;
+            pc.LocationSetMapManager(null);
         }
     }
 
