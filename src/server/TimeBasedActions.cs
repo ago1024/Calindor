@@ -13,6 +13,9 @@ using System.Collections.Generic;
 using Calindor.Server.Maps;
 using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
+using Calindor.Server.Items;
+using Calindor.Server;
+using Calindor.Server.Resources;
 
 namespace Calindor.Server.TimeBasedActions
 {
@@ -81,6 +84,16 @@ namespace Calindor.Server.TimeBasedActions
             lastExecutedTick = DateTime.Now.Ticks;
         }
 
+        public TimeBasedAction(EntityImplementation enImpl)
+        {
+            if (enImpl == null)
+                throw new ArgumentNullException("enImpl");
+
+            targetEntityImplementation = enImpl;
+            enImpl.TimeBasedActionSet(this);
+        }
+
+
         #region ITimeBasedAction Members
 
         public abstract bool Execute();
@@ -99,16 +112,11 @@ namespace Calindor.Server.TimeBasedActions
         private const int WALK_COMMAND_DELAY = 250; // Delay (in milis) of sending commands
         private bool firstStep = true; 
 
-        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath)
+        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath) : base(enImpl)
         {
-            if (enImpl == null)
-                throw new ArgumentNullException("enImpl");
-
-            if (walkPath == null)
+           if (walkPath == null)
                 throw new ArgumentNullException("walkPath");
 
-            targetEntityImplementation = enImpl;
-            enImpl.TimeBasedActionSet(this);
             this.walkPath = walkPath;
 
             updateLastExecutionTime();
@@ -117,7 +125,6 @@ namespace Calindor.Server.TimeBasedActions
 
         public override bool Execute()
         {
-            
             if (actionCanceled)
                 return false; // Action canceled. Nothing to do.
 
@@ -197,6 +204,62 @@ namespace Calindor.Server.TimeBasedActions
             }
 
             return true; // Keep on executing
+        }
+    }
+
+    public class HarvestTimeBasedAction : TimeBasedAction
+    {
+        private HarvestableResourceDefinition rscDef = null;
+        private double successRate = 0.0;
+        private uint harvestTime = 0;
+
+        public HarvestTimeBasedAction(EntityImplementation enImpl, 
+            HarvestableResourceDefinition rscDef): base(enImpl)
+        {
+            if (rscDef == null)
+                throw new ArgumentNullException("rscDef");
+
+            this.rscDef = rscDef;
+            this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef.BaseHarvestLevel);
+            this.harvestTime = targetEntityImplementation.HarvestGetActionTime(rscDef.BaseHarvestLevel, 
+                rscDef.BaseHarvestTime);
+        }
+
+        public override bool Execute()
+        {
+            if (actionCanceled)
+            {
+                RawTextOutgoingMessage msgRawText =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawText.Color = PredefinedColor.Blue1;
+                msgRawText.Text = "You stoped harvesting " + rscDef.HarvestedItem.Name;
+                targetEntityImplementation.PutMessageIntoMyQueue(msgRawText);
+
+                return false; // Action canceled. Nothing to do.
+            }
+
+            int milisSinceLastExecute = getMilisSinceLastExecution();
+
+            if (milisSinceLastExecute > harvestTime)
+            {
+                if (WorldRNG.NextDouble() <= successRate)
+                {
+                    Item itm = new Item(rscDef.HarvestedItem);
+                    itm.Quantity = rscDef.QuantityPerHarvest;
+                    targetEntityImplementation.InventoryUpdateItem(itm);
+                    targetEntityImplementation.HarvestAwardExperience(rscDef.BaseHarvestLevel);
+                }
+
+                // After each harvest, recalculate
+                this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef.BaseHarvestLevel);
+                this.harvestTime = targetEntityImplementation.HarvestGetActionTime(rscDef.BaseHarvestLevel, 
+                    rscDef.BaseHarvestTime);
+
+                updateLastExecutionTime();
+            }
+
+            return true;
         }
     }
 }

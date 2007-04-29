@@ -32,9 +32,6 @@ namespace Calindor.Server
             set { logger = value; }
         }
 
-        // All mighty random numbers generator
-        protected Random RNG = new Random();
-
         // Configuration
         private ServerConfiguration serverConfiguration = null;
 
@@ -323,6 +320,9 @@ namespace Calindor.Server
                     case(IncommingMessageType.MOVE_INVENTORY_ITEM):
                         handleMoveInventoryItem(pc, msg);
                         break;
+                    case(IncommingMessageType.HARVEST):
+                        handleHarvest(pc, msg);
+                        break;
                     default:
                         Logger.LogWarning(LogSource.World,
                             string.Format("Message {0} - no action taken", msg.ToString()), null);
@@ -423,4 +423,18 @@ namespace Calindor.Server
         }
     }
 
+    public sealed class WorldRNG
+    {
+        private static Random rand = new Random();
+
+        public static double NextDouble()
+        {
+            return rand.NextDouble();
+        }
+
+        public static int Next(int minValue, int maxValue)
+        {
+            return rand.Next(minValue, maxValue);
+        }
+    }
 }

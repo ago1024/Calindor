@@ -14,6 +14,7 @@ using Calindor.Server.Messaging;
 using Calindor.Server.Maps;
 using Calindor.Server.TimeBasedActions;
 using Calindor.Misc.Predefines;
+using Calindor.Server.Resources;
 using System;
 
 namespace Calindor.Server
@@ -562,6 +563,47 @@ namespace Calindor.Server
                     PutMessageIntoMyQueue(msgAddNewEnhancedActor);
                 }
             }
+        }
+        #endregion
+
+        #region Harvest Handling
+        public virtual void HarvestStart(HarvestableResourceDefinition rscDef)
+        {
+            timeBasedActionsManager.AddAction(
+                new HarvestTimeBasedAction(this, rscDef));
+
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Blue1;
+            msgRawText.Text = "You started harvesting " + rscDef.HarvestedItem.Name;
+            PutMessageIntoMyQueue(msgRawText);
+        }
+
+        // TODO: Change to SkillsGetSuccessRate
+        public virtual double HarvestGetSuccessRate(ushort baseLevel)
+        {
+            // TODO: Implement
+            return 0.5;
+        }
+
+        // TODO: Change to SkillsGetActionTime
+        public virtual uint HarvestGetActionTime(ushort baseLevel, uint baseTime)
+        {
+            // TODO: Implement
+            return 2000;
+        }
+
+        // TODO: Change to SkillsAwardExperience
+        public virtual void HarvestAwardExperience(ushort baseLevel)
+        {
+            // TODO: Implement
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Grey1;
+            msgRawText.Text = "Plants Harvesting: +200xp";
+            PutMessageIntoMyQueue(msgRawText);
         }
         #endregion
     }

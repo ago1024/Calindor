@@ -113,8 +113,8 @@ namespace Calindor.Server
 
                 EntityLocation location = new EntityLocation();
                 short deviation = mapManager.StartPointDeviation;
-                location.X = (short)(mapManager.StartPointX + (sbyte)RNG.Next(-deviation, deviation));
-                location.Y = (short)(mapManager.StartPointY + (sbyte)RNG.Next(-deviation, deviation));
+                location.X = (short)(mapManager.StartPointX + (sbyte)WorldRNG.Next(-deviation, deviation));
+                location.Y = (short)(mapManager.StartPointY + (sbyte)WorldRNG.Next(-deviation, deviation));
                 location.Z = 0;
                 location.Rotation = 0;
                 location.CurrentMap = mapManager.StartPointMap;

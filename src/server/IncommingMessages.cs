@@ -30,6 +30,7 @@ namespace Calindor.Server.Messaging
         USE_MAP_OBJECT = 16,
         LOOK_AT_INVENTORY_ITEM = 19,
         MOVE_INVENTORY_ITEM = 20,
+        HARVEST = 21,
         DROP_ITEM = 22,
         LOG_IN = 140,
         CREATE_CHAR = 141,
@@ -121,6 +122,7 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)IncommingMessageType.LOOK_AT_INVENTORY_ITEM] = new LookAtInventoryItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.DROP_ITEM] = new DropItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.MOVE_INVENTORY_ITEM] = new MoveInventoryItemIncommingMessage();
+            knownMessages[(int)IncommingMessageType.HARVEST] = new HarvestIncommingMessage();
         }
         
         /// <summary>
@@ -717,4 +719,33 @@ namespace Calindor.Server.Messaging
         }
     }
 
+    public class HarvestIncommingMessage : IncommingMessage
+    {
+        private int targetObjectID = -1;
+
+        public int TargetObjectID
+        {
+            get { return targetObjectID; }
+        }
+
+        public HarvestIncommingMessage()
+        {
+            messageType = IncommingMessageType.HARVEST;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new HarvestIncommingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + TargetObjectID + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            targetObjectID = BitConverter.ToUInt16(stream, startIndex + 3);
+        }
+    }
 }

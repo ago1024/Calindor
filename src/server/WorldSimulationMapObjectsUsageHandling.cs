@@ -11,6 +11,8 @@
 using System;
 using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
+using Calindor.Server.Resources;
+using Calindor.Server.Items;
 
 namespace Calindor.Server
 {
@@ -206,6 +208,49 @@ namespace Calindor.Server
                         }
                     default:
                         break;
+                }
+            }
+        }
+
+        private void handleHarvest(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                HarvestIncommingMessage msgHarvest = (HarvestIncommingMessage)msg;
+
+                switch (pc.LocationCurrentMap.Name)
+                {
+                    case ("startmap.elm"):
+                        {
+                            switch (msgHarvest.TargetObjectID)
+                            {
+                                case (1141):
+                                    {
+                                        HarvestableResourceDefinition rscDef =
+                                            new HarvestableResourceDefinition(
+                                            ItemDefinitionCache.GetItemDefinitionByID(2), 1, 2000, 1);
+                                        pc.HarvestStart(rscDef);
+                                        break;
+                                    }
+                                case (575):
+                                    {
+                                        HarvestableResourceDefinition rscDef =
+                                            new HarvestableResourceDefinition(
+                                            ItemDefinitionCache.GetItemDefinitionByID(3), 5, 2000, 1);
+                                        pc.HarvestStart(rscDef);
+                                        break;
+                                    }
+                                case (574):
+                                    {
+                                        HarvestableResourceDefinition rscDef =
+                                            new HarvestableResourceDefinition(
+                                            ItemDefinitionCache.GetItemDefinitionByID(3), 5, 2000, 2);
+                                        pc.HarvestStart(rscDef);
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
                 }
             }
         }
