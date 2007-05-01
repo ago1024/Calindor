@@ -152,6 +152,10 @@ namespace Calindor.Server
                             pc.InventoryUpdateItem(itm);
 
                         }
+                        if (msgRawText.Text.ToLower() == "#list_skills")
+                        {
+                            pc.SkillsListSkills();
+                        }
                         break;
                     default:
                         break;

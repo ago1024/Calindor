@@ -18,6 +18,7 @@ namespace Calindor.Server.Serialization
         void WriteValue(sbyte data);
         void WriteValue(string data);
         void WriteValue(int data);
+        void WriteValue(uint data);
         void WriteValue(byte data);
     }
 
@@ -27,6 +28,7 @@ namespace Calindor.Server.Serialization
         ushort ReadUShort();
         sbyte ReadSByte();
         int ReadSInt();
+        uint ReadUInt();
         string ReadString();
         byte ReadByte();
     }

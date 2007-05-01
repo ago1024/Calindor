@@ -33,6 +33,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="CommunicationManager.cs" />
     <Compile Include="EntityImplementation.cs" />

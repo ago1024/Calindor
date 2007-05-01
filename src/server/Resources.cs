@@ -9,10 +9,11 @@
  */
 using System;
 using Calindor.Server.Items;
+using Calindor.Server.Actions;
 
 namespace Calindor.Server.Resources
 {
-    public class HarvestableResourceDefinition
+    public class HarvestableResourceDescriptor
     {
         private ItemDefinition harvestedItem;
         public ItemDefinition HarvestedItem
@@ -20,17 +21,12 @@ namespace Calindor.Server.Resources
             get { return harvestedItem; }
         }
 
-        private ushort baseHarvestLevel;
-        public ushort BaseHarvestLevel
+        private ActionDescriptor performedAction;
+        public ActionDescriptor PerformedAction
         {
-            get { return baseHarvestLevel; }
+            get { return performedAction; }
         }
-
-        private uint baseHarvestTime;
-        public uint BaseHarvestTime
-        {
-            get { return baseHarvestTime; }
-        }
+	
 
         private int quantityPerHarvest;
         public int QuantityPerHarvest
@@ -38,18 +34,20 @@ namespace Calindor.Server.Resources
             get { return quantityPerHarvest; }
         }
 
-        private HarvestableResourceDefinition()
+        private HarvestableResourceDescriptor()
         {
         }
 
-        public HarvestableResourceDefinition(ItemDefinition itmDef, ushort level, uint time, int quantity)
+        public HarvestableResourceDescriptor(ItemDefinition itmDef, ActionDescriptor action, int quantity)
         {
             if (itmDef == null)
                 throw new ArgumentNullException("itmDef");
 
+            if (action == null)
+                throw new ArgumentNullException("action");
+
             harvestedItem = itmDef;
-            baseHarvestLevel = level;
-            baseHarvestTime = time;
+            performedAction = action;
             quantityPerHarvest = quantity;
         }
 	

@@ -209,12 +209,12 @@ namespace Calindor.Server.TimeBasedActions
 
     public class HarvestTimeBasedAction : TimeBasedAction
     {
-        private HarvestableResourceDefinition rscDef = null;
+        private HarvestableResourceDescriptor rscDef = null;
         private double successRate = 0.0;
         private uint harvestTime = 0;
 
         public HarvestTimeBasedAction(EntityImplementation enImpl, 
-            HarvestableResourceDefinition rscDef): base(enImpl)
+            HarvestableResourceDescriptor rscDef): base(enImpl)
         {
             if (rscDef == null)
                 throw new ArgumentNullException("rscDef");

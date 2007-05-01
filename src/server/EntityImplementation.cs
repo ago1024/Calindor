@@ -88,6 +88,8 @@ namespace Calindor.Server
 
             if (itm != null)
             {
+                TimeBasedActionCancelCurrent();
+
                 Item updateItem = new Item(itm.Definition);
                 updateItem.Quantity = -1 * quantity;
 
@@ -116,6 +118,8 @@ namespace Calindor.Server
 
             if (inventory.IsSlotFree(newSlot))
             {
+                TimeBasedActionCancelCurrent();
+
                 Item itmToRemove = inventory.RemoveItemAtSlot(oldSlot);
 
                 if (itmToRemove != null)

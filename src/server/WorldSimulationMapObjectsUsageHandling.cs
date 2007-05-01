@@ -13,6 +13,8 @@ using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Resources;
 using Calindor.Server.Items;
+using Calindor.Server.Actions;
+using Calindor.Server.Entities;
 
 namespace Calindor.Server
 {
@@ -226,25 +228,32 @@ namespace Calindor.Server
                             {
                                 case (1141):
                                     {
-                                        HarvestableResourceDefinition rscDef =
-                                            new HarvestableResourceDefinition(
-                                            ItemDefinitionCache.GetItemDefinitionByID(2), 1, 2000, 1);
+                                        
+                                        ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 5, 100));
+                                        HarvestableResourceDescriptor rscDef =
+                                            new HarvestableResourceDescriptor(
+                                            ItemDefinitionCache.GetItemDefinitionByID(2), actDesc , 1);
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }
                                 case (575):
                                     {
-                                        HarvestableResourceDefinition rscDef =
-                                            new HarvestableResourceDefinition(
-                                            ItemDefinitionCache.GetItemDefinitionByID(3), 5, 2000, 1);
+                                        ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 200));
+                                        HarvestableResourceDescriptor rscDef =
+                                            new HarvestableResourceDescriptor(
+                                            ItemDefinitionCache.GetItemDefinitionByID(3), actDesc, 1);
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }
                                 case (574):
                                     {
-                                        HarvestableResourceDefinition rscDef =
-                                            new HarvestableResourceDefinition(
-                                            ItemDefinitionCache.GetItemDefinitionByID(3), 5, 2000, 2);
+                                        ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 200));
+                                        HarvestableResourceDescriptor rscDef =
+                                            new HarvestableResourceDescriptor(
+                                            ItemDefinitionCache.GetItemDefinitionByID(3), actDesc, 2);
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }

@@ -155,6 +155,17 @@ namespace Calindor.Server
                 {
                     sr.End();
                 }
+
+                try
+                {
+                    sr.Start(Name, PlayerCharacterDataType.PCSkills, "VER.1.0.0");
+                    skills.Serialize(sr);
+                }
+                finally
+                {
+                    sr.End();
+                }
+
             }
         }
 
@@ -206,10 +217,20 @@ namespace Calindor.Server
                 dsr.End();
             }
 
+            try
+            {
+                dsr.Start(Name, PlayerCharacterDataType.PCSkills, "VER.1.0.0");
+                skills.Deserialize(dsr);
+            }
+            finally
+            {
+                dsr.End();
+            }
+
             isDeserialized = true;
         }
         #endregion
-
+            
         #region Message Exchange
 
         public void GetMessages()
@@ -279,7 +300,8 @@ namespace Calindor.Server
 
         public virtual void LocationLeaveMapAtLogoff()
         {
-            mapManager.RemoveEntityFromItsMap(this, location);
+            if (mapManager != null)
+                mapManager.RemoveEntityFromItsMap(this, location);
             
             // No messages need to be send. Entity will disapear with next round of visibility
         }

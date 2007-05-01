@@ -220,6 +220,10 @@ namespace Calindor.Server.Entities
                 entitiesObservers.Add(en);
         }
         #endregion
+
+        #region Skills
+        protected EntitySkills skills = new EntitySkills();
+        #endregion
     }
 
     public class EntityIDEntityDictionary : Dictionary<UInt16, Entity>
@@ -407,10 +411,172 @@ namespace Calindor.Server.Entities
         {
             get { return type; }
         }
+
+        public ushort CurrentLevel
+        {
+            get { return BaseLevel; } // TODO + modifier applied
+        }
+
+        private uint nextLevelXP = 0; // not serialized
+        public uint NextLevelXP
+        {
+            get { return nextLevelXP; }
+        }
+
+        private uint xp = 0; // serialized
+        public uint XP
+        {
+            get { return xp; }
+        }
+
+        private ushort precalculatedBaseLevel = 0; // not serialized
+        public ushort BaseLevel
+        {
+            get { return precalculatedBaseLevel; } 
+        }
+
+        private string name = "Undefined";
+        public string Name
+        {
+            get { return name; }
+        }
+	
+
+        private EntitySkill()
+        {
+
+        }
+
+        public void AddXP(uint xpToAdd)
+        {
+            // Add XP
+            xp += xpToAdd;
+
+            // Precalculate base level
+            if (XP >= nextLevelXP)
+                precalculateBaseLevel();
+
+        }
+
+        private void precalculateBaseLevel()
+        {
+            // TODO: Experience level model should be loaded from scripts (?)
+            if (XP < 1000)
+            {
+                precalculatedBaseLevel = 0;
+                nextLevelXP = 1000;
+                return;
+            }
+
+            if (XP < 2000)
+            {
+                precalculatedBaseLevel = 1;
+                nextLevelXP = 2000;
+                return;
+            }
+
+            if (XP < 4000)
+            {
+                precalculatedBaseLevel = 2;
+                nextLevelXP = 4000;
+                return;
+            }
+            
+            if (XP < 8000)
+            {
+                precalculatedBaseLevel = 3;
+                nextLevelXP = uint.MaxValue;
+                return;
+            }
+         
+        }
+
+        public EntitySkill(EntitySkillType type, string name)
+        {
+            this.type = type;
+            this.name = name;
+            nextLevelXP = 0;
+            precalculateBaseLevel();
+        }
     }
 
     public class EntitySkillList : List<EntitySkill>
     {
+    }
+
+    public class EntitySkillNameComparer : IComparer<EntitySkill>
+    {
+        #region IComparer<EntitySkill> Members
+
+        public int Compare(EntitySkill x, EntitySkill y)
+        {
+            return x.Name.CompareTo(y.Name);
+        }
+
+        #endregion
+    }
+
+    public class EntitySkills
+    {
+        private EntitySkill[] innerData = new EntitySkill[4];
+        public int Count
+        {
+            get { return innerData.GetLength(0); }
+        }
+
+        public EntitySkills()
+        {
+            addSkill(EntitySkillType.Undefined, "Undefined");
+            addSkill(EntitySkillType.PlantsHarvesting, "Plants Harvesting");
+            addSkill(EntitySkillType.AttackUnarmed, "Attack(Unarmed)");
+            addSkill(EntitySkillType.DefenseDodge, "Defense(Dodge)");
+        }
+
+        private void addSkill(EntitySkillType type, string name)
+        {
+            EntitySkill skill = new EntitySkill(type, name);
+            setSkill(skill);
+        }
+
+        private void setSkill(EntitySkill skill)
+        {
+            innerData[(int)skill.Type] = skill;
+        }
+
+        public EntitySkill GetSkill(EntitySkillType type)
+        {
+            return innerData[(int)type];
+        }
+
+        public int GetCurrentLevelDifference(EntitySkillType type, ushort level)
+        {
+            return (GetSkill(type).CurrentLevel - level);
+        }
+
+        public void AwardXPToSkill(EntitySkillType type, uint xp)
+        {
+            GetSkill(type).AddXP(xp);
+        }
+
+        public virtual void Serialize(ISerializer sr)
+        {
+            for (int i = 0; i < innerData.GetLength(0); i++)
+            {
+                EntitySkill skill = innerData[i];
+                sr.WriteValue((byte)skill.Type);
+                sr.WriteValue(skill.XP);
+            }
+                
+        }
+
+        public virtual void Deserialize(IDeserializer dsr)
+        {
+            for (int i = 0; i < innerData.GetLength(0); i++)
+            {
+                EntitySkill skill = GetSkill((EntitySkillType)dsr.ReadByte()); // Skill created in ctor
+                skill.AddXP(dsr.ReadUInt());
+            }
+        }
     }
     #endregion
 }

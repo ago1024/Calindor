@@ -192,6 +192,7 @@ namespace Calindor.Server
         PCAttributes    =   1,
         PCLocation      =   2,
         PCInventory     =   3,
+        PCSkills        =   4,
     }
 
     public class PlayerCharacterDoesNotExistException : ApplicationException
@@ -246,6 +247,9 @@ namespace Calindor.Server
                 case(PlayerCharacterDataType.PCInventory):
                     extention = ".inventory";
                     break;
+                case (PlayerCharacterDataType.PCSkills):
+                    extention = ".skills";
+                    break;
                 default:
                     throw new ArgumentException("Unrecognized type of player data");
             }
@@ -280,6 +284,11 @@ namespace Calindor.Server
         }
 
         public void WriteValue(int data)
+        {
+            bw.Write(data);
+        }
+
+        public void WriteValue(uint data)
         {
             bw.Write(data);
         }
@@ -336,6 +345,9 @@ namespace Calindor.Server
                 case(PlayerCharacterDataType.PCInventory):
                     extention = ".inventory";
                     break;
+                case (PlayerCharacterDataType.PCSkills):
+                    extention = ".skills";
+                    break;
                 default:
                     throw new ArgumentException("Unrecognized type of player data");
             }
@@ -374,6 +386,11 @@ namespace Calindor.Server
         public int ReadSInt()
         {
             return br.ReadInt32();
+        }
+        
+        public uint ReadUInt()
+        {
+            return br.ReadUInt32();
         }
 
         public byte ReadByte()
