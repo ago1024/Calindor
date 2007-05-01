@@ -230,7 +230,7 @@ namespace Calindor.Server
                                     {
                                         
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
-                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 3, 15));
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 3, 15));
                                         HarvestableResourceDescriptor rscDef =
                                             new HarvestableResourceDescriptor(
                                             ItemDefinitionCache.GetItemDefinitionByID(2), actDesc , 1);
@@ -239,8 +239,8 @@ namespace Calindor.Server
                                     }
                                 case (575):
                                     {
-                                        ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
-                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 25));
+                                        ActionDescriptor actDesc = new HarvestActionDescriptor(3000, 1000);
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 10, 25));
                                         HarvestableResourceDescriptor rscDef =
                                             new HarvestableResourceDescriptor(
                                             ItemDefinitionCache.GetItemDefinitionByID(3), actDesc, 1);
@@ -249,11 +249,21 @@ namespace Calindor.Server
                                     }
                                 case (574):
                                     {
-                                        ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
-                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 25));
+                                        ActionDescriptor actDesc = new HarvestActionDescriptor(3000, 1000);
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 10, 25));
                                         HarvestableResourceDescriptor rscDef =
                                             new HarvestableResourceDescriptor(
                                             ItemDefinitionCache.GetItemDefinitionByID(3), actDesc, 2);
+                                        pc.HarvestStart(rscDef);
+                                        break;
+                                    }
+                                case (512):
+                                    {
+                                        ActionDescriptor actDesc = new HarvestActionDescriptor(3000, 1000);
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 8, 20));
+                                        HarvestableResourceDescriptor rscDef =
+                                            new HarvestableResourceDescriptor(
+                                            ItemDefinitionCache.GetItemDefinitionByID(7), actDesc, 1);
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }

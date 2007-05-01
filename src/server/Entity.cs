@@ -399,9 +399,11 @@ namespace Calindor.Server.Entities
     public enum EntitySkillType
     {
         Undefined = 0,
-        PlantsHarvesting = 1,
+        HarvestingPlants = 1,
         AttackUnarmed = 2,
-        DefenseDodge = 3
+        DefenseDodge = 3,
+        HarvestingMinerals = 4,
+        HarvestingOres = 5
     }
 
     public class EntitySkill
@@ -489,6 +491,12 @@ namespace Calindor.Server.Entities
 
         }
 
+        public void ZeroXP()
+        {
+            xp = 0;
+            precalculateBaseLevel();
+        }
+
         private void precalculateBaseLevel()
         {
             // TODO: Experience level model should be loaded from scripts (?)
@@ -507,8 +515,7 @@ namespace Calindor.Server.Entities
         {
             this.type = type;
             this.name = name;
-            nextLevelXP = 0;
-            precalculateBaseLevel();
+            ZeroXP();
         }
     }
 
@@ -530,7 +537,7 @@ namespace Calindor.Server.Entities
 
     public class EntitySkills
     {
-        private EntitySkill[] innerData = new EntitySkill[4];
+        private EntitySkill[] innerData = new EntitySkill[6];
         public int Count
         {
             get { return innerData.GetLength(0); }
@@ -539,9 +546,11 @@ namespace Calindor.Server.Entities
         public EntitySkills()
         {
             addSkill(EntitySkillType.Undefined, "Undefined");
-            addSkill(EntitySkillType.PlantsHarvesting, "Plants Harvesting");
+            addSkill(EntitySkillType.HarvestingPlants, "Harvesting(Plants)");
             addSkill(EntitySkillType.AttackUnarmed, "Attack(Unarmed)");
             addSkill(EntitySkillType.DefenseDodge, "Defense(Dodge)");
+            addSkill(EntitySkillType.HarvestingMinerals, "Harvesting(Minerals)");
+            addSkill(EntitySkillType.HarvestingOres, "Harvesting(Ores)");
         }
 
         private void addSkill(EntitySkillType type, string name)
@@ -565,6 +574,12 @@ namespace Calindor.Server.Entities
             return (GetSkill(type).CurrentLevel - level);
         }
 
+        public void Clear()
+        {
+            for (int i = 0; i < innerData.GetLength(0); i++)
+                innerData[i].ZeroXP();
+        }
+
         public void AwardXPToSkill(EntitySkillType type, uint xp)
         {
             GetSkill(type).AddXP(xp);
@@ -583,6 +598,8 @@ namespace Calindor.Server.Entities
 
         public virtual void Deserialize(IDeserializer dsr)
         {
+            Clear();
+
             for (int i = 0; i < innerData.GetLength(0); i++)
             {
                 EntitySkill skill = GetSkill((EntitySkillType)dsr.ReadByte()); // Skill created in ctor

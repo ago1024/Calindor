@@ -82,6 +82,8 @@ namespace Calindor.Server.Items
             addItemDefinition(new ItemDefinition(5, 100, "Royals"));
             // iron sword
             addItemDefinition(new ItemDefinition(6, 101, "Iron Sword"));
+            // red snapdragon
+            addItemDefinition(new ItemDefinition(7, 35, "Red Snapdragon"));
         }
 
         private static void addItemDefinition(ItemDefinition itmDef)
@@ -263,7 +265,7 @@ namespace Calindor.Server.Items
             return itemSlots[slot] == null;
         }
 
-        private void clear()
+        public void Clear()
         {
             for (byte i = 0; i < totalSlotsCount; i++)
                 itemSlots[i] = null;
@@ -303,7 +305,7 @@ namespace Calindor.Server.Items
         public virtual void Deserialize(IDeserializer dsr)
         {
             // clear array
-            clear();
+            Clear();
 
             // size
             byte sizeStored = dsr.ReadByte();

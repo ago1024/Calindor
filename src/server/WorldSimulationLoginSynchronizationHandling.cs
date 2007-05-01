@@ -102,6 +102,9 @@ namespace Calindor.Server
                     return;
                 }
 
+                // Clear character (current state of character is undefined!)
+                pc.ClearCharacter();
+
                 pc.Appearance.Head = msgCreateChar.Head;
                 pc.Appearance.Type = msgCreateChar.Type;
                 pc.Appearance.Skin = msgCreateChar.Skin;
@@ -120,7 +123,7 @@ namespace Calindor.Server
                 location.CurrentMap = mapManager.StartPointMap;
                 pc.CreateCharacterSetInitialLocation(location);
 
-		        // TODO: Apply race specific attributes
+		        // TODO: Apply race specific factors
 
                 // Add bonus items
                 ItemDefinition itmDef = null;
@@ -212,6 +215,9 @@ namespace Calindor.Server
                     pc.PutMessageIntoMyQueue(msgLogInNotOk);
                     return;
                 }
+
+                // Clear character (current state of character is undefined!)
+                pc.ClearCharacter();
 
                 pc.Name = msgLogIn.UserName; // Temporary setting user name so that deserialization may work
 

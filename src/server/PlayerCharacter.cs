@@ -275,7 +275,7 @@ namespace Calindor.Server
         #endregion
 
         #region Movement Handling
-        public virtual void LocationChangeMapAtLogin()
+        public void LocationChangeMapAtLogin()
         {
             mapManager.ChangeMapForEntity(this, location, location.LoadedMapMame, true, location.X, location.Y);
 
@@ -298,7 +298,7 @@ namespace Calindor.Server
             PutMessageIntoMyQueue(msgAddNewEnhancedActor);
         }
 
-        public virtual void LocationLeaveMapAtLogoff()
+        public void LocationLeaveMapAtLogoff()
         {
             if (mapManager != null)
                 mapManager.RemoveEntityFromItsMap(this, location);
@@ -309,12 +309,19 @@ namespace Calindor.Server
         #endregion
 
         #region Character Creation Handling
-        public virtual void CreateCharacterSetInitialLocation(EntityLocation location)
+        public void CreateCharacterSetInitialLocation(EntityLocation location)
         {
             if (LoginState == PlayerCharacterLoginState.LoginSuccesfull)
                 throw new InvalidOperationException("Don't use this method if player logged in!");
             this.location = location;
         }
+
+        public void ClearCharacter()
+        {
+            skills.Clear();
+            inventory.Clear();
+        }
+
         #endregion
     }
 
