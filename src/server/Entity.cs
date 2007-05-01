@@ -13,9 +13,12 @@ using System.Collections.Generic;
 using System.Text;
 using Calindor.Server.Maps;
 using Calindor.Server.Items;
+using Calindor.Server.Serialization;
+using Calindor.Misc.Predefines;
 
 namespace Calindor.Server.Entities
 {
+    #region Entity
     /// <summary>
     /// Represents a single, living(or undead :P) entity in the game
     /// </summary>
@@ -226,4 +229,188 @@ namespace Calindor.Server.Entities
     public class EntityList : List<Entity>
     {
     }
+    #endregion
+
+    #region Entity Appearance
+    public class EntityAppearance
+    {
+        private sbyte[] innerData = new sbyte[7];
+
+        public PredefinedModelHead Head
+        {
+            get { return (PredefinedModelHead)innerData[6]; }
+            set { innerData[6] = (sbyte)value; }
+        }
+
+        public PredefinedEntityType Type
+        {
+            get { return (PredefinedEntityType)innerData[5]; }
+            set { innerData[5] = (sbyte)value; }
+        }
+
+        public PredefinedModelSkin Skin
+        {
+            get { return (PredefinedModelSkin)innerData[0]; }
+            set { innerData[0] = (sbyte)value; }
+        }
+
+        public PredefinedModelHair Hair
+        {
+            get { return (PredefinedModelHair)innerData[1]; }
+            set { innerData[1] = (sbyte)value; }
+        }
+
+        public PredefinedModelShirt Shirt
+        {
+            get { return (PredefinedModelShirt)innerData[2]; }
+            set { innerData[2] = (sbyte)value; }
+        }
+
+        public PredefinedModelPants Pants
+        {
+            get { return (PredefinedModelPants)innerData[3]; }
+            set { innerData[3] = (sbyte)value; }
+        }
+
+        public PredefinedModelBoots Boots
+        {
+            get { return (PredefinedModelBoots)innerData[4]; }
+            set { innerData[4] = (sbyte)value; }
+        }
+
+        public virtual void Serialize(ISerializer sr)
+        {
+            for (int i = 0; i < innerData.Length; i++)
+                sr.WriteValue(innerData[i]);
+        }
+
+        public virtual void Deserialize(IDeserializer dsr)
+        {
+            for (int i = 0; i < innerData.Length; i++)
+                innerData[i] = dsr.ReadSByte();
+        }
+    }
+    #endregion
+
+    #region Entity Location
+    public class EntityLocation
+    {
+        private short[] innerData = new short[5];
+
+        public short X
+        {
+            get { return innerData[0]; }
+            set { innerData[0] = value; }
+        }
+
+        public short Y
+        {
+            get { return innerData[1]; }
+            set { innerData[1] = value; }
+        }
+
+        public short Z
+        {
+            get { return innerData[2]; }
+            set { innerData[2] = value; }
+        }
+
+        public short Rotation
+        {
+            get { return innerData[3]; }
+            set { innerData[3] = value; }
+        }
+
+        public bool IsSittingDown
+        {
+            get { if (innerData[4] == 1) return true; else return false; }
+            set { if (value) innerData[4] = 1; else innerData[4] = 0; }
+        }
+
+        /// <summary>
+        /// Name of the map deserialized from file
+        /// </summary>
+        private string loadedMapName;
+
+        /// <summary>
+        /// Should only be used at login time
+        /// </summary>
+        public string LoadedMapMame
+        {
+            get { return loadedMapName; }
+        }
+
+        public string CurrentMapName
+        {
+            get
+            {
+                if (CurrentMap == null)
+                    return "__NULL__";
+                else
+                    return CurrentMap.Name;
+            }
+        }
+
+        private Map currentMap = null;
+        public Map CurrentMap
+        {
+            get { return currentMap; }
+            set { currentMap = value; }
+        }
+
+        public virtual void Serialize(ISerializer sr)
+        {
+            for (int i = 0; i < innerData.Length; i++)
+                sr.WriteValue(innerData[i]);
+            sr.WriteValue(CurrentMapName);
+        }
+
+        public virtual void Deserialize(IDeserializer dsr)
+        {
+            for (int i = 0; i < innerData.Length; i++)
+                innerData[i] = dsr.ReadShort();
+            loadedMapName = dsr.ReadString();
+        }
+
+        public void RatateBy(short additionalRotation)
+        {
+            innerData[3] = (short)((int)(innerData[3] + additionalRotation) % 360);
+            if (innerData[3] < 0)
+                innerData[3] += 360;
+        }
+    }
+    #endregion
+
+    #region Entity Inventory
+    public class EntityInventory : ItemStorage
+    {
+        public EntityInventory()
+            : base(36)
+        {
+        }
+    }
+    #endregion
+
+    #region Entity Skills
+    public enum EntitySkillType
+    {
+        Undefined = 0,
+        PlantsHarvesting = 1,
+        AttackUnarmed = 2,
+        DefenseDodge = 3
+    }
+
+    public class EntitySkill
+    {
+        private EntitySkillType type = EntitySkillType.Undefined;
+        public EntitySkillType Type
+        {
+            get { return type; }
+        }
+    }
+
+    public class EntitySkillList : List<EntitySkill>
+    {
+    }
+    #endregion
 }

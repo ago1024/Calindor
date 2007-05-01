@@ -34,12 +34,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entity.cs" />
-    <Compile Include="EntityAppearance.cs" />
-    <Compile Include="EntityAttributes.cs" />
     <Compile Include="CommunicationManager.cs" />
     <Compile Include="EntityImplementation.cs" />
-    <Compile Include="EntityInventory.cs" />
-    <Compile Include="EntityLocation.cs" />
+    <Compile Include="EntityImplementationSkills.cs" />
     <Compile Include="IncommingMessages.cs" />
     <Compile Include="InPlaceBitConverter.cs" />
     <Compile Include="Items.cs" />

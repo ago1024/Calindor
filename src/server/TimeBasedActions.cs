@@ -98,7 +98,7 @@ namespace Calindor.Server.TimeBasedActions
 
         public abstract bool Execute();
 
-        public void Cancel()
+        public virtual void Cancel()
         {
             actionCanceled = true;
         }
@@ -220,24 +220,28 @@ namespace Calindor.Server.TimeBasedActions
                 throw new ArgumentNullException("rscDef");
 
             this.rscDef = rscDef;
-            this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef.BaseHarvestLevel);
-            this.harvestTime = targetEntityImplementation.HarvestGetActionTime(rscDef.BaseHarvestLevel, 
-                rscDef.BaseHarvestTime);
+            calculateParameters();
         }
 
+        private void calculateParameters()
+        {
+            this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef);
+            this.harvestTime = targetEntityImplementation.HarvestGetActionTime(rscDef);
+        }
+        public override void Cancel()
+        {
+            base.Cancel();
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Blue1;
+            msgRawText.Text = "You stoped harvesting " + rscDef.HarvestedItem.Name;
+            targetEntityImplementation.PutMessageIntoMyQueue(msgRawText);
+        }
         public override bool Execute()
         {
             if (actionCanceled)
-            {
-                RawTextOutgoingMessage msgRawText =
-                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-                msgRawText.Color = PredefinedColor.Blue1;
-                msgRawText.Text = "You stoped harvesting " + rscDef.HarvestedItem.Name;
-                targetEntityImplementation.PutMessageIntoMyQueue(msgRawText);
-
                 return false; // Action canceled. Nothing to do.
-            }
 
             int milisSinceLastExecute = getMilisSinceLastExecution();
 
@@ -245,16 +249,11 @@ namespace Calindor.Server.TimeBasedActions
             {
                 if (WorldRNG.NextDouble() <= successRate)
                 {
-                    Item itm = new Item(rscDef.HarvestedItem);
-                    itm.Quantity = rscDef.QuantityPerHarvest;
-                    targetEntityImplementation.InventoryUpdateItem(itm);
-                    targetEntityImplementation.HarvestAwardExperience(rscDef.BaseHarvestLevel);
+                    targetEntityImplementation.HarvestItemHarvested(rscDef);
                 }
 
                 // After each harvest, recalculate
-                this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef.BaseHarvestLevel);
-                this.harvestTime = targetEntityImplementation.HarvestGetActionTime(rscDef.BaseHarvestLevel, 
-                    rscDef.BaseHarvestTime);
+                calculateParameters();
 
                 updateLastExecutionTime();
             }

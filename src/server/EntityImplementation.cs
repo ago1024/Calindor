@@ -22,7 +22,7 @@ namespace Calindor.Server
     /// <summary>
     /// Contains implementation of actions that can be performed over the entity
     /// </summary>
-    public abstract class EntityImplementation : Entity
+    public abstract partial class EntityImplementation : Entity
     {
         #region Time Based Actions Handling
         // Time based action
@@ -53,7 +53,7 @@ namespace Calindor.Server
         #endregion
 
         #region Inventory Handling
-        public virtual void InventoryUpdateItem(Item itm)
+        public  void InventoryUpdateItem(Item itm)
         {
             if (itm != null)
             {
@@ -69,7 +69,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void InventoryLookAtItem(byte slot)
+        public  void InventoryLookAtItem(byte slot)
         {
             Item itm = inventory.GetItemAtSlot(slot);
 
@@ -82,7 +82,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void InventoryDropItemToGround(byte slot, int quantity)
+        public  void InventoryDropItemToGround(byte slot, int quantity)
         {
             Item itm = inventory.GetItemAtSlot(slot);
 
@@ -106,7 +106,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void InventoryMoveItemInInventory(byte oldSlot, byte newSlot)
+        public  void InventoryMoveItemInInventory(byte oldSlot, byte newSlot)
         {
             if (oldSlot > 35)
                 return; //TODO: Add handling for equipment
@@ -141,7 +141,7 @@ namespace Calindor.Server
 
         protected MapManager mapManager = null;
 
-        public virtual void LocationMoveTo(short x, short y)
+        public  void LocationMoveTo(short x, short y)
         {
             // Check if destination tile is walkable
             if (!location.CurrentMap.IsLocationWalkable(x, y))
@@ -178,12 +178,12 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void LocationStandUp()
+        public  void LocationStandUp()
         {
             LocationStandUp(false);
         }
 
-        public virtual void LocationStandUp(bool continueWalking)
+        public  void LocationStandUp(bool continueWalking)
         {
             if (location.IsSittingDown)
             {
@@ -199,7 +199,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void LocationSitDown()
+        public  void LocationSitDown()
         {
             if (!location.IsSittingDown)
             {
@@ -214,7 +214,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void LocationTurnLeft()
+        public  void LocationTurnLeft()
         {
             if (!location.IsSittingDown)
             {
@@ -229,7 +229,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void LocationTurnRight()
+        public  void LocationTurnRight()
         {
             if (!location.IsSittingDown)
             {
@@ -244,7 +244,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void LocationTakeStep(PredefinedDirection dir)
+        public  void LocationTakeStep(PredefinedDirection dir)
         {
             AddActorCommandOutgoingMessage msgAddActorCommand =
                 (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
@@ -301,7 +301,7 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
         }
 
-        public virtual void LocationChangeMap(string newMapName, short x, short y)
+        public  void LocationChangeMap(string newMapName, short x, short y)
         {
             mapManager.ChangeMapForEntity(this, location, newMapName, x, y);
 
@@ -324,7 +324,7 @@ namespace Calindor.Server
 
         }
 
-        public virtual void LocationChangeLocation(short newX, short newY)
+        public  void LocationChangeLocation(short newX, short newY)
         {
             // TODO: Should check if new locaiton is walkable?
 
@@ -342,7 +342,7 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(msgAddNewEnchangedActor);
         }
 
-        public virtual void LocationSetMapManager(MapManager mapMngr)
+        public  void LocationSetMapManager(MapManager mapMngr)
         {
             mapManager = mapMngr;
         }
@@ -351,7 +351,7 @@ namespace Calindor.Server
         #region Following Handling
         protected EntityList followers = new EntityList();
         protected EntityImplementation entityToFollow = null;
-        public virtual void FollowingStopFollowing()
+        public  void FollowingStopFollowing()
         {
             if (isFollowingEntity)
             {
@@ -370,7 +370,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void FollowingFollow(EntityImplementation enImpl)
+        public  void FollowingFollow(EntityImplementation enImpl)
         {
             RawTextOutgoingMessage msgRawTextOutMe =
                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -435,7 +435,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void FollowingReleaseFollowers()
+        public  void FollowingReleaseFollowers()
         {
             if (isFollowedByEntities)
             {
@@ -456,7 +456,7 @@ namespace Calindor.Server
             }
         }
 
-        public virtual void FollowingCheckForStopFollowing()
+        public  void FollowingCheckForStopFollowing()
         {
             if (!isFollowingEntity)
                 return;
@@ -508,14 +508,14 @@ namespace Calindor.Server
         #endregion
 
         #region Message Queue
-        public virtual void PutMessageIntoObserversQueue(OutgoingMessage msg)
+        public  void PutMessageIntoObserversQueue(OutgoingMessage msg)
         {
             foreach (Entity en in entitiesObservers)
                 if (en is EntityImplementation)
                     (en as EntityImplementation).PutMessageIntoMyQueue(msg);
         }
 
-        public virtual void PutMessageIntoMyAndObserversQueue(OutgoingMessage msg)
+        public  void PutMessageIntoMyAndObserversQueue(OutgoingMessage msg)
         {
             PutMessageIntoMyQueue(msg);
 
@@ -539,7 +539,7 @@ namespace Calindor.Server
         #endregion
 
         #region Visibility Handling
-        public virtual void VisibilityUpdateVisibleEntities()
+        public  void VisibilityUpdateVisibleEntities()
         {
             // Remove entities
             calculateRemovedVisibleEntities();
@@ -566,45 +566,5 @@ namespace Calindor.Server
         }
         #endregion
 
-        #region Harvest Handling
-        public virtual void HarvestStart(HarvestableResourceDefinition rscDef)
-        {
-            timeBasedActionsManager.AddAction(
-                new HarvestTimeBasedAction(this, rscDef));
-
-            RawTextOutgoingMessage msgRawText =
-                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-            msgRawText.Color = PredefinedColor.Blue1;
-            msgRawText.Text = "You started harvesting " + rscDef.HarvestedItem.Name;
-            PutMessageIntoMyQueue(msgRawText);
-        }
-
-        // TODO: Change to SkillsGetSuccessRate
-        public virtual double HarvestGetSuccessRate(ushort baseLevel)
-        {
-            // TODO: Implement
-            return 0.5;
-        }
-
-        // TODO: Change to SkillsGetActionTime
-        public virtual uint HarvestGetActionTime(ushort baseLevel, uint baseTime)
-        {
-            // TODO: Implement
-            return 2000;
-        }
-
-        // TODO: Change to SkillsAwardExperience
-        public virtual void HarvestAwardExperience(ushort baseLevel)
-        {
-            // TODO: Implement
-            RawTextOutgoingMessage msgRawText =
-                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-            msgRawText.Color = PredefinedColor.Grey1;
-            msgRawText.Text = "Plants Harvesting: +200xp";
-            PutMessageIntoMyQueue(msgRawText);
-        }
-        #endregion
     }
 }
