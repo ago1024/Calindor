@@ -7,12 +7,12 @@ Features:
 
 Tasks:
 >MUST HAVE:
-	- HarvestingTimeBasedAction
+	+ HarvestingTimeBasedAction
 	+ inventory support (put in, take out, send initial)
 	+ inventory serialization
-	- skills model (leveling)
-	- skills serialization
-	- list_skills command
+	+ skills model (leveling)
+	+ skills serialization
+	+ list_skills command
 	- FightingTimeBasedAction
 	- AnimalEntity
 	- death (animal and player)

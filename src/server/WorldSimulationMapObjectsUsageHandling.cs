@@ -230,7 +230,7 @@ namespace Calindor.Server
                                     {
                                         
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
-                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 5, 100));
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 3, 15));
                                         HarvestableResourceDescriptor rscDef =
                                             new HarvestableResourceDescriptor(
                                             ItemDefinitionCache.GetItemDefinitionByID(2), actDesc , 1);
@@ -240,7 +240,7 @@ namespace Calindor.Server
                                 case (575):
                                     {
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
-                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 200));
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 25));
                                         HarvestableResourceDescriptor rscDef =
                                             new HarvestableResourceDescriptor(
                                             ItemDefinitionCache.GetItemDefinitionByID(3), actDesc, 1);
@@ -250,7 +250,7 @@ namespace Calindor.Server
                                 case (574):
                                     {
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
-                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 200));
+                                        actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.PlantsHarvesting, 10, 25));
                                         HarvestableResourceDescriptor rscDef =
                                             new HarvestableResourceDescriptor(
                                             ItemDefinitionCache.GetItemDefinitionByID(3), actDesc, 2);

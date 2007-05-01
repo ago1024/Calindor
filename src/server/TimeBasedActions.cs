@@ -255,6 +255,8 @@ namespace Calindor.Server.TimeBasedActions
                 // After each harvest, recalculate
                 calculateParameters();
 
+                // TODO: After each harvest, remove food
+
                 updateLastExecutionTime();
             }
 

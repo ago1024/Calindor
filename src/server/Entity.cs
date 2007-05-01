@@ -406,6 +406,37 @@ namespace Calindor.Server.Entities
 
     public class EntitySkill
     {
+        // TODO: Should be loaded from script and stored at different location
+        private static uint[] levels = new uint[200];
+        static EntitySkill()
+        {
+            levels[0] = 400;
+            levels[1] = (uint)(levels[0] * 2.1);
+            levels[2] = (uint)(levels[1] * 1.6);
+            levels[3] = (uint)(levels[2] * 1.5);
+            for (int i = 4; i < 10; i++)
+                levels[i] = (uint)(levels[i - 1] * 1.38);
+
+            for (int i = 10; i < 25; i++)
+                levels[i] = (uint)(levels[i - 1] * 1.22);
+
+            for (int i = 25; i < 50; i++)
+                levels[i] = (uint)(levels[i - 1] * 1.135);
+
+            for (int i = 50; i < 100; i++)
+                levels[i] = (uint)(levels[i - 1] * 1.0475);
+
+            for (int i = 100; i < 200; i++)
+                levels[i] = (uint)(levels[i - 1] * 1.03);
+
+            return;
+        }
+
+
+
+
+
+
         private EntitySkillType type = EntitySkillType.Undefined;
         public EntitySkillType Type
         {
@@ -461,34 +492,15 @@ namespace Calindor.Server.Entities
         private void precalculateBaseLevel()
         {
             // TODO: Experience level model should be loaded from scripts (?)
-            if (XP < 1000)
+            for (int i = 0; i < levels.GetLength(0); i++)
             {
-                precalculatedBaseLevel = 0;
-                nextLevelXP = 1000;
-                return;
+                if (xp < levels[i])
+                {
+                    precalculatedBaseLevel = (ushort)i;
+                    nextLevelXP = levels[i];
+                    break;
+                }
             }
-
-            if (XP < 2000)
-            {
-                precalculatedBaseLevel = 1;
-                nextLevelXP = 2000;
-                return;
-            }
-
-            if (XP < 4000)
-            {
-                precalculatedBaseLevel = 2;
-                nextLevelXP = 4000;
-                return;
-            }
-            
-            if (XP < 8000)
-            {
-                precalculatedBaseLevel = 3;
-                nextLevelXP = uint.MaxValue;
-                return;
-            }
-         
         }
 
         public EntitySkill(EntitySkillType type, string name)

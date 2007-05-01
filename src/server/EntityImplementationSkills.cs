@@ -33,44 +33,95 @@ namespace Calindor.Server
             msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
             msgRawText.Color = PredefinedColor.Blue1;
             msgRawText.Text = "You started harvesting " + rscDef.HarvestedItem.Name;
+
+            // Add success rate comment
+            double successRate = HarvestGetSuccessRate(rscDef);
+            if (successRate < 0.5)
+            {
+                if (successRate < 0.25)
+                {
+                    msgRawText.Text += " and you feel you will need a lot of luck.";
+                }
+                else
+                {
+                    msgRawText.Text += " and you feel you will need some luck.";
+                }
+            }
+            else
+                msgRawText.Text += " and you feel confident about it.";
+
             PutMessageIntoMyQueue(msgRawText);
         }
 
         public double HarvestGetSuccessRate(HarvestableResourceDescriptor rscDef)
         {
-            // TODO: Implement
-            double _return = 0.5; // Chance at base level
+            double _return = 0.0;
+            int skillsUsed = 0;
+            double skillSuccessRate = 0.0;
 
             ActionDescriptor actDef = rscDef.PerformedAction;
             foreach (ExperienceDescriptor xpDesc in actDef.ExperienceDescriptors)
             {
+                skillsUsed++;
                 int levelDiff = skills.GetCurrentLevelDifference(xpDesc.Skill, xpDesc.BaseLevel);
-                _return += levelDiff * 0.05;
+
+                if (levelDiff < 0)
+                    skillSuccessRate = (10.0 + levelDiff) * 0.05; // Linear
+                else
+                    skillSuccessRate = (20.0 + levelDiff) * 0.025; // Linear
+
+                _return += skillSuccessRate;
             }
 
-            if (_return < 0.01)
-                _return = 0.01; // Always a chance for lucky success 1/100
-            if (_return > 0.99)
-                _return = 0.99; // Always a chance for failure = 1/100
+            _return /= skillsUsed;
+
+            if (_return < 0.001)
+                _return = 0.001; // Always a chance for lucky success 1/1000
+            if (_return > 0.995)
+                _return = 0.995; // Always a chance for failure 5/1000
+
+           // RawTextOutgoingMessage msgRawText =
+           //(RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+           // msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+           // msgRawText.Color = PredefinedColor.Grey1;
+           // msgRawText.Text = "Chance: " + _return;
+           // PutMessageIntoMyQueue(msgRawText);
 
             return _return;
         }
 
         public uint HarvestGetActionTime(HarvestableResourceDescriptor rscDef)
         {
-            // TODO: Implement
-
             ActionDescriptor actDef = rscDef.PerformedAction;
-            int _return = (int)actDef.BaseTime;
+
+            int _return = 0;
+            int skillsUsed = 0;
+            int skillTime = 0;
 
             foreach (ExperienceDescriptor xpDesc in actDef.ExperienceDescriptors)
             {
+                skillsUsed++;
                 int levelDiff = skills.GetCurrentLevelDifference(xpDesc.Skill, xpDesc.BaseLevel);
-                _return -= levelDiff * 100;
+
+                if (levelDiff < 0)
+                    skillTime = (int)((-levelDiff) * (actDef.BaseTime / 10)); // Linear
+                else
+                    skillTime = (int)((-levelDiff) * (actDef.BaseTime / 20)); // Linear
+
+                _return += (int)(actDef.BaseTime + skillTime);
             }
+
+            _return /= skillsUsed;
 
             if (_return < actDef.MinTime)
                 _return = (int)actDef.MinTime; // Can't work faster than min time
+
+           // RawTextOutgoingMessage msgRawText =
+           //(RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+           // msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+           // msgRawText.Color = PredefinedColor.Grey1;
+           // msgRawText.Text = "Time: " + _return;
+           // PutMessageIntoMyQueue(msgRawText);
 
             if (_return < 0)
                 return 0;
@@ -100,32 +151,40 @@ namespace Calindor.Server
                 skill = skills.GetSkill(xpDesc.Skill);
 
                 int levelDiff = skills.GetCurrentLevelDifference(xpDesc.Skill, xpDesc.BaseLevel);
-
-                // TODO: Modify rule
                 xpAwarded = (int)xpDesc.BaseExperience;
-                xpAwarded -= levelDiff * (int)xpDesc.BaseExperience / 20;
-                
-                if (xpAwarded < 0)
-                    xpAwarded = 0;
 
-                baseLevel = skill.BaseLevel;
-                skills.AwardXPToSkill(xpDesc.Skill, (uint)xpAwarded);
-
-                RawTextOutgoingMessage msgRawText =
-                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-                msgRawText.Color = PredefinedColor.Grey1;
-                msgRawText.Text = skill.Name + ": +" + xpAwarded + "xp";
-                PutMessageIntoMyQueue(msgRawText);
-
-                if (skill.BaseLevel != baseLevel)
+                if (levelDiff < 0)
                 {
-                    RawTextOutgoingMessage msgRawTextLevel =
+                    // Unlimited if below base level
+                    xpAwarded += (int)(xpAwarded * 0.05 * -levelDiff); // Linear
+                }
+                else
+                {
+                    // Get only for the next 10 levels
+                    xpAwarded -= (int)(xpAwarded * levelDiff / 10.0); // Linear
+                }
+                                
+                if (xpAwarded > 0)
+                {
+                    baseLevel = skill.BaseLevel;
+                    skills.AwardXPToSkill(xpDesc.Skill, (uint)xpAwarded);
+
+                    RawTextOutgoingMessage msgRawText =
                         (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                    msgRawTextLevel.Channel = PredefinedChannel.CHAT_LOCAL;
-                    msgRawTextLevel.Color = PredefinedColor.Blue1;
-                    msgRawTextLevel.Text = skill.Name + ": Level " + skill.BaseLevel;
-                    PutMessageIntoMyQueue(msgRawTextLevel);
+                    msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+                    msgRawText.Color = PredefinedColor.Grey1;
+                    msgRawText.Text = skill.Name + ": +" + xpAwarded + "xp";
+                    PutMessageIntoMyQueue(msgRawText);
+
+                    if (skill.BaseLevel != baseLevel)
+                    {
+                        RawTextOutgoingMessage msgRawTextLevel =
+                            (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                        msgRawTextLevel.Channel = PredefinedChannel.CHAT_LOCAL;
+                        msgRawTextLevel.Color = PredefinedColor.Blue1;
+                        msgRawTextLevel.Text = skill.Name + ": Level " + skill.BaseLevel;
+                        PutMessageIntoMyQueue(msgRawTextLevel);
+                    }
                 }
             }
 
