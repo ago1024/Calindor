@@ -269,10 +269,68 @@ namespace Calindor.Server
             PutMessageIntoMyQueue(msgAddNewEnhancedActor);
         }
         #endregion
+
+        #region Creation Handling
         protected override bool isEntityImplementationInCreationPhase()
         {
             return LoginState != PlayerCharacterLoginState.LoginSuccesfull;
         }
+        #endregion
+
+        #region NPC Conversation
+        protected ServerCharacter npcInConversation = null;
+        protected bool isNPCCloseEnoughForConversation()
+        {
+            if (npcInConversation == null)
+                return false;
+
+            if (getDistanceToEntity(npcInConversation) < 5.0)
+                return true;
+
+            return false;
+        }
+        public void NPCConversationStart(ServerCharacter sc)
+        {
+            if (sc == null)
+                throw new ArgumentNullException("sc");
+            
+            npcInConversation = sc;
+
+            if (!isNPCCloseEnoughForConversation())
+            {
+                RawTextOutgoingMessage msgRawText = 
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawText.Color = PredefinedColor.Blue1;
+                msgRawText.Text = "You are too far away to talk...";
+                PutMessageIntoMyQueue(msgRawText);
+                return;
+            }
+
+            npcInConversation.PlayerConversationStart(this);
+        }
+        public void NPCConversationRespond(ServerCharacter sc, ushort optionID)
+        {
+            if (sc == null)
+                throw new ArgumentNullException("sc");
+
+            if (sc != npcInConversation)
+                return;
+
+            if (!isNPCCloseEnoughForConversation())
+            {
+                RawTextOutgoingMessage msgRawText =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawText.Color = PredefinedColor.Blue1;
+                msgRawText.Text = "You are too far away to talk...";
+                PutMessageIntoMyQueue(msgRawText);
+                return;
+            }
+
+            npcInConversation.PlayerConversationResponseSelected(this, optionID);
+        }
+        #endregion
     }
 
     public class PlayerCharacterList : List<PlayerCharacter>

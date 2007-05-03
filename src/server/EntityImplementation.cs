@@ -597,7 +597,7 @@ namespace Calindor.Server
         }
         #endregion
 
-        #region EntityImplementation Creation Handling
+        #region Creation Handling
         
         protected abstract bool isEntityImplementationInCreationPhase();
 

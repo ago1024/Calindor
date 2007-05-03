@@ -324,6 +324,12 @@ namespace Calindor.Server
                     case(IncommingMessageType.HARVEST):
                         handleHarvest(pc, msg);
                         break;
+                    case(IncommingMessageType.TOUCH_PLAYER):
+                        handleTouchPlayer(pc, msg);
+                        break;
+                    case (IncommingMessageType.RESPOND_TO_NPC):
+                        handleRespondToNPC(pc, msg);
+                        break;
                     default:
                         Logger.LogWarning(LogSource.World,
                             string.Format("Message {0} - no action taken", msg.ToString()), null);
@@ -402,6 +408,14 @@ namespace Calindor.Server
                 return null;
         }
 
+        private Entity getEntityByEntityID(ushort entityID)
+        {
+            if (worldEntitiesByEntityID.ContainsKey(entityID))
+                return worldEntitiesByEntityID[entityID];
+            else
+                return null;
+        }
+
         private void removePlayerFromWorld(PlayerCharacter pc)
         {
             // Total active players
@@ -414,7 +428,7 @@ namespace Calindor.Server
             removeEntityImplementationFromWorld(pc);
         }
 
-        public void removeEntityImplementationFromWorld(EntityImplementation enImpl)
+        private void removeEntityImplementationFromWorld(EntityImplementation enImpl)
         {
             // By EntityID dictionary
             if (worldEntitiesByEntityID.ContainsKey(enImpl.EntityID))
@@ -442,8 +456,8 @@ namespace Calindor.Server
             ServerCharacter npcOwyn = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_NPC);
             EntityAppearance appearance = new EntityAppearance();
             appearance.Boots = PredefinedModelBoots.BOOTS_BROWN;
-            appearance.Hair = PredefinedModelHair.HAIR_BLOND;
-            appearance.Head = PredefinedModelHead.HEAD_2;
+            appearance.Hair = PredefinedModelHair.HAIR_BROWN;
+            appearance.Head = PredefinedModelHead.HEAD_1;
             appearance.Pants = PredefinedModelPants.PANTS_BLUE;
             appearance.Shirt = PredefinedModelShirt.SHIRT_LIGHTBROWN;
             appearance.Skin = PredefinedModelSkin.SKIN_PALE;

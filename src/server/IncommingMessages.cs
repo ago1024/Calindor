@@ -32,6 +32,8 @@ namespace Calindor.Server.Messaging
         MOVE_INVENTORY_ITEM = 20,
         HARVEST = 21,
         DROP_ITEM = 22,
+        TOUCH_PLAYER = 28,
+        RESPOND_TO_NPC = 29,
         LOG_IN = 140,
         CREATE_CHAR = 141,
         UNKNOWN = 256 //THIS MESSAGE DOES NOT EXIST
@@ -123,6 +125,8 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)IncommingMessageType.DROP_ITEM] = new DropItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.MOVE_INVENTORY_ITEM] = new MoveInventoryItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.HARVEST] = new HarvestIncommingMessage();
+            knownMessages[(int)IncommingMessageType.TOUCH_PLAYER] = new TouchPlayerIncommingMessage();
+            knownMessages[(int)IncommingMessageType.RESPOND_TO_NPC] = new RespondToNPCIncommingMessage();
         }
         
         /// <summary>
@@ -748,4 +752,73 @@ namespace Calindor.Server.Messaging
             targetObjectID = BitConverter.ToUInt16(stream, startIndex + 3);
         }
     }
+
+    public class TouchPlayerIncommingMessage : IncommingMessage
+    {
+        private int targetEntityID = -1;
+
+        public ushort TargetEntityID
+        {
+            get { return (ushort)targetEntityID; }
+        }
+
+        public TouchPlayerIncommingMessage()
+        {
+            messageType = IncommingMessageType.TOUCH_PLAYER;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new TouchPlayerIncommingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + TargetEntityID + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            targetEntityID = BitConverter.ToInt32(stream, startIndex + 3);
+        }
+    }
+
+    public class RespondToNPCIncommingMessage : IncommingMessage
+    {
+        private short targetEntityID = -1;
+
+        public ushort TargetEntityID
+        {
+            get { return (ushort)targetEntityID; }
+        }
+
+        private short optionID = -1;
+        public ushort OptionID
+        {
+            get { return (ushort)optionID; }
+        }
+	
+
+        public RespondToNPCIncommingMessage()
+        {
+            messageType = IncommingMessageType.RESPOND_TO_NPC;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new RespondToNPCIncommingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + TargetEntityID + ", " + OptionID + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            targetEntityID = BitConverter.ToInt16(stream, startIndex + 3);
+            optionID = BitConverter.ToInt16(stream, startIndex + 5);
+        }
+    }
+
 }

@@ -12,6 +12,7 @@ using System;
 using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Items;
+using Calindor.Server.Entities;
 
 namespace Calindor.Server
 {
@@ -159,6 +160,38 @@ namespace Calindor.Server
                         break;
                     default:
                         break;
+                }
+            }
+        }
+
+        private void handleTouchPlayer(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                TouchPlayerIncommingMessage msgTouchPlayer = (TouchPlayerIncommingMessage)msg;
+
+                Entity en = getEntityByEntityID(msgTouchPlayer.TargetEntityID);
+
+                if ((en != null) && (en is ServerCharacter))
+                { 
+                    // Can talk only to server characters
+                    pc.NPCConversationStart(en as ServerCharacter);
+                }
+            }
+        }
+
+        private void handleRespondToNPC(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                RespondToNPCIncommingMessage msgRespondToNPC = (RespondToNPCIncommingMessage)msg;
+
+                Entity en = getEntityByEntityID(msgRespondToNPC.TargetEntityID);
+
+                if ((en != null) && (en is ServerCharacter))
+                {
+                    // Can talk only to server characters
+                    pc.NPCConversationRespond((en as ServerCharacter), msgRespondToNPC.OptionID);
                 }
             }
         }

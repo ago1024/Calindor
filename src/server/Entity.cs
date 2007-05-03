@@ -132,6 +132,14 @@ namespace Calindor.Server.Entities
         {
             get { return location.CurrentMap; }
         }
+        protected double getDistanceToEntity(Entity en)
+        {
+            if (location.CurrentMap != en.location.CurrentMap)
+                return Double.MaxValue;
+
+            return Math.Sqrt(((location.X - en.location.X) * (location.X - en.location.X)) +
+                ((location.Y - en.location.Y) * (location.Y - en.location.Y)));
+        }
         #endregion
 
         #region Inventory
@@ -175,8 +183,7 @@ namespace Calindor.Server.Entities
                     {
 
                         // TODO: For now just a simple condition, change for future
-                        if ((Math.Abs(location.X - testedEntity.location.X) < 30) &&
-                            (Math.Abs(location.Y - testedEntity.location.Y) < 30))
+                        if (getDistanceToEntity(testedEntity) < 30.0)
                         {
                             addVisibleEntity(testedEntity); // I can see you
                             testedEntity.addObserverEntity(this); // You know that I can see you

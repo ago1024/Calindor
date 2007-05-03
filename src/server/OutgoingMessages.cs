@@ -35,6 +35,9 @@ namespace Calindor.Server.Messaging
         INVENTORY_ITEM_TEXT = 20,
         GET_NEW_INVENTORY_ITEM  = 21,
         REMOVE_ITEM_FROM_INVENTORY = 22,
+        NPC_TEXT = 30,
+        NPC_OPTIONS_LIST = 31,
+        SEND_NPC_INFO = 33,
         ADD_NEW_ENHANCED_ACTOR = 51,
         UPGRADE_TOO_OLD = 241,
         YOU_DONT_EXIST = 249,
@@ -126,7 +129,9 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.GET_NEW_INVENTORY_ITEM] = new GetNewInventoryItemOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY] = new RemoveItemFromInventoryOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.INVENTORY_ITEM_TEXT] = new InventoryItemTextOutgoingMessage();
-
+            knownMessages[(int)OutgoingMessageType.NPC_TEXT] = new NPCTextOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.SEND_NPC_INFO] = new SendNPCInfoOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.NPC_OPTIONS_LIST] = new NPCOptionsListOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -965,6 +970,155 @@ namespace Calindor.Server.Messaging
         public override string ToString()
         {
             return base.ToString() + "(" + Text + ")";
+        }
+    }
+
+    public class NPCTextOutgoingMessage : OutgoingMessage
+    {
+        private string text;
+
+        public string Text
+        {
+            get { return text; }
+            set { text = value; }
+        }
+
+        public override ushort Length
+        {
+            get
+            {
+                return (ushort)(3 + Text.Length);
+            }
+        }
+
+        public NPCTextOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.NPC_TEXT;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new NPCTextOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(Text, _return, 3);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + Text + ")";
+        }
+    }
+
+    public class SendNPCInfoOutgoingMessage : OutgoingMessage
+    {
+        private string name;
+
+        public string Name
+        {
+            get { return name; }
+            set { name = value; }
+        }
+
+        private byte portrait;
+
+        public byte Portrait
+        {
+            get { return portrait; }
+            set { portrait = value; }
+        }
+	
+        public SendNPCInfoOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.SEND_NPC_INFO;
+            length = 24;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new SendNPCInfoOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            string name20 = "";
+            if (Name.Length > 20)
+                name20 = Name.Substring(0, 20);
+            else
+                name20 = Name;
+            InPlaceBitConverter.GetBytes(name20, _return, 3);
+            for (int i = name20.Length; i < 20; i++)
+                _return[i + 3] = 0; // fill with 0
+
+            _return[23] = Portrait;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + Name + ", " + Portrait + ")";
+        }
+    }
+
+    public class NPCOptionsListOutgoingMessage : OutgoingMessage
+    {
+        private ushort npcEntityID;
+
+        public ushort NPCEntityID
+        {
+            get { return npcEntityID; }
+            set { npcEntityID = value; }
+        }
+	
+        public override ushort Length
+        {
+            get
+            {
+                return (ushort)(3 + optionsBuffeSize);
+            }
+        }
+
+        private byte[] optionsBuffer = null;
+        private int optionsBuffeSize = 0;
+
+        public NPCOptionsListOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.NPC_OPTIONS_LIST;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new NPCOptionsListOutgoingMessage();
+        }
+
+        public void FromNPCOptions(NPCOptions options)
+        {
+            // Calculate size
+            foreach (NPCOption option in options.Options)
+                optionsBuffeSize += (7 + option.Text.Length);
+
+            optionsBuffer = new byte[optionsBuffeSize];
+            
+            // Copy data
+            int currentIndex = 0;
+            foreach (NPCOption option in options.Options)
+            {
+                InPlaceBitConverter.GetBytes((ushort)(option.Text.Length + 1), optionsBuffer, currentIndex);
+                currentIndex += 2;
+                InPlaceBitConverter.GetBytes(option.Text, optionsBuffer, currentIndex);
+                currentIndex += option.Text.Length + 1;
+                InPlaceBitConverter.GetBytes(option.OptionID, optionsBuffer, currentIndex);
+                currentIndex += 2;
+                InPlaceBitConverter.GetBytes(NPCEntityID, optionsBuffer, currentIndex);
+                currentIndex += 2;
+            }
+            
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            Array.Copy(optionsBuffer, 0, _return, 3, optionsBuffeSize);
         }
     }
 }
