@@ -57,8 +57,8 @@ namespace Calindor.Server
         private NamePlayerCharacterDictionary loggedInPlayersByName =
             new NamePlayerCharacterDictionary();
 
-        // Dictionary of logged in players by EntityID
-        private EntityIDEntityDictionary loggedInPlayersByEntityID =
+        // Dictionary of world entities by EntityID
+        private EntityIDEntityDictionary worldEntitiesByEntityID =
             new EntityIDEntityDictionary();
         
         
@@ -159,11 +159,12 @@ namespace Calindor.Server
 
         private void threadMain()
         {
-            
-
             // Initialize standard messages
             createStandardMessages();
-        
+
+            // Adds server characters to the world
+            addServerCharacters();
+
             while (isWorking)
             {
                 // Perform world simulation/update players state
@@ -369,23 +370,28 @@ namespace Calindor.Server
 
             loggedInPlayersByName[pc.Name.ToLower()] = pc;
 
+            addEntityImplementationToWorld(pc);
+        }
+
+        private void addEntityImplementationToWorld(EntityImplementation enImpl)
+        {
             // Searching for the next free entityID
             for (UInt16 i = 1; i < UInt16.MaxValue; i++)
-                if (!loggedInPlayersByEntityID.ContainsKey(i))
+                if (!worldEntitiesByEntityID.ContainsKey(i))
                 {
-                    pc.EntityID = i;
-                    loggedInPlayersByEntityID[i] = pc;
+                    enImpl.EntityID = i;
+                    worldEntitiesByEntityID[i] = enImpl;
                     break;
                 }
 
-            if (pc.EntityID == 0)
-                throw new InvalidOperationException("Could not allocate entityID to player.");
+            if (enImpl.EntityID == 0)
+                throw new InvalidOperationException("Could not allocate entityID to entity.");
 
-            // Connect player to time based actions manager
-            pc.TimeBasedActionSetManager(timeBasedActionsManager);
+            // Connect entity to time based actions manager
+            enImpl.TimeBasedActionSetManager(timeBasedActionsManager);
 
-            // Connecct player to map manager
-            pc.LocationSetMapManager(mapManager);
+            // Connecct entity to map manager
+            enImpl.LocationSetMapManager(mapManager);
         }
 
         private PlayerCharacter getPlayerByName(string playerName)
@@ -405,21 +411,60 @@ namespace Calindor.Server
             if (loggedInPlayersByName.ContainsKey(pc.Name.ToLower()))
                 loggedInPlayersByName.Remove(pc.Name.ToLower());
 
+            removeEntityImplementationFromWorld(pc);
+        }
+
+        public void removeEntityImplementationFromWorld(EntityImplementation enImpl)
+        {
             // By EntityID dictionary
-            if (loggedInPlayersByEntityID.ContainsKey(pc.EntityID))
-                loggedInPlayersByEntityID.Remove(pc.EntityID);
+            if (worldEntitiesByEntityID.ContainsKey(enImpl.EntityID))
+                worldEntitiesByEntityID.Remove(enImpl.EntityID);
 
             // Cancel time based actions
-            pc.TimeBasedActionCancelCurrent(); 
+            enImpl.TimeBasedActionCancelCurrent();
 
-            // Current map active players
-            pc.LocationLeaveMapAtLogoff();
+            // Remove from current map
+            enImpl.LocationLeaveMapAtExitWorld();
 
             // Stop following
-            pc.FollowingStopFollowing();
+            enImpl.FollowingStopFollowing();
 
-            pc.TimeBasedActionSetManager(null);
-            pc.LocationSetMapManager(null);
+            enImpl.TimeBasedActionSetManager(null);
+            enImpl.LocationSetMapManager(null);
+
+        }
+
+        private void addServerCharacters()
+        {
+            // TODO: Implement based on scripts!!!
+
+            // create npc
+            ServerCharacter npcOwyn = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_NPC);
+            EntityAppearance appearance = new EntityAppearance();
+            appearance.Boots = PredefinedModelBoots.BOOTS_BROWN;
+            appearance.Hair = PredefinedModelHair.HAIR_BLOND;
+            appearance.Head = PredefinedModelHead.HEAD_2;
+            appearance.Pants = PredefinedModelPants.PANTS_BLUE;
+            appearance.Shirt = PredefinedModelShirt.SHIRT_LIGHTBROWN;
+            appearance.Skin = PredefinedModelSkin.SKIN_PALE;
+            appearance.Type = PredefinedEntityType.HUMAN_MALE;
+            npcOwyn.Name = "Owyn";
+            npcOwyn.CreateSetInitialAppearance(appearance);
+            EntityLocation location = new EntityLocation();
+            location.CurrentMap = mapManager.StartPointMap;
+            location.Z = 0;
+            location.X = (short)(mapManager.StartPointX);
+            location.Y = (short)(mapManager.StartPointY + 5);
+            location.Rotation = 180;
+            location.IsSittingDown = false;
+            npcOwyn.CreateSetInitialLocation(location);
+
+            // add npc to the world
+            addEntityImplementationToWorld(npcOwyn);
+            npcOwyn.LocationChangeMapAtEnterWorld();
+
+            
+
         }
     }
 

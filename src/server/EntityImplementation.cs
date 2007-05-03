@@ -24,6 +24,21 @@ namespace Calindor.Server
     /// </summary>
     public abstract partial class EntityImplementation : Entity
     {
+        protected PredefinedEntityImplementationKind kind = PredefinedEntityImplementationKind.ENTITY;
+        public PredefinedEntityImplementationKind EntityImplementationKind
+        {
+            get { return kind; }
+        }
+
+        private EntityImplementation()
+        {
+        }
+
+        public EntityImplementation(PredefinedEntityImplementationKind kind)
+        {
+            this.kind = kind;
+        }
+
         #region Time Based Actions Handling
         // Time based action
         // TODO: Probably an entity might have more than one time based action
@@ -350,6 +365,17 @@ namespace Calindor.Server
         {
             mapManager = mapMngr;
         }
+
+        public abstract void LocationChangeMapAtEnterWorld();
+
+        public void LocationLeaveMapAtExitWorld()
+        {
+            if (mapManager != null)
+                mapManager.RemoveEntityFromItsMap(this, location);
+
+            // No messages need to be send. Entity will disapear with next round of visibility
+        }
+
         #endregion
 
         #region Following Handling
@@ -537,7 +563,7 @@ namespace Calindor.Server
         }
         public void FillOutgoingMessage(AddNewEnhancedActorOutgoingMessage msg)
         {
-            msg.FromEntity(this);
+            msg.FromEntityImplementation(this);
             msg.FromAppearance(appearance);
             msg.FromLocation(location);
         }
@@ -571,5 +597,30 @@ namespace Calindor.Server
         }
         #endregion
 
+        #region EntityImplementation Creation Handling
+        
+        protected abstract bool isEntityImplementationInCreationPhase();
+
+        public void CreateSetInitialLocation(EntityLocation location)
+        {
+            if (!isEntityImplementationInCreationPhase())
+                throw new InvalidOperationException("This method can only be used during creation!");
+            this.location = location;
+        }
+
+        public void CreateSetInitialAppearance(EntityAppearance appearance)
+        {
+            if (!isEntityImplementationInCreationPhase())
+                throw new InvalidOperationException("This method can only be used during creation!");
+            this.appearance = appearance;
+        }
+
+        public void ClearEntityImplementation()
+        {
+            skills.Clear();
+            inventory.Clear();
+        }
+
+        #endregion
     }
 }

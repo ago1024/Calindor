@@ -52,6 +52,7 @@
     <Compile Include="ProtocolVersion.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Serialization.cs" />
+    <Compile Include="ServerCharacter.cs" />
     <Compile Include="ServerClientConnection.cs" />
     <Compile Include="ServerConfiguration.cs" />
     <Compile Include="ServerListeningThread.cs" />

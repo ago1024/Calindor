@@ -431,14 +431,12 @@ namespace Calindor.Server.Messaging
         public UInt16 EntityID
         {
             get { return entityID; }
-            set { entityID = value; }
         }
 
         protected string entityName = "";
         public String EntityName
         {
             get { return entityName; }
-            set { entityName = value; }
         }
 
         public override UInt16 Length
@@ -451,16 +449,18 @@ namespace Calindor.Server.Messaging
 
         protected byte [] innerDataAppearance = new byte[7];
         protected short[] innerDataLocation = new short[5];
+        protected byte kindOfEntityImplementation = 0;
 
         public AddNewEnhancedActorOutgoingMessage()
         {
             messageType = OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR;
         }
 
-        public void FromEntity(Entity en)
+        public void FromEntityImplementation(EntityImplementation enImpl)
         {
-            EntityID = en.EntityID;
-            EntityName = en.Name;
+            entityID = enImpl.EntityID;
+            entityName = enImpl.Name;
+            kindOfEntityImplementation = (byte)enImpl.EntityImplementationKind;
         }
 
         public void FromAppearance(EntityAppearance appearance)
@@ -555,7 +555,7 @@ namespace Calindor.Server.Messaging
             _return[29] = 0x00;
             
             // kind of actor
-            _return[30] = 0x01;
+            _return[30] = kindOfEntityImplementation;
 
 
 

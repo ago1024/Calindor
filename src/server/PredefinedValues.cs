@@ -127,6 +127,14 @@ namespace Calindor.Misc.Predefines
         SHIRT_YELLOW = 11,
     }
 
+    public enum PredefinedEntityImplementationKind
+    {
+        ENTITY = 0,
+        CLIENT_ENTITY = 1,
+        SERVER_NPC = 2,
+        SERVER_ENTITY = 3,
+    }
+
     public enum PredefinedModelPants
     { 
         PANTS_BLACK = 0,

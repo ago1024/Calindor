@@ -103,7 +103,7 @@ namespace Calindor.Server
                 }
 
                 // Clear character (current state of character is undefined!)
-                pc.ClearCharacter();
+                pc.ClearEntityImplementation();
 
                 EntityAppearance appearance = new EntityAppearance();
 
@@ -115,7 +115,7 @@ namespace Calindor.Server
                 appearance.Pants = msgCreateChar.Pants;
                 appearance.Boots = msgCreateChar.Boots;
                 pc.Name = msgCreateChar.UserName;
-                pc.CreateCharacterSetInitialAppearance(appearance);
+                pc.CreateSetInitialAppearance(appearance);
 
                 EntityLocation location = new EntityLocation();
                 short deviation = mapManager.StartPointDeviation;
@@ -124,7 +124,7 @@ namespace Calindor.Server
                 location.Z = 0;
                 location.Rotation = 0;
                 location.CurrentMap = mapManager.StartPointMap;
-                pc.CreateCharacterSetInitialLocation(location);
+                pc.CreateSetInitialLocation(location);
 
 		        // TODO: Apply race specific factors
 
@@ -220,7 +220,7 @@ namespace Calindor.Server
                 }
 
                 // Clear character (current state of character is undefined!)
-                pc.ClearCharacter();
+                pc.ClearEntityImplementation();
 
                 pc.Name = msgLogIn.UserName; // Temporary setting user name so that deserialization may work
 
@@ -269,7 +269,7 @@ namespace Calindor.Server
                 pc.PutMessageIntoMyQueue(msgYouAre);
 
                 // Change Map
-                pc.LocationChangeMapAtLogin();
+                pc.LocationChangeMapAtEnterWorld();
 
                 // Here Your Inventory
                 HereYourInventoryOutgoingMessage msgHereYourInventory =

@@ -15,6 +15,7 @@ using System.IO;
 using Calindor.Server.Messaging;
 using Calindor.Server.Entities;
 using Calindor.Server.Items;
+using Calindor.Misc.Predefines;
 
 
 namespace Calindor.Server
@@ -53,11 +54,11 @@ namespace Calindor.Server
         private OutgoingMessagesQueue outgoingMessages =
             new OutgoingMessagesQueue();
 
-        private PlayerCharacter()
+        private PlayerCharacter() : base(PredefinedEntityImplementationKind.CLIENT_ENTITY)
         {
         }
 
-        public PlayerCharacter(ServerClientConnection conn)
+        public PlayerCharacter(ServerClientConnection conn) : base(PredefinedEntityImplementationKind.CLIENT_ENTITY)
         {
             if (conn == null)
                 throw new ArgumentNullException("conn");
@@ -245,7 +246,7 @@ namespace Calindor.Server
         #endregion
 
         #region Movement Handling
-        public void LocationChangeMapAtLogin()
+        public override void LocationChangeMapAtEnterWorld()
         {
             mapManager.ChangeMapForEntity(this, location, location.LoadedMapMame, true, location.X, location.Y);
 
@@ -267,39 +268,11 @@ namespace Calindor.Server
             FillOutgoingMessage(msgAddNewEnhancedActor);
             PutMessageIntoMyQueue(msgAddNewEnhancedActor);
         }
-
-        public void LocationLeaveMapAtLogoff()
-        {
-            if (mapManager != null)
-                mapManager.RemoveEntityFromItsMap(this, location);
-            
-            // No messages need to be send. Entity will disapear with next round of visibility
-        }
-
         #endregion
-
-        #region Character Creation Handling
-        public void CreateCharacterSetInitialLocation(EntityLocation location)
+        protected override bool isEntityImplementationInCreationPhase()
         {
-            if (LoginState == PlayerCharacterLoginState.LoginSuccesfull)
-                throw new InvalidOperationException("Don't use this method if player logged in!");
-            this.location = location;
+            return LoginState != PlayerCharacterLoginState.LoginSuccesfull;
         }
-
-        public void CreateCharacterSetInitialAppearance(EntityAppearance appearance)
-        {
-            if (LoginState == PlayerCharacterLoginState.LoginSuccesfull)
-                throw new InvalidOperationException("Don't use this method if player logged in!");
-            this.appearance = appearance;
-        }
-
-        public void ClearCharacter()
-        {
-            skills.Clear();
-            inventory.Clear();
-        }
-
-        #endregion
     }
 
     public class PlayerCharacterList : List<PlayerCharacter>
