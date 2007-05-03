@@ -105,14 +105,17 @@ namespace Calindor.Server
                 // Clear character (current state of character is undefined!)
                 pc.ClearCharacter();
 
-                pc.Appearance.Head = msgCreateChar.Head;
-                pc.Appearance.Type = msgCreateChar.Type;
-                pc.Appearance.Skin = msgCreateChar.Skin;
-                pc.Appearance.Hair = msgCreateChar.Hair;
-                pc.Appearance.Shirt = msgCreateChar.Shirt;
-                pc.Appearance.Pants = msgCreateChar.Pants;
-                pc.Appearance.Boots = msgCreateChar.Boots;
+                EntityAppearance appearance = new EntityAppearance();
+
+                appearance.Head = msgCreateChar.Head;
+                appearance.Type = msgCreateChar.Type;
+                appearance.Skin = msgCreateChar.Skin;
+                appearance.Hair = msgCreateChar.Hair;
+                appearance.Shirt = msgCreateChar.Shirt;
+                appearance.Pants = msgCreateChar.Pants;
+                appearance.Boots = msgCreateChar.Boots;
                 pc.Name = msgCreateChar.UserName;
+                pc.CreateCharacterSetInitialAppearance(appearance);
 
                 EntityLocation location = new EntityLocation();
                 short deviation = mapManager.StartPointDeviation;

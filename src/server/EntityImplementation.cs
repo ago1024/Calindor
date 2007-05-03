@@ -538,6 +538,7 @@ namespace Calindor.Server
         public void FillOutgoingMessage(AddNewEnhancedActorOutgoingMessage msg)
         {
             msg.FromEntity(this);
+            msg.FromAppearance(appearance);
             msg.FromLocation(location);
         }
         #endregion

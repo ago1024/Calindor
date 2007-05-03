@@ -114,27 +114,12 @@ namespace Calindor.Server
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
                     sr.WriteValue(this.Name);
-                    Appearance.Serialize(sr);
+                    appearance.Serialize(sr);
                 }
                 finally
                 {
                     sr.End();
                 }
-
-                /*sr.Start(Name, PlayerCharacterDataType.PCAttributes, "VER.1.0.0");
-                    BasicAttributesCurrent.Serialize(sr);
-                    BasicAttributesBase.Serialize(sr);
-                    CrossAttributesCurrent.Serialize(sr);
-                    CrossAttributesBase.Serialize(sr);
-                    NexusesCurrent.Serialize(sr);
-                    NexusesBase.Serialize(sr);
-                    SkillsCurrent.Serialize(sr);
-                    SkillsBase.Serialize(sr);
-                    MiscAttributesCurrent.Serialize(sr);
-                    MiscAttributesBase.Serialize(sr);
-                    sr.WriteValue(this.FoodLevel);
-                    sr.WriteValue(this.PickPoints);
-                sr.End();*/
                 
                 try
                 {
@@ -175,27 +160,12 @@ namespace Calindor.Server
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
                 this.Name = dsr.ReadString();
-                Appearance.Deserialize(dsr);
+                appearance.Deserialize(dsr);
             }
             finally
             {
                 dsr.End();
             }
-
-            /*/dsr.Start(Name, PlayerCharacterDataType.PCAttributes, "VER.1.0.0");
-                BasicAttributesCurrent.Deserialize(dsr);
-                BasicAttributesBase.Deserialize(dsr);
-                CrossAttributesCurrent.Deserialize(dsr);
-                CrossAttributesBase.Deserialize(dsr);
-                NexusesCurrent.Deserialize(dsr);
-                NexusesBase.Deserialize(dsr);
-                SkillsCurrent.Deserialize(dsr);
-                SkillsBase.Deserialize(dsr);
-                MiscAttributesCurrent.Deserialize(dsr);
-                MiscAttributesBase.Deserialize(dsr);
-                this.FoodLevel = dsr.ReadSByte();
-                this.PickPoints = dsr.ReadShort();
-            dsr.End();*/
 
             try
             {
@@ -314,6 +284,13 @@ namespace Calindor.Server
             if (LoginState == PlayerCharacterLoginState.LoginSuccesfull)
                 throw new InvalidOperationException("Don't use this method if player logged in!");
             this.location = location;
+        }
+
+        public void CreateCharacterSetInitialAppearance(EntityAppearance appearance)
+        {
+            if (LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+                throw new InvalidOperationException("Don't use this method if player logged in!");
+            this.appearance = appearance;
         }
 
         public void ClearCharacter()

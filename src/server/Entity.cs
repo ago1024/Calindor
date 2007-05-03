@@ -114,12 +114,9 @@ namespace Calindor.Server.Entities
         }*/
         #endregion
 
+        #region Appearance
         protected EntityAppearance appearance = new EntityAppearance();
-        public EntityAppearance Appearance
-        {
-            get { return appearance; }
-            set { appearance = value; }
-        }
+        #endregion
 
         #region Location
         protected EntityLocation location = new EntityLocation();

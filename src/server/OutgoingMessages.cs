@@ -461,17 +461,19 @@ namespace Calindor.Server.Messaging
         {
             EntityID = en.EntityID;
             EntityName = en.Name;
+        }
 
+        public void FromAppearance(EntityAppearance appearance)
+        {
             // Appearance 
             // TODO:What if wielding items?
-            innerDataAppearance[0] = (byte)en.Appearance.Skin;
-            innerDataAppearance[1] = (byte)en.Appearance.Hair;
-            innerDataAppearance[2] = (byte)en.Appearance.Shirt;
-            innerDataAppearance[3] = (byte)en.Appearance.Pants;
-            innerDataAppearance[4] = (byte)en.Appearance.Boots;
-            innerDataAppearance[5] = (byte)en.Appearance.Type;
-            innerDataAppearance[6] = (byte)en.Appearance.Head;
-
+            innerDataAppearance[0] = (byte)appearance.Skin;
+            innerDataAppearance[1] = (byte)appearance.Hair;
+            innerDataAppearance[2] = (byte)appearance.Shirt;
+            innerDataAppearance[3] = (byte)appearance.Pants;
+            innerDataAppearance[4] = (byte)appearance.Boots;
+            innerDataAppearance[5] = (byte)appearance.Type;
+            innerDataAppearance[6] = (byte)appearance.Head;
         }
 
         public void FromLocation(EntityLocation location)
