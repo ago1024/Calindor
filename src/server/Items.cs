@@ -136,6 +136,15 @@ namespace Calindor.Server.Items
             quantity = 0;
             slot = 0;
         }
+
+        public Item Clone()
+        {
+            Item _return = new Item(this.itemDef);
+            _return.quantity = this.quantity;
+            _return.slot = this.slot;
+            return _return;
+        }
+
     }
 
     public class ItemStorage
@@ -194,7 +203,7 @@ namespace Calindor.Server.Items
             // Not found. Need to add at first free location
             for (byte i = 0; i < totalSlotsCount; i++)
                 if (IsSlotFree(i))
-                    return InsertItemToSlot(i, itm);
+                    return InsertItemToSlot(i, itm.Clone()); // Do not put passed object but a clone of it
 
             // If we are here, item cannot be added to storage
             return null;

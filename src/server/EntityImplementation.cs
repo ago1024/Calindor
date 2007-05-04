@@ -154,6 +154,21 @@ namespace Calindor.Server
                 }
             }
         }
+
+        /// <summary>
+        /// Returns COPY of stored item. Use this copy to update inventory.
+        /// </summary>
+        /// <param name="itmDef"></param>
+        /// <returns></returns>
+        public Item InventoryGetItemByDefinition(ItemDefinition itmDef)
+        {
+            Item _return = inventory.FindItemByDefinitionID(itmDef.ID);
+
+            if (_return != null)
+                return _return.Clone();
+
+            return null;
+        }
         #endregion
 
         #region Movement Handling

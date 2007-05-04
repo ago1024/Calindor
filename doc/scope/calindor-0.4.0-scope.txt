@@ -18,8 +18,8 @@ Tasks:
 	- death (animal and player)
 	- health
 	- health serialization
-	- NCPEntity
-	- npc dialogs
+	+ NCPEntity
+	+ npc dialogs
 	- implement CSU
 
 >NICE TO HAVE:

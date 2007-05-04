@@ -131,8 +131,8 @@ namespace Calindor.Server
                 // Add bonus items
                 ItemDefinition itmDef = null;
                 
-                // Sovereigns
-                itmDef = ItemDefinitionCache.GetItemDefinitionByID(1);
+                // Royals
+                itmDef = ItemDefinitionCache.GetItemDefinitionByID(5);
                 if (itmDef != null)
                 {
                     Item itm = new Item(itmDef);

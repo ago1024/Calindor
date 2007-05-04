@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Messaging;
+using Calindor.Server.Items;
 
 
 namespace Calindor.Server
@@ -131,17 +132,73 @@ namespace Calindor.Server
                     pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
                     break;
                 case (3):
-                    // TODO: Implement sell
-                    msgNPCText.Text = "Your items were worth XX to me.";
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
-                    break;
+                    {
+                        // Get all sellable items. Change them into rolays.
+                        double royalsTotal = 0.0;
+                        Item itm = null;
+                        // Vegetables
+                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(2));
+                        if (itm != null)
+                        {
+                            royalsTotal += itm.Quantity * 0.5;
+                            itm.Quantity *= -1;
+                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                        }
+                        // Tiger Lilly
+                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(3));
+                        if (itm != null)
+                        {
+                            royalsTotal += itm.Quantity * 0.9;
+                            itm.Quantity *= -1;
+                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                        }
+                        // Red Snapdragon
+                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(7));
+                        if (itm != null)
+                        {
+                            royalsTotal += itm.Quantity * 0.7;
+                            itm.Quantity *= -1;
+                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                        }
+
+                        msgNPCText.Text = "Your items were worth " + Math.Round(royalsTotal, 0) + " royals to me.";
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                        itm = new Item(ItemDefinitionCache.GetItemDefinitionByID(5));
+                        itm.Quantity = (int)Math.Round(royalsTotal, 0);
+                        pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                        break;
+                    }
                 case (4):
-                    // TODO: Implement heal
-                    msgNPCText.Text = "You have been healed my friend. Take better care in future.... oh and thank you for 100 royals... my friend...";
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
-                    break;
+                    {
+                        // Get royals. If enough, subtract and heal
+                        Item itm = null;
+                        bool notEnough = false;
+                        // Royals
+                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(5));
+                        if (itm != null)
+                        {
+                            if (itm.Quantity >= 100)
+                            {
+                                // TODO: Implement heal
+                                itm.Quantity = -100;
+                                pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                                msgNPCText.Text = "You have been healed my friend. Take better care in future.... oh and thank you for 100 royals... my friend...";
+                            }
+                            else
+                                notEnough = true;
+                        }
+                        else
+                            notEnough = true;
+
+                        if (notEnough)
+                            msgNPCText.Text = "I'm sorry but I require a small donation of 100 royals for my prayers... my friend...";
+
+
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                        break;
+                    }
                 default:
                     throw new ArgumentException("Unsupported conversation state");
             }
