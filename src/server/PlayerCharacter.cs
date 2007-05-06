@@ -111,6 +111,7 @@ namespace Calindor.Server
         {
             if (isDeserialized || forceSerialization) // Serialize only if it was deserialized or force (create character)
             {
+                // Appearance
                 try
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
@@ -122,6 +123,7 @@ namespace Calindor.Server
                     sr.End();
                 }
                 
+                // Location
                 try
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
@@ -132,6 +134,7 @@ namespace Calindor.Server
                     sr.End();
                 }
 
+                // Inventory
                 try
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
@@ -142,10 +145,22 @@ namespace Calindor.Server
                     sr.End();
                 }
 
+                // Skills
                 try
                 {
                     sr.Start(Name, PlayerCharacterDataType.PCSkills, "VER.1.0.0");
                     skills.Serialize(sr);
+                }
+                finally
+                {
+                    sr.End();
+                }
+
+                // Energies
+                try
+                {
+                    sr.Start(Name, PlayerCharacterDataType.PCEnergies, "VER.1.0.0");
+                    energies.Serialize(sr);
                 }
                 finally
                 {
@@ -157,6 +172,7 @@ namespace Calindor.Server
 
         public void Deserialize(PlayerCharacterDeserializer dsr)
         {
+            // Appearance
             try
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
@@ -168,6 +184,7 @@ namespace Calindor.Server
                 dsr.End();
             }
 
+            // Location
             try
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
@@ -178,6 +195,7 @@ namespace Calindor.Server
                 dsr.End();
             }
 
+            // Inventory
             try
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
@@ -188,10 +206,22 @@ namespace Calindor.Server
                 dsr.End();
             }
 
+            // Skills
             try
             {
                 dsr.Start(Name, PlayerCharacterDataType.PCSkills, "VER.1.0.0");
                 skills.Deserialize(dsr);
+            }
+            finally
+            {
+                dsr.End();
+            }
+
+            // Energies
+            try
+            {
+                dsr.Start(Name, PlayerCharacterDataType.PCEnergies, "VER.1.0.0");
+                energies.Deserialize(dsr);
             }
             finally
             {
@@ -331,6 +361,14 @@ namespace Calindor.Server
             npcInConversation.PlayerConversationResponseSelected(this, optionID);
         }
         #endregion
+
+        #region Fill Messages
+        public void FillOutgoingMessage(HereYourStatsOutgoingMessage msg)
+        {
+            msg.FromEnergies(energies);
+        }
+        #endregion
+
     }
 
     public class PlayerCharacterList : List<PlayerCharacter>

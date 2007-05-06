@@ -43,6 +43,23 @@ namespace Calindor.Server
         {
             return true;
         }
+        
+        public override void CreateRecalculateInitialEnergies()
+        {
+            if (!isEntityImplementationInCreationPhase())
+                throw new InvalidOperationException("This method can only be used during creation!");
+
+            // TODO: Recalculate based on attributes/perks/items
+            energies.SetMaxHealth(50);
+
+            if (kind == PredefinedEntityImplementationKind.SERVER_NPC)
+            {
+                energies.SetMaxHealth(0);
+            }
+
+
+            energies.UpdateCurrentHealth(energies.GetHealthDifference());
+        }
         #endregion
 
         #region Player Conversation Handling
@@ -180,7 +197,7 @@ namespace Calindor.Server
                         {
                             if (itm.Quantity >= 100)
                             {
-                                // TODO: Implement heal
+                                pcConv.PlayerInConversation.EnergiesRestoreAllHealth();
                                 itm.Quantity = -100;
                                 pcConv.PlayerInConversation.InventoryUpdateItem(itm);
                                 msgNPCText.Text = "You have been healed my friend. Take better care in future.... oh and thank you for 100 royals... my friend...";

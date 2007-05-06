@@ -139,6 +139,9 @@ namespace Calindor.Server
                     itm.Quantity = 100;
                     pc.InventoryUpdateItem(itm);
                 }
+
+                // Recalculate enerigies
+                pc.CreateRecalculateInitialEnergies();
                 
                 // Store data
                 try
@@ -277,11 +280,11 @@ namespace Calindor.Server
                 pc.FillOutgoingMessage(msgHereYourInventory);
                 pc.PutMessageIntoMyQueue(msgHereYourInventory);
 
-                // Here Your Stats //TODO: Reimplement accorting to world model
-                /*HereYourStatsOutgoingMessage msgHereYourStats =
+                // Here Your Stats
+                HereYourStatsOutgoingMessage msgHereYourStats =
                     (HereYourStatsOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.HERE_YOUR_STATS);
-                msgHereYourStats.FromPlayerCharacter(pc);
-                pc.PutMessageIntoQueue(msgHereYourStats);*/
+                pc.FillOutgoingMessage(msgHereYourStats);
+                pc.PutMessageIntoMyQueue(msgHereYourStats);
 
                 // Log In Ok
                 pc.PutMessageIntoMyQueue(msgStdLogInOk);

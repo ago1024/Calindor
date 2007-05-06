@@ -93,7 +93,7 @@ namespace Calindor.Server
                                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
                             msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
                             msgRawTextOut.Color = PredefinedColor.Green3;
-                            msgRawTextOut.Text = "Available commands: list_commands, save, take_hand, follow, stop_following, release_followers";
+                            msgRawTextOut.Text = "Available commands: list_commands, save, follow, stop_following, release_followers, list_skills";
                             pc.PutMessageIntoMyQueue(msgRawTextOut);
                             return;
                         }
@@ -134,6 +134,13 @@ namespace Calindor.Server
 
                             pc.FollowingFollow(pcTakenByHand);
 
+                            return;
+                        }
+                        if (msgRawText.Text.ToLower().IndexOf("#change_health") != -1)
+                        {
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            short changeVal = Convert.ToInt16(tokens[1]);
+                            pc.EnergiesUpdateHealth(changeVal);
                             return;
                         }
                         if (msgRawText.Text.ToLower().IndexOf("#add_item") != -1)

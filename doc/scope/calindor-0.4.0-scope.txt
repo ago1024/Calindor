@@ -16,8 +16,8 @@ Tasks:
 	- FightingTimeBasedAction
 	- AnimalEntity
 	- death (animal and player)
-	- health
-	- health serialization
+	+ health
+	+ health serialization
 	+ NCPEntity
 	+ npc dialogs
 	- implement CSU

@@ -30,7 +30,7 @@ namespace Calindor.Server.Messaging
         KILL_ALL_ACTORS = 9,
         TELEPORT_IN = 12,
         TELEPORT_OUT = 13,
-        //HERE_YOUR_STATS = 18,
+        HERE_YOUR_STATS = 18,
         HERE_YOUR_INVENTORY = 19,
         INVENTORY_ITEM_TEXT = 20,
         GET_NEW_INVENTORY_ITEM  = 21,
@@ -38,6 +38,9 @@ namespace Calindor.Server.Messaging
         NPC_TEXT = 30,
         NPC_OPTIONS_LIST = 31,
         SEND_NPC_INFO = 33,
+        GET_ACTOR_DAMAGE = 47,
+        GET_ACTOR_HEAL = 48,
+        SEND_PARTIAL_STAT = 49,
         ADD_NEW_ENHANCED_ACTOR = 51,
         UPGRADE_TOO_OLD = 241,
         YOU_DONT_EXIST = 249,
@@ -115,7 +118,7 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.LOG_IN_OK] = new LogInOkOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR] = new AddNewEnhancedActorOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.NEW_MINUTE] = new NewMinuteOutgoingMessage();
-//            knownMessages[(int)OutgoingMessageType.HERE_YOUR_STATS] = new HereYourStatsOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.HERE_YOUR_STATS] = new HereYourStatsOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.CREATE_CHAR_OK] = new CreateCharOkOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.CREATE_CHAR_NOT_OK] = new CreateCharNotOkOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.YOU_DONT_EXIST] = new YouDontExistOutgoingMessage();
@@ -132,6 +135,9 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.NPC_TEXT] = new NPCTextOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.SEND_NPC_INFO] = new SendNPCInfoOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.NPC_OPTIONS_LIST] = new NPCOptionsListOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.GET_ACTOR_DAMAGE] = new GetActorDamageOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.GET_ACTOR_HEAL] = new GetActorHealOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.SEND_PARTIAL_STAT] = new SendPartialStatOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -454,6 +460,7 @@ namespace Calindor.Server.Messaging
 
         protected byte [] innerDataAppearance = new byte[7];
         protected short[] innerDataLocation = new short[5];
+        protected short[] innerDataEnergies = new short[2];
         protected byte kindOfEntityImplementation = 0;
 
         public AddNewEnhancedActorOutgoingMessage()
@@ -479,6 +486,12 @@ namespace Calindor.Server.Messaging
             innerDataAppearance[4] = (byte)appearance.Boots;
             innerDataAppearance[5] = (byte)appearance.Type;
             innerDataAppearance[6] = (byte)appearance.Head;
+        }
+
+        public void FromEnergies(EntityEnergies energies)
+        {
+            innerDataEnergies[0] = energies.MaxHealth;
+            innerDataEnergies[1] = energies.CurrentHealth;
         }
 
         public void FromLocation(EntityLocation location)
@@ -552,12 +565,10 @@ namespace Calindor.Server.Messaging
                 _return[25] = (byte)PredefinedActorFrame.frame_stand;
 
             // max health
-            _return[26] = 0x78;
-            _return[27] = 0x00;
+            InPlaceBitConverter.GetBytes(innerDataEnergies[0], _return, 26);
 
             // cur health
-            _return[28] = 0x78;
-            _return[29] = 0x00;
+            InPlaceBitConverter.GetBytes(innerDataEnergies[1], _return, 28);
             
             // kind of actor
             _return[30] = kindOfEntityImplementation;
@@ -615,47 +626,32 @@ namespace Calindor.Server.Messaging
         }
     }
 
-    /*public class HereYourStatsOutgoingMessage : OutgoingMessage
+    public class HereYourStatsOutgoingMessage : OutgoingMessage
     {
         private byte[] statsBuffer = null;
         public HereYourStatsOutgoingMessage()
         {
             messageType = OutgoingMessageType.HERE_YOUR_STATS;
-            length = 193;
+            length = 205;
             statsBuffer = new byte[length - 3];
         }
         protected override void serializeSpecific(byte[] _return)
         {
-            for (int i = 0; i < statsBuffer.Length; i++)
-                _return[i + 3] = statsBuffer[i];
+            Array.Copy(statsBuffer, 0, _return, 3, statsBuffer.GetLength(0));
         }
 
-        /// <summary>
-        /// Copies selected player properties to internal buffer
-        /// </summary>
-        /// <param name="pc"></param>
-        public void FromPlayerCharacter(PlayerCharacter pc)
+        public void FromEnergies(EntityEnergies energies)
         {
-            // Basic attributes
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesCurrent.Physique, statsBuffer, 0);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesBase.Physique, statsBuffer, 2);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesCurrent.Coordination, statsBuffer, 4);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesBase.Coordination, statsBuffer, 6);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesCurrent.Reasoning, statsBuffer, 8);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesBase.Reasoning, statsBuffer, 10);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesCurrent.Will, statsBuffer, 12);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesBase.Will, statsBuffer, 14);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesCurrent.Instinct, statsBuffer, 16);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesBase.Instinct, statsBuffer, 18);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesCurrent.Vitality, statsBuffer, 20);
-            InPlaceBitConverter.GetBytes(pc.BasicAttributesBase.Vitality, statsBuffer, 22);
+            // Health
+            InPlaceBitConverter.GetBytes(energies.CurrentHealth, statsBuffer, 84);
+            InPlaceBitConverter.GetBytes(energies.MaxHealth, statsBuffer, 86);
         }
 
         public override OutgoingMessage CreateNew()
         {
             return new HereYourStatsOutgoingMessage();
         }
-    }*/
+    }
 
     public class RemoveActorOutgoingMessage : OutgoingMessage
     {
@@ -1120,5 +1116,129 @@ namespace Calindor.Server.Messaging
         {
             Array.Copy(optionsBuffer, 0, _return, 3, optionsBuffeSize);
         }
+    }
+
+    public class GetActorDamageOutgoingMessage : OutgoingMessage
+    {
+        private UInt16 entityID;
+
+        public UInt16 EntityID
+        {
+            get { return entityID; }
+            set { entityID = value; }
+        }
+
+        private ushort damage;
+
+        public ushort Damage
+        {
+            get { return damage; }
+            set { damage = value; }
+        }
+
+
+        public GetActorDamageOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.GET_ACTOR_DAMAGE;
+            length = 7;
+        }
+        public override OutgoingMessage CreateNew()
+        {
+            return new GetActorDamageOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(EntityID, _return, 3);
+            InPlaceBitConverter.GetBytes(Damage, _return, 5);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + EntityID + ", " + Damage + ")";
+        }
+    }
+
+    public class GetActorHealOutgoingMessage : OutgoingMessage
+    {
+        private UInt16 entityID;
+
+        public UInt16 EntityID
+        {
+            get { return entityID; }
+            set { entityID = value; }
+        }
+
+        private ushort heal;
+
+        public ushort Heal
+        {
+            get { return heal; }
+            set { heal = value; }
+        }
+
+
+        public GetActorHealOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.GET_ACTOR_HEAL;
+            length = 7;
+        }
+        public override OutgoingMessage CreateNew()
+        {
+            return new GetActorHealOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(EntityID, _return, 3);
+            InPlaceBitConverter.GetBytes(Heal, _return, 5);
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + EntityID + ", " + Heal + ")";
+        }
+    }
+
+    public class SendPartialStatOutgoingMessage : OutgoingMessage
+    {
+        private PredefinedPartialStatType statType;
+
+        public PredefinedPartialStatType StatType
+        {
+            get { return statType; }
+            set { statType = value; }
+        }
+
+        private int _value;
+
+        public int Value
+        {
+            get { return _value; }
+            set { _value = value; }
+        }
+
+        public SendPartialStatOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.SEND_PARTIAL_STAT;
+            length = 8;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + StatType.ToString() + ", " + Value + ")";
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            _return[3] = (byte)StatType;
+            InPlaceBitConverter.GetBytes(Value, _return, 4);
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new SendPartialStatOutgoingMessage();
+        }
+	
     }
 }

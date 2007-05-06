@@ -255,4 +255,10 @@ namespace Calindor.Misc.Predefines
         W = 6,
         NW = 7
     }
+
+    public enum PredefinedPartialStatType
+    {
+        MAT_POINT_CUR       =   42,
+        MAT_POINT_BASE      =   43,
+    }
 }

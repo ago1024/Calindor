@@ -476,6 +476,7 @@ namespace Calindor.Server
             // add npc to the world
             addEntityImplementationToWorld(npcOwyn);
             npcOwyn.LocationChangeMapAtEnterWorld();
+            npcOwyn.CreateRecalculateInitialEnergies();
 
             
 

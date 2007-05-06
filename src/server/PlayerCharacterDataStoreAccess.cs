@@ -193,6 +193,7 @@ namespace Calindor.Server
         PCLocation      =   2,
         PCInventory     =   3,
         PCSkills        =   4,
+        PCEnergies      =   5,
     }
 
     public class PlayerCharacterDoesNotExistException : ApplicationException
@@ -249,6 +250,9 @@ namespace Calindor.Server
                     break;
                 case (PlayerCharacterDataType.PCSkills):
                     extention = ".skills";
+                    break;
+                case (PlayerCharacterDataType.PCEnergies):
+                    extention = ".energies";
                     break;
                 default:
                     throw new ArgumentException("Unrecognized type of player data");
@@ -347,6 +351,9 @@ namespace Calindor.Server
                     break;
                 case (PlayerCharacterDataType.PCSkills):
                     extention = ".skills";
+                    break;
+                case (PlayerCharacterDataType.PCEnergies):
+                    extention = ".energies";
                     break;
                 default:
                     throw new ArgumentException("Unrecognized type of player data");

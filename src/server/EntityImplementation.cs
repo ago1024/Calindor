@@ -581,6 +581,7 @@ namespace Calindor.Server
             msg.FromEntityImplementation(this);
             msg.FromAppearance(appearance);
             msg.FromLocation(location);
+            msg.FromEnergies(energies);
         }
         #endregion
 
@@ -630,12 +631,72 @@ namespace Calindor.Server
             this.appearance = appearance;
         }
 
+        public virtual void CreateRecalculateInitialEnergies()
+        {
+            if (!isEntityImplementationInCreationPhase())
+                throw new InvalidOperationException("This method can only be used during creation!");
+            
+            // TODO: Recalculate based on attributes/perks/items
+            energies.SetMaxHealth(50);
+
+
+            energies.UpdateCurrentHealth(energies.GetHealthDifference());
+        }
+
         public void ClearEntityImplementation()
         {
             skills.Clear();
             inventory.Clear();
         }
 
+        #endregion
+
+        #region Energies Handling
+        public void EnergiesUpdateHealth(short updValue)
+        {
+            short actualHealthChanged = energies.UpdateCurrentHealth(updValue);
+
+            if (energies.CurrentHealth <= 0)
+            {
+                // TODO: Death
+                RawTextOutgoingMessage msgRawText = 
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawText.Color = PredefinedColor.Red2;
+                msgRawText.Text = "You have died...";
+                PutMessageIntoMyQueue(msgRawText);
+            }
+
+            // Send messages
+            if (actualHealthChanged < 0)
+            {
+                GetActorDamageOutgoingMessage msgGetActorDamage =
+                    (GetActorDamageOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.GET_ACTOR_DAMAGE);
+                msgGetActorDamage.EntityID = EntityID;
+                msgGetActorDamage.Damage = (ushort)(-1.0 * actualHealthChanged); // actual health changed is less than 0
+                PutMessageIntoMyAndObserversQueue(msgGetActorDamage);
+            }
+
+            if (actualHealthChanged >= 0)
+            {
+                GetActorHealOutgoingMessage msgGetActorHeal =
+                    (GetActorHealOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.GET_ACTOR_HEAL);
+                msgGetActorHeal.EntityID = EntityID;
+                msgGetActorHeal.Heal = (ushort)(actualHealthChanged); // actual health changed is more than 0
+                PutMessageIntoMyAndObserversQueue(msgGetActorHeal);
+            }
+
+            SendPartialStatOutgoingMessage msgSendPartialStat =
+                (SendPartialStatOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_PARTIAL_STAT);
+            msgSendPartialStat.StatType = PredefinedPartialStatType.MAT_POINT_CUR;
+            msgSendPartialStat.Value = energies.CurrentHealth;
+            PutMessageIntoMyQueue(msgSendPartialStat);
+        }
+
+        public void EnergiesRestoreAllHealth()
+        {
+            EnergiesUpdateHealth(energies.GetHealthDifference());
+        }
         #endregion
     }
 }

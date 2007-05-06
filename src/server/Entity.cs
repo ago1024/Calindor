@@ -228,6 +228,18 @@ namespace Calindor.Server.Entities
         #region Skills
         protected EntitySkills skills = new EntitySkills();
         #endregion
+
+        #region Energies
+        protected EntityEnergies energies = new EntityEnergies();
+        #endregion
+
+        #region Attributes
+        // TODO
+        #endregion
+
+        #region Perks
+        // TODO
+        #endregion
     }
 
     public class EntityIDEntityDictionary : Dictionary<UInt16, Entity>
@@ -609,6 +621,76 @@ namespace Calindor.Server.Entities
                 EntitySkill skill = GetSkill((EntitySkillType)dsr.ReadByte()); // Skill created in ctor
                 skill.AddXP(dsr.ReadUInt());
             }
+        }
+    }
+    #endregion
+
+    #region Entity Energies
+    public class EntityEnergies
+    {
+        private short maxHealth = 50; // TODO: Calculate based on attributes, items, etc. Not serializable
+
+        public short MaxHealth
+        {
+            get { return maxHealth; }
+        }
+
+        private short currentHealth;
+
+        public short CurrentHealth
+        {
+            get { return currentHealth; }
+        }
+	
+	
+
+        public void Serialize(ISerializer sr)
+        {
+            sr.WriteValue(currentHealth);
+        }
+
+        public void Deserialize(IDeserializer dsr)
+        {
+            currentHealth = dsr.ReadShort();
+            if (currentHealth > maxHealth)
+                throw new DeserializationException("CurrentHealth greater than MaxHealth");
+        }
+
+        private void checkCurrentHealthIsInBounds()
+        {
+            if (currentHealth > maxHealth)
+                currentHealth = maxHealth;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="updValue"></param>
+        /// <returns>Actual change value</returns>
+        public short UpdateCurrentHealth(short updValue)
+        {
+            short _return = currentHealth;
+
+            currentHealth += updValue;
+
+            checkCurrentHealthIsInBounds();
+
+            _return = (short)(currentHealth - _return);
+
+            return _return;
+        }
+
+        public void SetMaxHealth(short newValue)
+        {
+            if (newValue < 0)
+                throw new ArgumentException("New value cannot be less than 0");
+            maxHealth = newValue;
+            checkCurrentHealthIsInBounds();
+        }
+
+        public short GetHealthDifference()
+        {
+            return (short)(maxHealth - currentHealth);
         }
     }
     #endregion
