@@ -292,11 +292,8 @@ namespace Calindor.Server
             msgTeleportIn.Y = location.Y;
             PutMessageIntoMyQueue(msgTeleportIn);
 
-            // Add New Enhanced Actor - send to player ONLY - observers will get it with the next round of visibility
-            AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-            FillOutgoingMessage(msgAddNewEnhancedActor);
-            PutMessageIntoMyQueue(msgAddNewEnhancedActor);
+            // Display - send to player ONLY - observers will get it with the next round of visibility
+            PutMessageIntoMyQueue(visibilityDisplayEntityImplementation());
         }
         #endregion
 
@@ -366,6 +363,16 @@ namespace Calindor.Server
         public void FillOutgoingMessage(HereYourStatsOutgoingMessage msg)
         {
             msg.FromEnergies(energies);
+        }
+        #endregion
+
+        #region Visibility Handling
+        protected override OutgoingMessage visibilityDisplayEntityImplementation()
+        {
+            AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
+                        (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
+            FillOutgoingMessage(msgAddNewEnhancedActor);
+            return msgAddNewEnhancedActor;
         }
         #endregion
 

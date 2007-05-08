@@ -22,6 +22,7 @@ namespace Calindor.Server.Messaging
     public enum OutgoingMessageType
     {
         RAW_TEXT = 0,
+        ADD_NEW_ACTOR = 1,
         ADD_ACTOR_COMMAND = 2,
         YOU_ARE = 3,
         NEW_MINUTE = 5,
@@ -138,6 +139,7 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.GET_ACTOR_DAMAGE] = new GetActorDamageOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.GET_ACTOR_HEAL] = new GetActorHealOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.SEND_PARTIAL_STAT] = new SendPartialStatOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.ADD_NEW_ACTOR] = new AddNewActorOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -1241,4 +1243,119 @@ namespace Calindor.Server.Messaging
         }
 	
     }
+
+
+    public class AddNewActorOutgoingMessage : OutgoingMessage
+    {
+
+        protected UInt16 entityID = 0;
+        public UInt16 EntityID
+        {
+            get { return entityID; }
+        }
+
+        protected string entityName = "";
+        public String EntityName
+        {
+            get { return entityName; }
+        }
+
+        public override UInt16 Length
+        {
+            get
+            {
+                return (UInt16)(21 + EntityName.Length); /*20 + name + 1*/
+            }
+        }
+
+        protected short[] innerDataLocation = new short[5];
+        protected short[] innerDataEnergies = new short[2];
+        protected byte kindOfEntityImplementation = 0;
+
+        public AddNewActorOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.ADD_NEW_ACTOR;
+        }
+
+        public void FromEntityImplementation(EntityImplementation enImpl)
+        {
+            entityID = enImpl.EntityID;
+            entityName = enImpl.Name;
+            kindOfEntityImplementation = (byte)enImpl.EntityImplementationKind;
+        }
+
+        public void FromEnergies(EntityEnergies energies)
+        {
+            innerDataEnergies[0] = energies.MaxHealth;
+            innerDataEnergies[1] = energies.CurrentHealth;
+        }
+
+        public void FromLocation(EntityLocation location)
+        {
+            // Location
+            innerDataLocation[0] = location.X;
+            innerDataLocation[1] = location.Y;
+            innerDataLocation[2] = location.Z;
+            innerDataLocation[3] = location.Rotation;
+            innerDataLocation[4] = location.IsSittingDown ? (short)1 : (short)0;
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            // Entity ID
+            InPlaceBitConverter.GetBytes(EntityID, _return, 3);
+
+            // X
+            InPlaceBitConverter.GetBytes(innerDataLocation[0], _return, 5);
+
+            // Y
+            InPlaceBitConverter.GetBytes(innerDataLocation[1], _return, 7);
+
+            // Z
+            InPlaceBitConverter.GetBytes(innerDataLocation[2], _return, 9);
+
+            // Rotation
+            InPlaceBitConverter.GetBytes(innerDataLocation[3], _return, 11);
+
+
+            // TODO: Change
+
+            // actor type
+            _return[13] = 19;
+
+            // frame
+            if (innerDataLocation[4] == 1)
+                _return[14] = (byte)PredefinedActorFrame.frame_sit_idle;
+            else
+                _return[14] = (byte)PredefinedActorFrame.frame_stand;
+
+            // max health
+            InPlaceBitConverter.GetBytes(innerDataEnergies[0], _return, 15);
+
+            // cur health
+            InPlaceBitConverter.GetBytes(innerDataEnergies[1], _return, 17);
+
+            // kind of actor
+            _return[19] = kindOfEntityImplementation;
+
+
+            // EntityName
+            InPlaceBitConverter.GetBytes(EntityName, _return, 20);
+
+            // Add null terminator
+            _return[20 + EntityName.Length] = 0x00;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new AddNewActorOutgoingMessage();
+        }
+
+        public override string ToString()
+        {
+            // TODO: Implement
+            return base.ToString() + "(" + EntityID + ", " + EntityName + ")";
+        }
+    }
+
 }

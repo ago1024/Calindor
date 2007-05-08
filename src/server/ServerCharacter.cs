@@ -262,6 +262,36 @@ namespace Calindor.Server
 
         }
         #endregion
+
+        #region Fill Messages
+        public void FillOutgoingMessage(AddNewActorOutgoingMessage msg)
+        {
+            msg.FromEntityImplementation(this);
+            msg.FromLocation(location);
+            msg.FromEnergies(energies);
+        }
+        #endregion
+
+        #region Visibility Handling
+        protected override OutgoingMessage visibilityDisplayEntityImplementation()
+        {
+            // TODO: Hardcode for now
+            if (EntityImplementationKind == PredefinedEntityImplementationKind.SERVER_NPC)
+            {
+                AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
+                            (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
+                FillOutgoingMessage(msgAddNewEnhancedActor);
+                return msgAddNewEnhancedActor;
+            }
+            else
+            {
+                AddNewActorOutgoingMessage msgAddNewActor =
+                    (AddNewActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ACTOR);
+                FillOutgoingMessage(msgAddNewActor);
+                return msgAddNewActor;
+            }
+        }
+        #endregion
     }
 
     public class PlayerCharacterConversationState

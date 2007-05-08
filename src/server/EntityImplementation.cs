@@ -350,11 +350,8 @@ namespace Calindor.Server
             msgChangeMap.MapPath = location.CurrentMap.ClientFileName;
             PutMessageIntoMyQueue(msgChangeMap);
 
-            // Add New Enhanced Actor 
-            AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-            FillOutgoingMessage(msgAddNewEnhancedActor);
-            PutMessageIntoMyQueue(msgAddNewEnhancedActor);
+            // Display
+            PutMessageIntoMyQueue(visibilityDisplayEntityImplementation());
 
         }
 
@@ -370,10 +367,8 @@ namespace Calindor.Server
             location.X = newX;
             location.Y = newY;
 
-            AddNewEnhancedActorOutgoingMessage msgAddNewEnchangedActor =
-                (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-            FillOutgoingMessage(msgAddNewEnchangedActor);
-            PutMessageIntoMyAndObserversQueue(msgAddNewEnchangedActor);
+            // Display
+            PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
         }
 
         public  void LocationSetMapManager(MapManager mapMngr)
@@ -604,13 +599,11 @@ namespace Calindor.Server
             {
                 if (en is EntityImplementation)
                 {
-                    AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                        (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-                    (en as EntityImplementation).FillOutgoingMessage(msgAddNewEnhancedActor);
-                    PutMessageIntoMyQueue(msgAddNewEnhancedActor);
+                    PutMessageIntoMyQueue((en as EntityImplementation).visibilityDisplayEntityImplementation());
                 }
             }
         }
+        protected abstract OutgoingMessage visibilityDisplayEntityImplementation();
         #endregion
 
         #region Creation Handling

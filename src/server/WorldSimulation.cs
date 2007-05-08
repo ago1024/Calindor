@@ -479,6 +479,22 @@ namespace Calindor.Server
             npcOwyn.CreateRecalculateInitialEnergies();
 
             
+            // create rabbit
+            ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            rabbit1.Name = "Rabbit";
+            EntityLocation locationRabbit = new EntityLocation();
+            locationRabbit.CurrentMap = mapManager.StartPointMap;
+            locationRabbit.Z = 0;
+            locationRabbit.X = (short)(mapManager.StartPointX);
+            locationRabbit.Y = (short)(mapManager.StartPointY + 8);
+            locationRabbit.Rotation = 180;
+            locationRabbit.IsSittingDown = false;
+            rabbit1.CreateSetInitialLocation(locationRabbit);
+
+            // add rabbit to the world
+            addEntityImplementationToWorld(rabbit1);
+            rabbit1.LocationChangeMapAtEnterWorld();
+            rabbit1.CreateRecalculateInitialEnergies();
 
         }
     }
