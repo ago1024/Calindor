@@ -65,7 +65,7 @@ namespace Calindor.Misc.Predefines
         HEAD_5 = 4
     }
 
-    public enum PredefinedEntityType
+    public enum PredefinedModelType
     {
         HUMAN_FEMALE = 0,
         HUMAN_MALE = 1,
@@ -73,12 +73,19 @@ namespace Calindor.Misc.Predefines
         ELF_MALE = 3,
         DWARF_FEMALE = 4,
         DWARF_MALE = 5,
+        BEAVER = 8,
+        RAT = 9,
+        DEER = 15,
+        BROWN_RABBIT = 19,
+        TROLL = 35,
         GNOME_FEMALE = 37,
         GNOME_MALE = 38,
         ORCHAN_FEMALE = 39,
         ORCHAN_MALE = 40,
         DRAEGONI_FEMALE = 41,
         DRAEGONI_MALE = 42,
+        SPIDER_SMALL_1 = 64,
+
     }
 
     public enum PredefinedModelSkin

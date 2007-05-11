@@ -366,16 +366,6 @@ namespace Calindor.Server
         }
         #endregion
 
-        #region Visibility Handling
-        protected override OutgoingMessage visibilityDisplayEntityImplementation()
-        {
-            AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
-                        (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
-            FillOutgoingMessage(msgAddNewEnhancedActor);
-            return msgAddNewEnhancedActor;
-        }
-        #endregion
-
     }
 
     public class PlayerCharacterList : List<PlayerCharacter>

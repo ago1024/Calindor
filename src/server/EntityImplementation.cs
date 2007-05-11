@@ -578,6 +578,13 @@ namespace Calindor.Server
             msg.FromLocation(location);
             msg.FromEnergies(energies);
         }
+        public void FillOutgoingMessage(AddNewActorOutgoingMessage msg)
+        {
+            msg.FromEntityImplementation(this);
+            msg.FromAppearance(appearance);
+            msg.FromLocation(location);
+            msg.FromEnergies(energies);
+        }
         #endregion
 
         #region Visibility Handling
@@ -603,7 +610,25 @@ namespace Calindor.Server
                 }
             }
         }
-        protected abstract OutgoingMessage visibilityDisplayEntityImplementation();
+
+        protected virtual OutgoingMessage visibilityDisplayEntityImplementation()
+        {
+            if (appearance.IsEnhancedModel)
+            {
+                AddNewEnhancedActorOutgoingMessage msgAddNewEnhancedActor =
+                            (AddNewEnhancedActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ENHANCED_ACTOR);
+                FillOutgoingMessage(msgAddNewEnhancedActor);
+                return msgAddNewEnhancedActor;
+            }
+            else
+            {
+                AddNewActorOutgoingMessage msgAddNewActor =
+                    (AddNewActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_NEW_ACTOR);
+                FillOutgoingMessage(msgAddNewActor);
+                return msgAddNewActor;
+            }
+        }
+
         #endregion
 
         #region Creation Handling

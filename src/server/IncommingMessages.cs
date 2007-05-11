@@ -314,8 +314,8 @@ namespace Calindor.Server.Messaging
             get { return head; }
         }
 
-        private PredefinedEntityType type = PredefinedEntityType.HUMAN_FEMALE;
-        public PredefinedEntityType Type
+        private PredefinedModelType type = PredefinedModelType.HUMAN_FEMALE;
+        public PredefinedModelType Type
         {
             get { return type; }
         }
@@ -391,7 +391,7 @@ namespace Calindor.Server.Messaging
             shirt = (PredefinedModelShirt)stream[startIndex + Length - 5];
             pants = (PredefinedModelPants)stream[startIndex + Length - 4];
             boots = (PredefinedModelBoots)stream[startIndex + Length - 3];
-            type = (PredefinedEntityType)stream[startIndex + Length - 2];
+            type = (PredefinedModelType)stream[startIndex + Length - 2];
             head = (PredefinedModelHead)stream[startIndex + Length - 1];
         }
 

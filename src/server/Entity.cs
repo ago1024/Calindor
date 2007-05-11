@@ -115,7 +115,7 @@ namespace Calindor.Server.Entities
         #endregion
 
         #region Appearance
-        protected EntityAppearance appearance = new EntityAppearance();
+        protected EntityAppearance appearance = new EntityAppearance(PredefinedModelType.HUMAN_FEMALE);
         #endregion
 
         #region Location
@@ -254,48 +254,47 @@ namespace Calindor.Server.Entities
     #region Entity Appearance
     public class EntityAppearance
     {
-        private sbyte[] innerData = new sbyte[7];
+        private byte[] innerData = new byte[7];
 
         public PredefinedModelHead Head
         {
             get { return (PredefinedModelHead)innerData[6]; }
-            set { innerData[6] = (sbyte)value; }
+            set { innerData[6] = (byte)value; }
         }
 
-        public PredefinedEntityType Type
+        public PredefinedModelType Type
         {
-            get { return (PredefinedEntityType)innerData[5]; }
-            set { innerData[5] = (sbyte)value; }
+            get { return (PredefinedModelType)innerData[5]; }
         }
 
         public PredefinedModelSkin Skin
         {
             get { return (PredefinedModelSkin)innerData[0]; }
-            set { innerData[0] = (sbyte)value; }
+            set { innerData[0] = (byte)value; }
         }
 
         public PredefinedModelHair Hair
         {
             get { return (PredefinedModelHair)innerData[1]; }
-            set { innerData[1] = (sbyte)value; }
+            set { innerData[1] = (byte)value; }
         }
 
         public PredefinedModelShirt Shirt
         {
             get { return (PredefinedModelShirt)innerData[2]; }
-            set { innerData[2] = (sbyte)value; }
+            set { innerData[2] = (byte)value; }
         }
 
         public PredefinedModelPants Pants
         {
             get { return (PredefinedModelPants)innerData[3]; }
-            set { innerData[3] = (sbyte)value; }
+            set { innerData[3] = (byte)value; }
         }
 
         public PredefinedModelBoots Boots
         {
             get { return (PredefinedModelBoots)innerData[4]; }
-            set { innerData[4] = (sbyte)value; }
+            set { innerData[4] = (byte)value; }
         }
 
         public virtual void Serialize(ISerializer sr)
@@ -307,7 +306,38 @@ namespace Calindor.Server.Entities
         public virtual void Deserialize(IDeserializer dsr)
         {
             for (int i = 0; i < innerData.Length; i++)
-                innerData[i] = dsr.ReadSByte();
+                innerData[i] = dsr.ReadByte();
+        }
+
+        private EntityAppearance()
+        {
+        }
+
+        public EntityAppearance(PredefinedModelType type)
+        {
+            innerData[5] = (byte)type;
+        }
+
+        public bool IsEnhancedModel
+        {
+            get
+            {
+                if ((Type == PredefinedModelType.HUMAN_FEMALE) ||
+                    (Type == PredefinedModelType.HUMAN_MALE) ||
+                    (Type == PredefinedModelType.ELF_FEMALE) ||
+                    (Type == PredefinedModelType.ELF_MALE) ||
+                    (Type == PredefinedModelType.DWARF_FEMALE) ||
+                    (Type == PredefinedModelType.DWARF_MALE) ||
+                    (Type == PredefinedModelType.DRAEGONI_FEMALE) ||
+                    (Type == PredefinedModelType.DRAEGONI_MALE) ||
+                    (Type == PredefinedModelType.GNOME_FEMALE) ||
+                    (Type == PredefinedModelType.GNOME_MALE) ||
+                    (Type == PredefinedModelType.ORCHAN_FEMALE) ||
+                    (Type == PredefinedModelType.ORCHAN_MALE))
+                    return true;
+                else
+                    return false;
+            }
         }
     }
     #endregion

@@ -105,10 +105,9 @@ namespace Calindor.Server
                 // Clear character (current state of character is undefined!)
                 pc.ClearEntityImplementation();
 
-                EntityAppearance appearance = new EntityAppearance();
+                EntityAppearance appearance = new EntityAppearance(msgCreateChar.Type);
 
                 appearance.Head = msgCreateChar.Head;
-                appearance.Type = msgCreateChar.Type;
                 appearance.Skin = msgCreateChar.Skin;
                 appearance.Hair = msgCreateChar.Hair;
                 appearance.Shirt = msgCreateChar.Shirt;

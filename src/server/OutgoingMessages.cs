@@ -1271,6 +1271,7 @@ namespace Calindor.Server.Messaging
         protected short[] innerDataLocation = new short[5];
         protected short[] innerDataEnergies = new short[2];
         protected byte kindOfEntityImplementation = 0;
+        protected byte modelType = 0;
 
         public AddNewActorOutgoingMessage()
         {
@@ -1300,6 +1301,13 @@ namespace Calindor.Server.Messaging
             innerDataLocation[4] = location.IsSittingDown ? (short)1 : (short)0;
         }
 
+        public void FromAppearance(EntityAppearance appearance)
+        {
+            if (appearance.IsEnhancedModel)
+                throw new ArgumentException("Appearance is enhanced");
+            modelType = (byte)appearance.Type;
+        }
+
         protected override void serializeSpecific(byte[] _return)
         {
             // Entity ID
@@ -1317,11 +1325,8 @@ namespace Calindor.Server.Messaging
             // Rotation
             InPlaceBitConverter.GetBytes(innerDataLocation[3], _return, 11);
 
-
-            // TODO: Change
-
             // actor type
-            _return[13] = 19;
+            _return[13] = modelType;
 
             // frame
             if (innerDataLocation[4] == 1)

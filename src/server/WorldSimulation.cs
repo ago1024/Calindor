@@ -454,14 +454,13 @@ namespace Calindor.Server
 
             // create npc
             ServerCharacter npcOwyn = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_NPC);
-            EntityAppearance appearance = new EntityAppearance();
+            EntityAppearance appearance = new EntityAppearance(PredefinedModelType.HUMAN_MALE);
             appearance.Boots = PredefinedModelBoots.BOOTS_BROWN;
             appearance.Hair = PredefinedModelHair.HAIR_BROWN;
             appearance.Head = PredefinedModelHead.HEAD_1;
             appearance.Pants = PredefinedModelPants.PANTS_BLUE;
             appearance.Shirt = PredefinedModelShirt.SHIRT_LIGHTBROWN;
             appearance.Skin = PredefinedModelSkin.SKIN_PALE;
-            appearance.Type = PredefinedEntityType.HUMAN_MALE;
             npcOwyn.Name = "Owyn";
             npcOwyn.CreateSetInitialAppearance(appearance);
             EntityLocation location = new EntityLocation();
@@ -481,6 +480,8 @@ namespace Calindor.Server
             
             // create rabbit
             ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            EntityAppearance appearanceRabbit = new EntityAppearance(PredefinedModelType.BROWN_RABBIT);
+            rabbit1.CreateSetInitialAppearance(appearanceRabbit);
             rabbit1.Name = "Rabbit";
             EntityLocation locationRabbit = new EntityLocation();
             locationRabbit.CurrentMap = mapManager.StartPointMap;
@@ -495,6 +496,63 @@ namespace Calindor.Server
             addEntityImplementationToWorld(rabbit1);
             rabbit1.LocationChangeMapAtEnterWorld();
             rabbit1.CreateRecalculateInitialEnergies();
+
+            // create troll
+            ServerCharacter troll1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            EntityAppearance appearancetroll = new EntityAppearance(PredefinedModelType.TROLL);
+            troll1.CreateSetInitialAppearance(appearancetroll);
+            troll1.Name = "Troll";
+            EntityLocation locationtroll = new EntityLocation();
+            locationtroll.CurrentMap = mapManager.StartPointMap;
+            locationtroll.Z = 0;
+            locationtroll.X = 114;
+            locationtroll.Y = 142;
+            locationtroll.Rotation = 270;
+            locationtroll.IsSittingDown = false;
+            troll1.CreateSetInitialLocation(locationtroll);
+
+            // add troll to the world
+            addEntityImplementationToWorld(troll1);
+            troll1.LocationChangeMapAtEnterWorld();
+            troll1.CreateRecalculateInitialEnergies();
+
+            // create deer
+            ServerCharacter deer1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            EntityAppearance appearancedeer = new EntityAppearance(PredefinedModelType.DEER);
+            deer1.CreateSetInitialAppearance(appearancedeer);
+            deer1.Name = "Deer";
+            EntityLocation locationdeer = new EntityLocation();
+            locationdeer.CurrentMap = mapManager.StartPointMap;
+            locationdeer.Z = 0;
+            locationdeer.X = 99;
+            locationdeer.Y = 131;
+            locationdeer.Rotation = 0;
+            locationdeer.IsSittingDown = false;
+            deer1.CreateSetInitialLocation(locationdeer);
+
+            // add deer to the world
+            addEntityImplementationToWorld(deer1);
+            deer1.LocationChangeMapAtEnterWorld();
+            deer1.CreateRecalculateInitialEnergies();
+
+            // create beaver
+            ServerCharacter beaver1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            EntityAppearance appearancebeaver = new EntityAppearance(PredefinedModelType.BEAVER);
+            beaver1.CreateSetInitialAppearance(appearancebeaver);
+            beaver1.Name = "Beaver";
+            EntityLocation locationbeaver = new EntityLocation();
+            locationbeaver.CurrentMap = mapManager.StartPointMap;
+            locationbeaver.Z = 0;
+            locationbeaver.X = 108;
+            locationbeaver.Y = 116;
+            locationbeaver.Rotation = 0;
+            locationbeaver.IsSittingDown = false;
+            beaver1.CreateSetInitialLocation(locationbeaver);
+
+            // add beaver to the world
+            addEntityImplementationToWorld(beaver1);
+            beaver1.LocationChangeMapAtEnterWorld();
+            beaver1.CreateRecalculateInitialEnergies();
 
         }
     }
