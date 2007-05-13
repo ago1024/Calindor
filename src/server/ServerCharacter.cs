@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Messaging;
 using Calindor.Server.Items;
+using Calindor.Server.AI;
 
 
 namespace Calindor.Server
@@ -262,6 +263,25 @@ namespace Calindor.Server
 
         }
         #endregion
+
+        #region AI Handling
+        protected AIImplementation myAI = null;
+        public void AIAttach(AIImplementation ai)
+        {
+            myAI = ai;
+            myAI.AttachServerCharacter(this);
+        }
+
+        public void AIExecute()
+        {
+            if (myAI != null)
+                myAI.Execute();
+        }
+        #endregion
+    }
+
+    public class ServerCharacterList : List<ServerCharacter>
+    {
     }
 
     public class PlayerCharacterConversationState

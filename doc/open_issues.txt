@@ -10,3 +10,8 @@ reaction to NPC messages, quests
 
 3. Following - with current implementation it is very easy to break 
 following. The algorithm should be update to avoid obstacles better.
+
+4. AI - currenty the AI is pretty simple. More advance AI could be 
+created since the framework is modular. Examples of desired AI: small
+animals run if the see predators (players as well), predators attack
+animals and players, predators group and attack (wolves?)

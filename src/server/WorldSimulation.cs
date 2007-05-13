@@ -17,6 +17,7 @@ using Calindor.Misc.Predefines;
 using Calindor.Server.Entities;
 using Calindor.Server.Maps;
 using Calindor.Server.TimeBasedActions;
+using Calindor.Server.AI; //TODO: Remove when script available
 
 namespace Calindor.Server
 {
@@ -42,7 +43,7 @@ namespace Calindor.Server
         private TimeBasedActionsManager timeBasedActionsManager = null;
 
         // List of active players
-        private PlayerCharacterList activePlayers =
+        private PlayerCharacterList activePlayerCharacters =
             new PlayerCharacterList();
 
         // List of new players to be added to the active ones
@@ -52,6 +53,10 @@ namespace Calindor.Server
         // List of players to be removed from active ones
         private PlayerCharacterList removedPlayers =
             new PlayerCharacterList();
+
+        // List of active server characters
+        private ServerCharacterList activeServerCharacters =
+            new ServerCharacterList();
 
         // Dictionary of logged in players by Name
         private NamePlayerCharacterDictionary loggedInPlayersByName =
@@ -172,6 +177,7 @@ namespace Calindor.Server
                 // 2. Map events (weather)
                 // 2.5 Calculate entity visibility
                 // 2.6 Check entity followers
+                // 2.7 AI
                 // 3. Player events
                 // 4. Remove players
                 // 4.5 Time based actions
@@ -183,26 +189,35 @@ namespace Calindor.Server
                 // STEP2. ToDo
 
                 // STEP2.5. Entity visibility
-                // TODO: Should be done for all entities, not only players
-                foreach (PlayerCharacter pc in activePlayers)
+                // Recalculate - server and player
+                foreach (PlayerCharacter pc in activePlayerCharacters)
                     pc.ResetVisibleEntities();
+                foreach (ServerCharacter sc in activeServerCharacters)
+                    sc.ResetVisibleEntities();
 
-                foreach (PlayerCharacter pc in activePlayers)
+                foreach (PlayerCharacter pc in activePlayerCharacters)
                     pc.UpdateVisibleEntities();
+                foreach (ServerCharacter sc in activeServerCharacters)
+                    sc.UpdateVisibleEntities();
                 
-                // This is done only for player characters
-                foreach (PlayerCharacter pc in activePlayers)
+                // Send - player
+                foreach (PlayerCharacter pc in activePlayerCharacters)
                     handleVisibilityChangeEvents(pc);
 
                 // STEP2.6 Entity followers
-                // TODO: Should be done for all entities, not only players
-                foreach (PlayerCharacter pc in activePlayers)
+                foreach (PlayerCharacter pc in activePlayerCharacters)
                     pc.FollowingCheckForStopFollowing();
+                foreach (ServerCharacter sc in activeServerCharacters)
+                    sc.FollowingCheckForStopFollowing();
+
+                // STEP2.7 AI
+                foreach (ServerCharacter sc in activeServerCharacters)
+                    sc.AIExecute();
                 
                 // STEP3. Player events
                 IncommingMessage msg = null;
 
-                foreach (PlayerCharacter pc in activePlayers)
+                foreach (PlayerCharacter pc in activePlayerCharacters)
                 {
                     // Get from queue
                     pc.GetMessages();
@@ -237,7 +252,7 @@ namespace Calindor.Server
                             logger.LogError(LogSource.World, "Failed to serialize player " + pc.Name, ex);
                         }
 
-                        removePlayerFromWorld(pc);
+                        removeEntityImplementationFromWorld(pc);
                     }
 
                     removedPlayers.Clear();
@@ -251,7 +266,7 @@ namespace Calindor.Server
 
                 try
                 {
-                    activePlayers.AddRange(newPlayers);
+                    activePlayerCharacters.AddRange(newPlayers);
                     newPlayers.Clear();
                 }
                 finally
@@ -360,27 +375,31 @@ namespace Calindor.Server
 
         private void sendMessageToAllPlayers(OutgoingMessage msg)
         {
-            foreach (PlayerCharacter pc in activePlayers)
+            foreach (PlayerCharacter pc in activePlayerCharacters)
                 pc.PutMessageIntoMyQueue(msg);
-        }
-
-        /// <summary>
-        /// Performs all necessary operations to add player to the world
-        /// </summary>
-        /// <param name="pc"></param>
-        private void addPlayerToWorld(PlayerCharacter pc)
-        {
-            if (loggedInPlayersByName.ContainsKey(pc.Name.ToLower()))
-                // This should not happen. It should be checked before making login successful
-                throw new InvalidOperationException("Player is already in 'by name' dictionary!"); 
-
-            loggedInPlayersByName[pc.Name.ToLower()] = pc;
-
-            addEntityImplementationToWorld(pc);
         }
 
         private void addEntityImplementationToWorld(EntityImplementation enImpl)
         {
+            // Basic implementation check
+            if (!(enImpl is PlayerCharacter) && !(enImpl is ServerCharacter))
+                throw new ArgumentException("Unknown type of EntityImplementation: " + enImpl.GetType().ToString());
+
+            // Type specific test operations
+            if (enImpl is PlayerCharacter)
+            {
+                if (loggedInPlayersByName.ContainsKey(enImpl.Name.ToLower()))
+                    // This should not happen. It should be checked before making login successful
+                    throw new InvalidOperationException("Player is already in 'by name' dictionary!"); 
+            }
+
+            if (enImpl is ServerCharacter)
+            {
+                if (activeServerCharacters.Contains(enImpl as ServerCharacter))
+                    // This should not happen unless bug in script logic.
+                    throw new InvalidOperationException("Server character " + enImpl.Name + " already on the list of active characters!");
+            }
+
             // Searching for the next free entityID
             for (UInt16 i = 1; i < UInt16.MaxValue; i++)
                 if (!worldEntitiesByEntityID.ContainsKey(i))
@@ -398,6 +417,18 @@ namespace Calindor.Server
 
             // Connecct entity to map manager
             enImpl.LocationSetMapManager(mapManager);
+
+
+            // Type specific final operations
+            if (enImpl is PlayerCharacter)
+            {
+                loggedInPlayersByName[enImpl.Name.ToLower()] = (enImpl as PlayerCharacter);
+            }
+
+            if (enImpl is ServerCharacter)
+            {
+                activeServerCharacters.Add(enImpl as ServerCharacter);
+            }
         }
 
         private PlayerCharacter getPlayerByName(string playerName)
@@ -416,20 +447,30 @@ namespace Calindor.Server
                 return null;
         }
 
-        private void removePlayerFromWorld(PlayerCharacter pc)
-        {
-            // Total active players
-            activePlayers.Remove(pc);
-
-            // By Name dictionary
-            if (loggedInPlayersByName.ContainsKey(pc.Name.ToLower()))
-                loggedInPlayersByName.Remove(pc.Name.ToLower());
-
-            removeEntityImplementationFromWorld(pc);
-        }
-
         private void removeEntityImplementationFromWorld(EntityImplementation enImpl)
         {
+
+            // Basic implementation check
+            if (!(enImpl is PlayerCharacter) && !(enImpl is ServerCharacter))
+                throw new ArgumentException("Unknown type of EntityImplementation: " + enImpl.GetType().ToString());
+
+            // Type specific remove operations
+            if (enImpl is PlayerCharacter)
+            {
+                // Total active players
+                activePlayerCharacters.Remove(enImpl as PlayerCharacter);
+
+                // By Name dictionary
+                if (loggedInPlayersByName.ContainsKey(enImpl.Name.ToLower()))
+                    loggedInPlayersByName.Remove(enImpl.Name.ToLower());
+            }
+
+            if (enImpl is ServerCharacter)
+            { 
+                // Total server characters
+                activeServerCharacters.Remove(enImpl as ServerCharacter);
+            }
+
             // By EntityID dictionary
             if (worldEntitiesByEntityID.ContainsKey(enImpl.EntityID))
                 worldEntitiesByEntityID.Remove(enImpl.EntityID);
@@ -477,25 +518,32 @@ namespace Calindor.Server
             npcOwyn.LocationChangeMapAtEnterWorld();
             npcOwyn.CreateRecalculateInitialEnergies();
 
-            
-            // create rabbit
-            ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
-            EntityAppearance appearanceRabbit = new EntityAppearance(PredefinedModelType.BROWN_RABBIT);
-            rabbit1.CreateSetInitialAppearance(appearanceRabbit);
-            rabbit1.Name = "Rabbit";
-            EntityLocation locationRabbit = new EntityLocation();
-            locationRabbit.CurrentMap = mapManager.StartPointMap;
-            locationRabbit.Z = 0;
-            locationRabbit.X = (short)(mapManager.StartPointX);
-            locationRabbit.Y = (short)(mapManager.StartPointY + 8);
-            locationRabbit.Rotation = 180;
-            locationRabbit.IsSittingDown = false;
-            rabbit1.CreateSetInitialLocation(locationRabbit);
 
-            // add rabbit to the world
-            addEntityImplementationToWorld(rabbit1);
-            rabbit1.LocationChangeMapAtEnterWorld();
-            rabbit1.CreateRecalculateInitialEnergies();
+            for (int i = 0; i < 5; i++)
+            {
+                // create rabbit
+                ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                EntityAppearance appearanceRabbit = new EntityAppearance(PredefinedModelType.BROWN_RABBIT);
+                rabbit1.CreateSetInitialAppearance(appearanceRabbit);
+                rabbit1.Name = "Rabbit";
+                EntityLocation locationRabbit = new EntityLocation();
+                locationRabbit.CurrentMap = mapManager.StartPointMap;
+                locationRabbit.Z = 0;
+                locationRabbit.X = (short)(mapManager.StartPointX);
+                locationRabbit.Y = (short)(mapManager.StartPointY + 8);
+                locationRabbit.Rotation = 180;
+                locationRabbit.IsSittingDown = false;
+                rabbit1.CreateSetInitialLocation(locationRabbit);
+
+                // AI
+                WonderingNonAggresiveAIImplementation aiImpl = new WonderingNonAggresiveAIImplementation();
+                rabbit1.AIAttach(aiImpl);
+
+                // add rabbit to the world
+                addEntityImplementationToWorld(rabbit1);
+                rabbit1.LocationChangeMapAtEnterWorld();
+                rabbit1.CreateRecalculateInitialEnergies();
+            }
 
             // create troll
             ServerCharacter troll1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
@@ -530,6 +578,10 @@ namespace Calindor.Server
             locationdeer.IsSittingDown = false;
             deer1.CreateSetInitialLocation(locationdeer);
 
+            // AI
+            WonderingNonAggresiveAIImplementation aiImplDeer = new WonderingNonAggresiveAIImplementation();
+            deer1.AIAttach(aiImplDeer);
+
             // add deer to the world
             addEntityImplementationToWorld(deer1);
             deer1.LocationChangeMapAtEnterWorld();
@@ -548,6 +600,10 @@ namespace Calindor.Server
             locationbeaver.Rotation = 0;
             locationbeaver.IsSittingDown = false;
             beaver1.CreateSetInitialLocation(locationbeaver);
+
+            // AI
+            WonderingNonAggresiveAIImplementation aiImplbeaver = new WonderingNonAggresiveAIImplementation();
+            beaver1.AIAttach(aiImplbeaver);
 
             // add beaver to the world
             addEntityImplementationToWorld(beaver1);

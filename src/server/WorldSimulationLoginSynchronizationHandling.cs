@@ -244,7 +244,7 @@ namespace Calindor.Server
                 try
                 {
                     // Add to dictionaries / Get EntityID
-                    addPlayerToWorld(pc);
+                    addEntityImplementationToWorld(pc);
                 }
                 catch (Exception ex)
                 {
