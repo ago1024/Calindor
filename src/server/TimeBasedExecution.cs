@@ -43,13 +43,31 @@ namespace Calindor.Misc
 
         public virtual void Execute()
         {
-            if (getMilisSinceLastExecution() > milisBetweenExecutions)
+            PreconditionsResult pResult = checkPreconditions();
+            if (pResult == PreconditionsResult.NO_EXECUTE)
+                return;
+
+            if ((getMilisSinceLastExecution() > milisBetweenExecutions) || 
+                (pResult == PreconditionsResult.IMMEDIATE_EXECUTE))
             {
+                // TODO: this should be called the number of times getMilisSinceLastExecution is greater than milisBetweenExecutions
                 execute();
                 updateLastExecutionTime();
             }
         }
 
         protected abstract void execute();
+
+        protected virtual PreconditionsResult checkPreconditions()
+        {
+            return PreconditionsResult.EXECUTE;
+        }
+    }
+
+    public enum PreconditionsResult
+    {
+        EXECUTE,
+        NO_EXECUTE,
+        IMMEDIATE_EXECUTE
     }
 }

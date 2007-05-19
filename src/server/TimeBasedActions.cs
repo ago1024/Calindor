@@ -16,6 +16,7 @@ using Calindor.Misc.Predefines;
 using Calindor.Server.Items;
 using Calindor.Server;
 using Calindor.Server.Resources;
+using Calindor.Misc;
 
 namespace Calindor.Server.TimeBasedActions
 {
@@ -30,7 +31,8 @@ namespace Calindor.Server.TimeBasedActions
             foreach (TimeBasedAction action in activeActions)
             {
                 // Execute and check if action finished
-                if (!action.Execute())
+                action.Execute();
+                if (!action.ShouldContinue)
                     actionsToRemove.Add(action);
             }
 
@@ -50,10 +52,12 @@ namespace Calindor.Server.TimeBasedActions
     public interface ITimeBasedAction
     {
         /// <summary>
-        /// 
+        /// Indicates if action should be executed in next cycle
         /// </summary>
-        /// <returns>False is action finished</returns>
-        bool Execute();
+        bool ShouldContinue
+        {
+            get;
+        }
 
         /// <summary>
         /// Causes the action to be canceled
@@ -68,23 +72,13 @@ namespace Calindor.Server.TimeBasedActions
     /// <summary>
     /// Default implementation
     /// </summary>
-    public abstract class TimeBasedAction : ITimeBasedAction
+    public abstract class TimeBasedAction : TimeBasedExecution, ITimeBasedAction
     {
         protected EntityImplementation targetEntityImplementation = null;
-        protected long lastExecutedTick = DateTime.Now.Ticks;
-        protected bool actionCanceled = false;
+        private bool actionCanceled = false;
+        protected bool shouldContinue = true;
 
-        protected int getMilisSinceLastExecution()
-        {
-            return (int)((DateTime.Now.Ticks - lastExecutedTick)) / 10000;
-        }
-
-        protected void updateLastExecutionTime()
-        {
-            lastExecutedTick = DateTime.Now.Ticks;
-        }
-
-        public TimeBasedAction(EntityImplementation enImpl)
+        public TimeBasedAction(EntityImplementation enImpl, uint actionDuration):base(actionDuration)
         {
             if (enImpl == null)
                 throw new ArgumentNullException("enImpl");
@@ -93,14 +87,27 @@ namespace Calindor.Server.TimeBasedActions
             enImpl.TimeBasedActionSet(this);
         }
 
+        protected override PreconditionsResult checkPreconditions()
+        {
+            if (actionCanceled)
+            {
+                shouldContinue = false;
+                return PreconditionsResult.NO_EXECUTE;
+            }
+            else
+                return PreconditionsResult.EXECUTE;
+        }
 
         #region ITimeBasedAction Members
-
-        public abstract bool Execute();
 
         public virtual void Cancel()
         {
             actionCanceled = true;
+        }
+
+        public bool ShouldContinue
+        {
+            get { return shouldContinue; }
         }
 
         #endregion
@@ -112,7 +119,7 @@ namespace Calindor.Server.TimeBasedActions
         private const int WALK_COMMAND_DELAY = 250; // Delay (in milis) of sending commands
         private bool firstStep = true; 
 
-        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath) : base(enImpl)
+        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath) : base(enImpl, WALK_COMMAND_DELAY)
         {
            if (walkPath == null)
                 throw new ArgumentNullException("walkPath");
@@ -120,90 +127,102 @@ namespace Calindor.Server.TimeBasedActions
             this.walkPath = walkPath;
 
             updateLastExecutionTime();
+
             firstStep = true;
         }
 
-        public override bool Execute()
+        protected override void execute()
         {
-            if (actionCanceled)
-                return false; // Action canceled. Nothing to do.
-
             int milisSinceLastExecute = getMilisSinceLastExecution();
 
-            if ((milisSinceLastExecute > WALK_COMMAND_DELAY) || (firstStep))
+            // How many moves should be executed
+            int numberOfMoves = milisSinceLastExecute / WALK_COMMAND_DELAY;
+
+            // If this is first step
+            if (firstStep)
             {
-                // How many moves should be executed
-                int numberOfMoves = milisSinceLastExecute / WALK_COMMAND_DELAY;
-
-                // If this is first step
-                if (firstStep)
-                {
-                    numberOfMoves++; // Add one move
-                    firstStep = false; // No longer first step
-                    walkPath.GetNext(); // Remove the first item (current location) from path 
-                    targetEntityImplementation.LocationStandUp(true); // Stand up
-                }
-
-                for (int i = 0; i < numberOfMoves; i++)
-                {
-                    WalkPathItem itm = null;
-
-                    itm = walkPath.GetNext();
-
-                    if (itm == null)
-                        return false; //Move finished
-
-                    // Check if location is not occupied
-                    if (targetEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y))
-                        return false; // TODO: Needs to reroute
-
-
-                    // Check direction
-                    int xDiff = targetEntityImplementation.LocationX - itm.X;
-                    int yDiff = targetEntityImplementation.LocationY - itm.Y;
-
-                    if (Math.Abs(xDiff) > 1 || Math.Abs(yDiff) > 1)
-                        return false; // Error. Stop.
-
-                    if (xDiff == 0)
-                    {
-                        if (yDiff == -1)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.N);
-
-                        if (yDiff == 1)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.S);
-                    }
-
-                    if (xDiff == -1)
-                    {
-                        if (yDiff == -1)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.NE);
-
-                        if (yDiff == 0)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.E);
-
-                        if (yDiff == 1)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.SE);
-                    }
-
-                    if (xDiff == 1)
-                    {
-                        if (yDiff == 1)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.SW);
-
-                        if (yDiff == 0)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.W);
-
-                        if (yDiff == -1)
-                            targetEntityImplementation.LocationTakeStep(PredefinedDirection.NW);
-
-                    }
-                }
-
-                updateLastExecutionTime();
+                numberOfMoves++; // Add one move
+                firstStep = false; // No longer first step
+                walkPath.GetNext(); // Remove the first item (current location) from path 
+                targetEntityImplementation.LocationStandUp(true); // Stand up
             }
 
-            return true; // Keep on executing
+            for (int i = 0; i < numberOfMoves; i++)
+            {
+                WalkPathItem itm = null;
+
+                itm = walkPath.GetNext();
+
+                if (itm == null)
+                {
+                    shouldContinue = false;
+                    return; //Move finished
+                }
+
+                // Check if location is not occupied
+                if (targetEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y))
+                {
+                    shouldContinue = false;
+                    return; // TODO: Needs to reroute
+                }
+
+
+                // Check direction
+                int xDiff = targetEntityImplementation.LocationX - itm.X;
+                int yDiff = targetEntityImplementation.LocationY - itm.Y;
+
+                if (Math.Abs(xDiff) > 1 || Math.Abs(yDiff) > 1)
+                {
+                    shouldContinue = false;
+                    return; // Error. Stop.
+                }
+
+                if (xDiff == 0)
+                {
+                    if (yDiff == -1)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.N);
+
+                    if (yDiff == 1)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.S);
+                }
+
+                if (xDiff == -1)
+                {
+                    if (yDiff == -1)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.NE);
+
+                    if (yDiff == 0)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.E);
+
+                    if (yDiff == 1)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.SE);
+                }
+
+                if (xDiff == 1)
+                {
+                    if (yDiff == 1)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.SW);
+
+                    if (yDiff == 0)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.W);
+
+                    if (yDiff == -1)
+                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.NW);
+
+                }
+            }
+
+            shouldContinue = true; // Keep on executing
+        }
+
+        protected override PreconditionsResult checkPreconditions()
+        {
+            PreconditionsResult pResult = base.checkPreconditions();
+
+            if (firstStep)
+                pResult = PreconditionsResult.IMMEDIATE_EXECUTE;
+
+            return pResult;
         }
     }
 
@@ -211,10 +230,9 @@ namespace Calindor.Server.TimeBasedActions
     {
         private HarvestableResourceDescriptor rscDef = null;
         private double successRate = 0.0;
-        private uint harvestTime = 0;
 
         public HarvestTimeBasedAction(EntityImplementation enImpl, 
-            HarvestableResourceDescriptor rscDef): base(enImpl)
+            HarvestableResourceDescriptor rscDef): base(enImpl,0)
         {
             if (rscDef == null)
                 throw new ArgumentNullException("rscDef");
@@ -226,11 +244,13 @@ namespace Calindor.Server.TimeBasedActions
         private void calculateParameters()
         {
             this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef);
-            this.harvestTime = targetEntityImplementation.HarvestGetActionTime(rscDef);
+            setMilisBetweenExecutions(targetEntityImplementation.HarvestGetActionTime(rscDef));
         }
+
         public override void Cancel()
         {
             base.Cancel();
+
             RawTextOutgoingMessage msgRawText =
                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
             msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
@@ -238,29 +258,16 @@ namespace Calindor.Server.TimeBasedActions
             msgRawText.Text = "You stopped harvesting " + rscDef.HarvestedItem.Name;
             targetEntityImplementation.PutMessageIntoMyQueue(msgRawText);
         }
-        public override bool Execute()
+
+        protected override void execute()
         {
-            if (actionCanceled)
-                return false; // Action canceled. Nothing to do.
+            if (WorldRNG.NextDouble() <= successRate)
+                targetEntityImplementation.HarvestItemHarvested(rscDef);
+            
+            // After each harvest, recalculate
+            calculateParameters();
 
-            int milisSinceLastExecute = getMilisSinceLastExecution();
-
-            if (milisSinceLastExecute > harvestTime)
-            {
-                if (WorldRNG.NextDouble() <= successRate)
-                {
-                    targetEntityImplementation.HarvestItemHarvested(rscDef);
-                }
-
-                // After each harvest, recalculate
-                calculateParameters();
-
-                // TODO: After each harvest, remove food
-
-                updateLastExecutionTime();
-            }
-
-            return true;
+            shouldContinue = true;
         }
     }
 }
