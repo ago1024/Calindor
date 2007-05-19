@@ -235,7 +235,7 @@ namespace Calindor.Server.TimeBasedActions
                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
             msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
             msgRawText.Color = PredefinedColor.Blue1;
-            msgRawText.Text = "You stoped harvesting " + rscDef.HarvestedItem.Name;
+            msgRawText.Text = "You stopped harvesting " + rscDef.HarvestedItem.Name;
             targetEntityImplementation.PutMessageIntoMyQueue(msgRawText);
         }
         public override bool Execute()

@@ -183,7 +183,7 @@ namespace Calindor.Server.Entities
                     {
 
                         // TODO: For now just a simple condition, change for future
-                        if (getDistanceToEntity(testedEntity) < 30.0)
+                        if (getDistanceToEntity(testedEntity) < 35.0)
                         {
                             addVisibleEntity(testedEntity); // I can see you
                             testedEntity.addObserverEntity(this); // You know that I can see you

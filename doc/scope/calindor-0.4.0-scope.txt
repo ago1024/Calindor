@@ -14,7 +14,7 @@ Tasks:
 	+ skills serialization
 	+ list_skills command
 	- FightingTimeBasedAction
-	- AnimalEntity
+	+ AnimalEntity
 	- death (animal and player)
 	+ health
 	+ health serialization

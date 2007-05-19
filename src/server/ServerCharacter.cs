@@ -145,7 +145,7 @@ namespace Calindor.Server
                     pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
                     break;
                 case (2):
-                    msgNPCText.Text = "My name is Owyn and I am a traveling merchant. Apart from buying and selling I also know a few priest prayer that can heal people.";
+                    msgNPCText.Text = "My name is Owyn and I am a traveling merchant. Apart from buying and selling I also know a few priest prayers that can heal people.";
                     pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
                     pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
                     break;
@@ -179,7 +179,7 @@ namespace Calindor.Server
                             pcConv.PlayerInConversation.InventoryUpdateItem(itm);
                         }
 
-                        msgNPCText.Text = "Your items were worth " + Math.Round(royalsTotal, 0) + " royals to me.";
+                        msgNPCText.Text = "I will trade your items for " + Math.Round(royalsTotal, 0) + " royals.";
                         pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
                         pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
                         itm = new Item(ItemDefinitionCache.GetItemDefinitionByID(5));

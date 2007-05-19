@@ -59,6 +59,7 @@
     <Compile Include="ServerListeningThread.cs" />
     <Compile Include="ServerLogger.cs" />
     <Compile Include="TimeBasedActions.cs" />
+    <Compile Include="TimeBasedExecution.cs" />
     <Compile Include="WorldCalendar.cs" />
     <Compile Include="WorldSimulation.cs" />
     <Compile Include="WorldSimulationEntityVinicityEventsHandling.cs" />

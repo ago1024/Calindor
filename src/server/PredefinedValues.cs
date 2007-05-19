@@ -77,6 +77,7 @@ namespace Calindor.Misc.Predefines
         RAT = 9,
         DEER = 15,
         BROWN_RABBIT = 19,
+        SNAKE_1 = 22,
         TROLL = 35,
         GNOME_FEMALE = 37,
         GNOME_MALE = 38,

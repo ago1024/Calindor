@@ -15,3 +15,9 @@ following. The algorithm should be update to avoid obstacles better.
 created since the framework is modular. Examples of desired AI: small
 animals run if the see predators (players as well), predators attack
 animals and players, predators group and attack (wolves?)
+
+5. Visibility calculations - ther is a lot of list based operations with
+current visibility model. Visibility is updated each cycle and it can
+become the bootleneck because the CPU consumption is not linear. Possible
+solution: make visibility update different for each entity but in such
+way, that all entities would update within a short time span (250ms)

@@ -518,8 +518,62 @@ namespace Calindor.Server
             npcOwyn.LocationChangeMapAtEnterWorld();
             npcOwyn.CreateRecalculateInitialEnergies();
 
+            for (int i = 0; i < 3; i++)
+            {
+                // create rat
+                ServerCharacter rat1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                EntityAppearance appearancerat = new EntityAppearance(PredefinedModelType.RAT);
+                rat1.CreateSetInitialAppearance(appearancerat);
+                rat1.Name = "Rat";
+                EntityLocation locationrat = new EntityLocation();
+                locationrat.CurrentMap = mapManager.StartPointMap;
+                locationrat.Z = 0;
+                locationrat.X = (short)(27 + i);
+                locationrat.Y = (short)(31 + i);
+                locationrat.Rotation = 180;
+                locationrat.IsSittingDown = false;
+                rat1.CreateSetInitialLocation(locationrat);
 
-            for (int i = 0; i < 5; i++)
+                // AI
+                WonderingDumbNonAggresiveAIImplementation aiImpl =
+                    new WonderingDumbNonAggresiveAIImplementation(locationrat.X, locationrat.Y, 20, 2000);
+                rat1.AIAttach(aiImpl);
+
+                // add rat to the world
+                addEntityImplementationToWorld(rat1);
+                rat1.LocationChangeMapAtEnterWorld();
+                rat1.CreateRecalculateInitialEnergies();
+            }
+
+            for (int i = 0; i < 1; i++)
+            {
+                // create rat
+                ServerCharacter rat1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                EntityAppearance appearancerat = new EntityAppearance(PredefinedModelType.RAT);
+                rat1.CreateSetInitialAppearance(appearancerat);
+                rat1.Name = "Rat";
+                EntityLocation locationrat = new EntityLocation();
+                locationrat.CurrentMap = mapManager.StartPointMap;
+                locationrat.Z = 0;
+                locationrat.X = (short)(108 + i);
+                locationrat.Y = (short)(166 + i);
+                locationrat.Rotation = 180;
+                locationrat.IsSittingDown = false;
+                rat1.CreateSetInitialLocation(locationrat);
+
+                // AI
+                WonderingDumbNonAggresiveAIImplementation aiImpl =
+                    new WonderingDumbNonAggresiveAIImplementation(locationrat.X, locationrat.Y, 20, 2000);
+                rat1.AIAttach(aiImpl);
+
+                // add rat to the world
+                addEntityImplementationToWorld(rat1);
+                rat1.LocationChangeMapAtEnterWorld();
+                rat1.CreateRecalculateInitialEnergies();
+            }
+
+
+            for (int i = 0; i < 2; i++)
             {
                 // create rabbit
                 ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
@@ -529,14 +583,15 @@ namespace Calindor.Server
                 EntityLocation locationRabbit = new EntityLocation();
                 locationRabbit.CurrentMap = mapManager.StartPointMap;
                 locationRabbit.Z = 0;
-                locationRabbit.X = (short)(mapManager.StartPointX);
-                locationRabbit.Y = (short)(mapManager.StartPointY + 8);
+                locationRabbit.X = (short)(165 + i);
+                locationRabbit.Y = (short)(120 + i);
                 locationRabbit.Rotation = 180;
                 locationRabbit.IsSittingDown = false;
                 rabbit1.CreateSetInitialLocation(locationRabbit);
 
                 // AI
-                WonderingNonAggresiveAIImplementation aiImpl = new WonderingNonAggresiveAIImplementation();
+                WonderingDumbNonAggresiveAIImplementation aiImpl = 
+                    new WonderingDumbNonAggresiveAIImplementation(locationRabbit.X, locationRabbit.Y, 30,3000);
                 rabbit1.AIAttach(aiImpl);
 
                 // add rabbit to the world
@@ -544,6 +599,61 @@ namespace Calindor.Server
                 rabbit1.LocationChangeMapAtEnterWorld();
                 rabbit1.CreateRecalculateInitialEnergies();
             }
+
+            for (int i = 0; i < 2; i++)
+            {
+                // create rabbit
+                ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                EntityAppearance appearanceRabbit = new EntityAppearance(PredefinedModelType.BROWN_RABBIT);
+                rabbit1.CreateSetInitialAppearance(appearanceRabbit);
+                rabbit1.Name = "Rabbit";
+                EntityLocation locationRabbit = new EntityLocation();
+                locationRabbit.CurrentMap = mapManager.StartPointMap;
+                locationRabbit.Z = 0;
+                locationRabbit.X = (short)(56 + i);
+                locationRabbit.Y = (short)(110 + i);
+                locationRabbit.Rotation = 180;
+                locationRabbit.IsSittingDown = false;
+                rabbit1.CreateSetInitialLocation(locationRabbit);
+
+                // AI
+                WonderingDumbNonAggresiveAIImplementation aiImpl =
+                    new WonderingDumbNonAggresiveAIImplementation(locationRabbit.X, locationRabbit.Y, 30, 3000);
+                rabbit1.AIAttach(aiImpl);
+
+                // add rabbit to the world
+                addEntityImplementationToWorld(rabbit1);
+                rabbit1.LocationChangeMapAtEnterWorld();
+                rabbit1.CreateRecalculateInitialEnergies();
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                // create snake
+                ServerCharacter snake1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                EntityAppearance appearancesnake = new EntityAppearance(PredefinedModelType.SNAKE_1);
+                snake1.CreateSetInitialAppearance(appearancesnake);
+                snake1.Name = "Snake";
+                EntityLocation locationsnake = new EntityLocation();
+                locationsnake.CurrentMap = mapManager.StartPointMap;
+                locationsnake.Z = 0;
+                locationsnake.X = (short)(19 + i);
+                locationsnake.Y = (short)(159 + i);
+                locationsnake.Rotation = 180;
+                locationsnake.IsSittingDown = false;
+                snake1.CreateSetInitialLocation(locationsnake);
+
+                // AI
+                WonderingDumbNonAggresiveAIImplementation aiImpl =
+                    new WonderingDumbNonAggresiveAIImplementation(locationsnake.X, locationsnake.Y, 40, 3000);
+                snake1.AIAttach(aiImpl);
+
+                // add snake to the world
+                addEntityImplementationToWorld(snake1);
+                snake1.LocationChangeMapAtEnterWorld();
+                snake1.CreateRecalculateInitialEnergies();
+            }
+
 
             // create troll
             ServerCharacter troll1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
@@ -553,9 +663,9 @@ namespace Calindor.Server
             EntityLocation locationtroll = new EntityLocation();
             locationtroll.CurrentMap = mapManager.StartPointMap;
             locationtroll.Z = 0;
-            locationtroll.X = 114;
-            locationtroll.Y = 142;
-            locationtroll.Rotation = 270;
+            locationtroll.X = 131;
+            locationtroll.Y = 160;
+            locationtroll.Rotation = 90;
             locationtroll.IsSittingDown = false;
             troll1.CreateSetInitialLocation(locationtroll);
 
@@ -572,14 +682,15 @@ namespace Calindor.Server
             EntityLocation locationdeer = new EntityLocation();
             locationdeer.CurrentMap = mapManager.StartPointMap;
             locationdeer.Z = 0;
-            locationdeer.X = 99;
-            locationdeer.Y = 131;
+            locationdeer.X = 156;
+            locationdeer.Y = 97;
             locationdeer.Rotation = 0;
             locationdeer.IsSittingDown = false;
             deer1.CreateSetInitialLocation(locationdeer);
 
             // AI
-            WonderingNonAggresiveAIImplementation aiImplDeer = new WonderingNonAggresiveAIImplementation();
+            WonderingDumbNonAggresiveAIImplementation aiImplDeer = 
+                new WonderingDumbNonAggresiveAIImplementation(locationdeer.X, locationdeer.Y, 50, 5000);
             deer1.AIAttach(aiImplDeer);
 
             // add deer to the world
@@ -595,14 +706,15 @@ namespace Calindor.Server
             EntityLocation locationbeaver = new EntityLocation();
             locationbeaver.CurrentMap = mapManager.StartPointMap;
             locationbeaver.Z = 0;
-            locationbeaver.X = 108;
-            locationbeaver.Y = 116;
+            locationbeaver.X = 74;
+            locationbeaver.Y = 32;
             locationbeaver.Rotation = 0;
             locationbeaver.IsSittingDown = false;
             beaver1.CreateSetInitialLocation(locationbeaver);
 
             // AI
-            WonderingNonAggresiveAIImplementation aiImplbeaver = new WonderingNonAggresiveAIImplementation();
+            WonderingDumbNonAggresiveAIImplementation aiImplbeaver = 
+                new WonderingDumbNonAggresiveAIImplementation(locationbeaver.X, locationbeaver.Y, 50, 5000);
             beaver1.AIAttach(aiImplbeaver);
 
             // add beaver to the world
