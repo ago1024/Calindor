@@ -722,6 +722,37 @@ namespace Calindor.Server
             beaver1.LocationChangeMapAtEnterWorld();
             beaver1.CreateRecalculateInitialEnergies();
 
+
+            // create town person
+            ServerCharacter townperson = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            EntityAppearance appearance2 = new EntityAppearance(PredefinedModelType.DWARF_MALE);
+            appearance2.Boots = PredefinedModelBoots.BOOTS_BROWN;
+            appearance2.Hair = PredefinedModelHair.HAIR_BLOND;
+            appearance2.Head = PredefinedModelHead.HEAD_3;
+            appearance2.Pants = PredefinedModelPants.PANTS_GREEN;
+            appearance2.Shirt = PredefinedModelShirt.SHIRT_BLUE;
+            appearance2.Skin = PredefinedModelSkin.SKIN_PALE;
+            townperson.Name = "Boric the Brave";
+            townperson.CreateSetInitialAppearance(appearance2);
+            EntityLocation location2 = new EntityLocation();
+            location2.CurrentMap = mapManager.StartPointMap;
+            location2.Z = 0;
+            location2.X = 82;
+            location2.Y = 136;
+            location2.Rotation = 180;
+            location2.IsSittingDown = false;
+            townperson.CreateSetInitialLocation(location2);
+
+            // AI
+            WonderingDumbNonAggresiveAIImplementation aiImpltownperson =
+                new WonderingDumbNonAggresiveAIImplementation(location2.X, location2.Y, 60, 10000);
+            townperson.AIAttach(aiImpltownperson);
+
+            // add npc to the world
+            addEntityImplementationToWorld(townperson);
+            townperson.LocationChangeMapAtEnterWorld();
+            townperson.CreateRecalculateInitialEnergies();
+
         }
     }
 

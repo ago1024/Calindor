@@ -25,7 +25,7 @@ namespace Calindor.Server
 
         private static bool shouldExitAfterParsingCommandLine = false;
 
-        public static void parseCMDLine(string[] args)
+        private static void parseCMDLine(string[] args)
         {
             if (args.Length == 0)
                 return;
