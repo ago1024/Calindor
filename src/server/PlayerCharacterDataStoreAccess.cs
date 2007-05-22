@@ -10,7 +10,6 @@
 
 using System;
 using System.IO;
-using Calindor.Server.Entities;
 using Calindor.Server.Serialization;
 
 namespace Calindor.Server

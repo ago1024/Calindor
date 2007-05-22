@@ -141,6 +141,9 @@ namespace Calindor.StorageUpdater
 
             if (op == Operation.Upgrade)
                 versions.UpgradeStorage(versionFrom, versionTo, logger, conf.DataStoragePath);
+
+            logger.LogProgress(LogSource.Other, "Finished. (press ENTER)");
+            Console.ReadLine();
         }
     }
 

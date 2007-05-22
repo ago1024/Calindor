@@ -28,8 +28,18 @@ namespace Calindor.StorageUpdater
             return null;
         }
 
+        public ServerVersion GetVersion(int order)
+        {
+            if (order < 0 || order >= versions.Count)
+                return null;
+
+            return versions[order];
+        }
+
         public void UpgradeStorage(string versionFrom, string versionTo, ILogger logger, string dataStoragePath)
         {
+            logger.LogProgress(LogSource.Other, "Upgrade starts...");
+
             // Checks
             ServerVersion verFrom = GetVersion(versionFrom);
             if (verFrom == null)
@@ -54,15 +64,41 @@ namespace Calindor.StorageUpdater
 
             // Checks ok
 
-            /*
-             * Foreach character:
-             * 1. make backup
-             * 2. upgrade through all versions
-             * 3. remove backup
-             */
 
-            // TODO: Implement
+            PlayerCharacterDataStoreIterator it = new PlayerCharacterDataStoreIterator();
+            it.Initialize(dataStoragePath);
 
+            string playerName = null;
+
+            while ((playerName = it.GetNextPlayerCharacterName()) != null)
+            {
+                /*
+                 * Foreach character:
+                 * 1. make backup
+                 * 2. upgrade through all versions
+                 * 3. remove backup
+                 */
+
+                //TODO: Make backup
+
+                try
+                {
+                    // Iterate through versions and upgrade
+                    for (int i = verFrom.Order + 1; i <= verTo.Order; i++)
+                        GetVersion(i).UpgradeToThisVersion();
+
+                    // TODO: Delete backup
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(LogSource.Other, "Failed to update player " + playerName, ex);
+
+                    // TODO: Restore backup
+                }
+
+            }
+
+            logger.LogProgress(LogSource.Other, "Upgrade completed.");
         }
 
         public void DowngradeStorage(string versionFrom, string versionTo)
@@ -129,6 +165,7 @@ namespace Calindor.StorageUpdater
         public override void UpgradeToThisVersion()
         {
             //TODO: Implement
+            Console.WriteLine("Upgraded to 0.4.0CTP1");
         }
 
         public override void DowngradeToPreviousVersion()
