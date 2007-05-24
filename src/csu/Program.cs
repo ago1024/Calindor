@@ -138,6 +138,9 @@ namespace Calindor.StorageUpdater
             }
 
             // Start
+            logger.LogProgress(LogSource.Other, "BE SURE TO MANUALLY BACKUP STORAGE AT: " + conf.DataStoragePath);
+            logger.LogProgress(LogSource.Other, "Press ENTER to continue");
+            Console.ReadLine();
 
             if (op == Operation.Upgrade)
                 versions.UpgradeStorage(versionFrom, versionTo, logger, conf.DataStoragePath);

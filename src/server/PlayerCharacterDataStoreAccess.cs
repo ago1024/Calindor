@@ -366,7 +366,8 @@ namespace Calindor.Server
             // Read version
             string ver = ReadString();
             if (ver != fileVer)
-                throw new InvalidOperationException("File version is wrong for this deserializer");
+                throw new InvalidOperationException("File version is wrong for this deserializer. Should be: " 
+                    + fileVer + ", is: " + ver);
         }
 
         public short ReadShort()

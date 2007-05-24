@@ -82,21 +82,15 @@ namespace Calindor.StorageUpdater
                  * 3. remove backup
                  */
 
-                //TODO: Make backup
-
                 try
                 {
                     // Iterate through versions and upgrade
                     for (int i = verFrom.Order + 1; i <= verTo.Order; i++)
                         GetVersion(i).UpgradeToThisVersion(playerName);
-
-                    // TODO: Delete backup
                 }
                 catch (Exception ex)
                 {
                     logger.LogError(LogSource.Other, "Failed to update player " + playerName, ex);
-
-                    // TODO: Restore backup
                 }
 
             }
@@ -126,18 +120,105 @@ namespace Calindor.StorageUpdater
 
         protected string storagePath = null;
 
+        protected PlayerCharacterDeserializer pcDsr = null;
+        protected PlayerCharacterSerializer pcSer = null;
+
         public string StoragePath
         {
-            set { storagePath = value; }
+            set 
+            { 
+                storagePath = value;
+                pcDsr = new PlayerCharacterDeserializer(storagePath);
+                pcSer = new PlayerCharacterSerializer(storagePath);
+            }
         }
 
-        public abstract void UpgradeToThisVersion(string playerName);
+        private void checkFileVersions(string playerName, bool testPreviousFileVersions)
+        {
+            PlayerCharacterFileVersionList list = null;
 
-        public abstract void DowngradeToPreviousVersion(string playerName);
-	
+            if (testPreviousFileVersions)
+                list = previousVersionFileVersions;
+            else
+                list = thisVersionFileVersions;
+
+            foreach (PlayerCharacterFileVersion pcFV in list)
+            {
+                try
+                {
+                    pcDsr.Start(playerName, pcFV.Type, pcFV.Version); // Will throw if wrong file version
+                }
+                finally
+                {
+                    pcDsr.End();
+                }
+            }
+        }
+
+        #region Upgrade
+        protected PlayerCharacterFileVersionList previousVersionFileVersions =
+            new PlayerCharacterFileVersionList();
+
+        public virtual void UpgradeToThisVersion(string playerName)
+        {
+            checkFileVersions(playerName, true);
+
+            upgradeToThisVersionImplementation(playerName);
+        }
+
+        protected abstract void upgradeToThisVersionImplementation(string playerName);
+        #endregion
+
+        #region Downgrade
+        // TODO: implement
+        protected PlayerCharacterFileVersionList thisVersionFileVersions =
+            new PlayerCharacterFileVersionList();
+
+        public virtual void DowngradeToPreviousVersion(string playerName)
+        {
+            checkFileVersions(playerName, false);
+
+            downgradeToPreviousVersionImplementation(playerName);
+        }
+
+        protected abstract void downgradeToPreviousVersionImplementation(string playerName);
+        #endregion
+
     }
 
     public class ServerVersionList : List<ServerVersion>
+    {
+    }
+
+    public class PlayerCharacterFileVersion
+    {
+        private PlayerCharacterDataType type;
+
+        public PlayerCharacterDataType Type
+        {
+            get { return type; }
+        }
+
+        private string version;
+
+        public string Version
+        {
+            get { return version; }
+        }
+
+        private PlayerCharacterFileVersion()
+        {
+        }
+
+        public PlayerCharacterFileVersion(PlayerCharacterDataType type, string version)
+        {
+            this.type = type;
+            this.version = version;
+        }
+	
+    }
+
+    public class PlayerCharacterFileVersionList : List<PlayerCharacterFileVersion>
     {
     }
 
@@ -153,13 +234,17 @@ namespace Calindor.StorageUpdater
         {
             get { return "0.3.0"; }
         }
+        
+        public ServerVersion0_3_0()
+        {
+        }
 
-        public override void UpgradeToThisVersion(string playerName)
+        protected override void upgradeToThisVersionImplementation(string playerName)
         {
             return; //Nothing
         }
 
-        public override void DowngradeToPreviousVersion(string playerName)
+        protected override void downgradeToPreviousVersionImplementation(string playerName)
         {
             return; //Nothing
         }
@@ -172,80 +257,65 @@ namespace Calindor.StorageUpdater
             get { return "0.4.0CTP1"; }
         }
 
-        private string playerNameAppearance0_3_0 = "";
-        private byte[] bArrayAppearance0_3_0 = new byte[7];
-        private short[] sArrayLocation0_3_0 = new short[5];
-        private string mapNameLocation0_3_0 = "";
-
-        public override void UpgradeToThisVersion(string playerName)
+        public ServerVersion0_4_0_CTP1()
         {
-            // Create serializer / deserializer
-            PlayerCharacterSerializer pcSer = new PlayerCharacterSerializer(storagePath);
-            PlayerCharacterDeserializer pcDSer = new PlayerCharacterDeserializer(storagePath);
+            previousVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, "VER.1.0.0"));
+            previousVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, "VER.1.1.0"));
 
-            // Load appearance 0.3.0
-            pcDSer.Start(playerName, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
-            playerNameAppearance0_3_0 = pcDSer.ReadString();
-            for (int i = 0; i < 7; i++)
-                bArrayAppearance0_3_0[i] = pcDSer.ReadByte();
-            pcDSer.End();
-
-            // Save appearance 0.4.0CTP1
-            pcSer.Start(playerName, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
-            pcSer.WriteValue(playerNameAppearance0_3_0);
-            for (int i = 0; i < 7; i++)
-                pcSer.WriteValue(bArrayAppearance0_3_0[i]);
-            pcSer.End();
-
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, "VER.1.0.0"));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, "VER.1.1.0"));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCEnergies, "VER.1.0.0"));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCInventory, "VER.1.0.0"));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCSkills, "VER.1.0.0"));
             
-            // Load location 0.3.0
-            pcDSer.Start(playerName, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
-            for (int i = 0; i < 5; i++)
-                sArrayLocation0_3_0[i] = pcDSer.ReadShort();
-            mapNameLocation0_3_0 = pcDSer.ReadString();
-            pcDSer.End();
+        }
 
-            // Save location 0.4.0CTP1
-            pcSer.Start(playerName, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
-            for (int i = 0; i < 5; i++)
-                pcSer.WriteValue(sArrayLocation0_3_0[i]);
-            pcSer.WriteValue(mapNameLocation0_3_0);
-            pcSer.End();
+        protected override void upgradeToThisVersionImplementation(string playerName)
+        {
+            // Appearance - no changes            
+            // Location - no changes
             
-            // Load energies 0.3.0
-            // Nothing - does not exist
-
-            // Save energies 0.4.0CTP1
-            pcSer.Start(playerName, PlayerCharacterDataType.PCEnergies, "VER.1.0.0");
-            pcSer.WriteValue((short)5);
-            pcSer.End();
-
-
-            // Load inventory 0.3.0
-            // Nothing - does not exist
-
-            // Save inventory 0.4.0CTP1
-            pcSer.Start(playerName, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
-            pcSer.WriteValue((byte)36);
-            pcSer.WriteValue((byte)0);
-            pcSer.End();
-
-
-            // Load skills 0.3.0
-            // Nothing - does not exist
-
-            // Save skills 0.4.0CTP1
-            pcSer.Start(playerName, PlayerCharacterDataType.PCSkills, "VER.1.0.0");
-            for (int i = 0; i < 6; i++)
+            // Energies - create
+            try
             {
-                pcSer.WriteValue((byte)i);
-                pcSer.WriteValue((uint)0);
+                pcSer.Start(playerName, PlayerCharacterDataType.PCEnergies, "VER.1.0.0");
+                pcSer.WriteValue((short)1);
             }
-            pcSer.End();
+            finally
+            {
+                pcSer.End();
+            }
+
+            // Inventory - create
+            try
+            {
+                pcSer.Start(playerName, PlayerCharacterDataType.PCInventory, "VER.1.0.0");
+                pcSer.WriteValue((byte)36);
+                pcSer.WriteValue((byte)0);
+            }
+            finally
+            {
+                pcSer.End();
+            }
+
+            // Skills - create
+            try
+            {
+                pcSer.Start(playerName, PlayerCharacterDataType.PCSkills, "VER.1.0.0");
+                for (int i = 0; i < 6; i++)
+                {
+                    pcSer.WriteValue((byte)i);
+                    pcSer.WriteValue((uint)0);
+                }
+            }
+            finally
+            {
+                pcSer.End();
+            }
 
         }
 
-        public override void DowngradeToPreviousVersion(string playerName)
+        protected override void downgradeToPreviousVersionImplementation(string playerName)
         {
             //TODO: Implement
         }
