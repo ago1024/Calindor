@@ -15,7 +15,11 @@ namespace Calindor.StorageUpdater
 
         public void AddVersion(ServerVersion ver)
         {
+            if (versions.Count > 0)
+                ver.PreviousVersion = versions[versions.Count - 1];
+
             versions.Add(ver);
+            
             ver.Order = versions.Count - 1;
         }
 
@@ -68,6 +72,7 @@ namespace Calindor.StorageUpdater
             PlayerCharacterDataStoreIterator it = new PlayerCharacterDataStoreIterator();
             it.Initialize(dataStoragePath);
 
+            // Set data storage path to all version
             foreach (ServerVersion sv in versions)
                 sv.StoragePath = dataStoragePath;
 
@@ -133,16 +138,18 @@ namespace Calindor.StorageUpdater
             }
         }
 
-        private void checkFileVersions(string playerName, bool testPreviousFileVersions)
+        protected ServerVersion previousVersion = null;
+        public ServerVersion PreviousVersion
         {
-            PlayerCharacterFileVersionList list = null;
+            set { previousVersion = value; }
+        }
 
-            if (testPreviousFileVersions)
-                list = previousVersionFileVersions;
-            else
-                list = thisVersionFileVersions;
+        protected PlayerCharacterFileVersionList thisVersionFileVersions =
+            new PlayerCharacterFileVersionList();
 
-            foreach (PlayerCharacterFileVersion pcFV in list)
+        private void checkFileVersions(string playerName)
+        {
+            foreach (PlayerCharacterFileVersion pcFV in thisVersionFileVersions)
             {
                 try
                 {
@@ -156,12 +163,16 @@ namespace Calindor.StorageUpdater
         }
 
         #region Upgrade
-        protected PlayerCharacterFileVersionList previousVersionFileVersions =
-            new PlayerCharacterFileVersionList();
-
         public virtual void UpgradeToThisVersion(string playerName)
         {
-            checkFileVersions(playerName, true);
+            if (previousVersion == null)
+                throw new ArgumentException("previousVersion is null");
+
+            // TODO: check if not already in this version, if() return
+
+            // Check if in previous version
+            // TODO: add if () throw
+            previousVersion.checkFileVersions(playerName);
 
             upgradeToThisVersionImplementation(playerName);
         }
@@ -171,14 +182,8 @@ namespace Calindor.StorageUpdater
 
         #region Downgrade
         // TODO: implement
-        protected PlayerCharacterFileVersionList thisVersionFileVersions =
-            new PlayerCharacterFileVersionList();
-
         public virtual void DowngradeToPreviousVersion(string playerName)
         {
-            checkFileVersions(playerName, false);
-
-            downgradeToPreviousVersionImplementation(playerName);
         }
 
         protected abstract void downgradeToPreviousVersionImplementation(string playerName);
@@ -237,6 +242,8 @@ namespace Calindor.StorageUpdater
         
         public ServerVersion0_3_0()
         {
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, "VER.1.0.0"));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, "VER.1.1.0"));
         }
 
         protected override void upgradeToThisVersionImplementation(string playerName)
@@ -259,15 +266,11 @@ namespace Calindor.StorageUpdater
 
         public ServerVersion0_4_0_CTP1()
         {
-            previousVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, "VER.1.0.0"));
-            previousVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, "VER.1.1.0"));
-
             thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, "VER.1.0.0"));
             thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, "VER.1.1.0"));
             thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCEnergies, "VER.1.0.0"));
             thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCInventory, "VER.1.0.0"));
             thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCSkills, "VER.1.0.0"));
-            
         }
 
         protected override void upgradeToThisVersionImplementation(string playerName)
