@@ -195,6 +195,12 @@ namespace Calindor.Server
         PCEnergies      =   5,
     }
 
+    public enum FileVersion
+    {
+        VER_1_0_0 = 1000,
+        VER_1_1_0 = 1100,
+    }
+
     public class PlayerCharacterDoesNotExistException : ApplicationException
     {
         private string playerName = "";
@@ -219,6 +225,13 @@ namespace Calindor.Server
         public PlayerCharacterSerializer(string storagePath)
         {
             this.storagePath = storagePath;
+        }
+
+        public void Start(string playerName, PlayerCharacterDataType type, FileVersion fileVer)
+        {
+            string fileVerStr = fileVer.ToString();
+            fileVerStr = fileVerStr.Replace('_', '.');
+            Start(playerName, type, fileVerStr);
         }
 
         public void Start(string playerName, PlayerCharacterDataType type, string fileVer)
@@ -320,6 +333,13 @@ namespace Calindor.Server
         public PlayerCharacterDeserializer(string storagePath)
         {
             this.storagePath = storagePath;
+        }
+
+        public void Start(string playerName, PlayerCharacterDataType type, FileVersion fileVer)
+        {
+            string fileVerStr = fileVer.ToString();
+            fileVerStr = fileVerStr.Replace('_', '.');
+            Start(playerName, type, fileVerStr);
         }
 
         public void Start(string playerName, PlayerCharacterDataType type, string fileVer)

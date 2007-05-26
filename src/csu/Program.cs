@@ -1,8 +1,20 @@
+/*
+ * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
+ * Original project page: http://sourceforge.net/projects/calindor/
+ * 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ */
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Threading;
+using System.Globalization;
 using Calindor.Server;
 
 namespace Calindor.StorageUpdater
@@ -82,6 +94,10 @@ namespace Calindor.StorageUpdater
 
         public static void Main(string[] args)
         {
+            // Setting invariant culture
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;            
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
+
             initializeVersions();
 
             // Setting working directory
