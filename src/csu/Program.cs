@@ -41,12 +41,30 @@ namespace Calindor.StorageUpdater
             versions.AddVersion(new ServerVersion0_4_0_CTP1());
         }
 
+        private static void displayHelp()
+        {
+            Console.WriteLine("Commands:");
+            Console.WriteLine("   /pv - displays informative version");
+            Console.WriteLine("   /supports - lists supported server versions");
+            Console.WriteLine("   /upgrade {versionFrom} {versionTo} - upgrades from versionFrom to versionTo");
+        }
+
         private static void parseCMDLine(string[] args)
         {
             shouldExitAfterParsingCommandLine = true;
 
             if (args.Length == 0)
+            {
+                displayHelp();
                 return;
+            }
+
+            // Display help
+            if ((args[0] == "/h") || (args[0] == "--help") || (args[0] == "/?"))
+            {
+                displayHelp();
+                return;
+            }
 
             // Display informative product version
             if (args[0] == "/pv")

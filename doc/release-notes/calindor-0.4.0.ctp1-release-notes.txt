@@ -1,0 +1,11 @@
+First CTP of version 0.4.0.
+Contains about 70% of the total scope.
+
+Implemented:
+- inventory
+- skills
+- harvesting
+- npc dialogs
+- server characters
+
+Be sure to run csu and upgrade your storage before running the server.

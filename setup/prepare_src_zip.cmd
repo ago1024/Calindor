@@ -13,7 +13,14 @@ cd setup
 cd %dest_dir%
 cd src
 cd server
+rmdir bin /S /Q
 rmdir obj /S /Q
+del *.user /Q
+cd..
+cd csu
+rmdir bin /S /Q
+rmdir obj /S /Q
+del *.user /Q
 cd..
 cd..
 cd..
@@ -23,6 +30,7 @@ copy doc\installation.txt setup\%dest_dir%\
 copy doc\compilation.txt setup\%dest_dir%\
 copy doc\license.txt setup\%dest_dir%\
 copy doc\features.txt setup\%dest_dir%\
+copy doc\commands.txt setup\%dest_dir%\
 copy setup\server_config_default.xml setup\%dest_dir%\src\server\server_config.xml /Y
 cd "%top_dir%\setup"
 7za a -r -tzip %dest_dir%.zip %dest_dir%\*

@@ -52,7 +52,21 @@ Installation Instructions for Calindor
    In order to use them, you don't have to change the <startingMap> configuration 
    key.   
 
-5. Support
+5. Updating storage
+
+   It is possible to update your existing storage to the new version of the server.
+   This operation is done using Calindor Storage Updater (csu.exe). The application
+   is located in the server's binaries directory.
+
+   First, check if your previous version and current version of the server are
+   supported. This is done by running csu.exe /supports. The application will
+   list the names of supported server versions.
+
+   If your versions are supported, run csu.exe /upgrade verFrom verTo, where verFrom
+   is a version you want to upgrade from and verTo is the version you want to upgrade to.
+   Be sure to use version names provided by /supports command.
+
+6. Support
 
    If you have problems running the server or have any questions about its
    configuration, be sure to visit project page:
@@ -61,7 +75,7 @@ Installation Instructions for Calindor
    You can also post on the "Help" forum:
    http://sourceforge.net/forum/forum.php?forum_id=682930
 
-6. License
+7. License
 
    This software is licensed under the terms on GNU Lesser General Public Lincese.
    The license is attached to the installation package.

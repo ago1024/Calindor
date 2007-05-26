@@ -13,10 +13,12 @@ mkdir storage
 cd..
 cd..
 copy release\calindor.exe setup\%dest_dir%\
+copy release\csu.exe setup\%dest_dir%\
 copy setup\server_config_default.xml setup\%dest_dir%\server_config.xml
 copy "doc\release-notes\calindor-%calindor_version%-release-notes.txt" setup\%dest_dir%\
 copy doc\installation.txt setup\%dest_dir%\
 copy doc\license.txt setup\%dest_dir%\
 copy doc\features.txt setup\%dest_dir%\
+copy doc\commands.txt setup\%dest_dir%\
 cd "%top_dir%\setup"
 7za a -r -tzip %dest_dir%.zip %dest_dir%\*

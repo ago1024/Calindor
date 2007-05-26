@@ -20,7 +20,7 @@ Tasks:
 	+ health serialization
 	+ NCPEntity
 	+ npc dialogs
-	- implement CSU
+	+ implement CSU
 
 >NICE TO HAVE:
 	- server side statistics

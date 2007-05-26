@@ -1,0 +1,13 @@
+Regular commands:
+
+   #save - save the character on the server
+   #list_commands - lists the available server commands
+   #follow character_name - you start following the selected character
+   #stop_following - you stop following
+   #release_followers - all followers stop following you
+   #list_skills - lists your current skills with levels and experience
+
+Test commands:
+
+   #add_item itemID quantity - adds item with itemID to your inventory
+   #change_health quantity - changes your health (negative or positive)
