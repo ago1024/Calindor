@@ -510,9 +510,9 @@ namespace Calindor.Server
             EntityLocation location = new EntityLocation();
             location.CurrentMap = mapManager.StartPointMap;
             location.Z = 0;
-            location.X = (short)(mapManager.StartPointX);
-            location.Y = (short)(mapManager.StartPointY + 5);
-            location.Rotation = 180;
+            location.X = 122;
+            location.Y = 125;
+            location.Rotation = 270;
             location.IsSittingDown = false;
             npcOwyn.CreateSetInitialLocation(location);
 
@@ -531,15 +531,15 @@ namespace Calindor.Server
                 EntityLocation locationrat = new EntityLocation();
                 locationrat.CurrentMap = mapManager.StartPointMap;
                 locationrat.Z = 0;
-                locationrat.X = (short)(27 + i);
-                locationrat.Y = (short)(31 + i);
+                locationrat.X = (short)(107 + i);
+                locationrat.Y = (short)(167 + i);
                 locationrat.Rotation = 180;
                 locationrat.IsSittingDown = false;
                 rat1.CreateSetInitialLocation(locationrat);
 
                 // AI
                 WonderingDumbNonAggresiveAIImplementation aiImpl =
-                    new WonderingDumbNonAggresiveAIImplementation(locationrat.X, locationrat.Y, 20, 2000);
+                    new WonderingDumbNonAggresiveAIImplementation(locationrat.X, locationrat.Y, 15, 2000);
                 rat1.AIAttach(aiImpl);
 
                 // add rat to the world
@@ -558,15 +558,15 @@ namespace Calindor.Server
                 EntityLocation locationrat = new EntityLocation();
                 locationrat.CurrentMap = mapManager.StartPointMap;
                 locationrat.Z = 0;
-                locationrat.X = (short)(108 + i);
-                locationrat.Y = (short)(166 + i);
+                locationrat.X = (short)(91 + i);
+                locationrat.Y = (short)(117 + i);
                 locationrat.Rotation = 180;
                 locationrat.IsSittingDown = false;
                 rat1.CreateSetInitialLocation(locationrat);
 
                 // AI
                 WonderingDumbNonAggresiveAIImplementation aiImpl =
-                    new WonderingDumbNonAggresiveAIImplementation(locationrat.X, locationrat.Y, 20, 2000);
+                    new WonderingDumbNonAggresiveAIImplementation(locationrat.X, locationrat.Y, 10, 2000);
                 rat1.AIAttach(aiImpl);
 
                 // add rat to the world
@@ -586,8 +586,8 @@ namespace Calindor.Server
                 EntityLocation locationRabbit = new EntityLocation();
                 locationRabbit.CurrentMap = mapManager.StartPointMap;
                 locationRabbit.Z = 0;
-                locationRabbit.X = (short)(165 + i);
-                locationRabbit.Y = (short)(120 + i);
+                locationRabbit.X = (short)(54 + i);
+                locationRabbit.Y = (short)(138 + i);
                 locationRabbit.Rotation = 180;
                 locationRabbit.IsSittingDown = false;
                 rabbit1.CreateSetInitialLocation(locationRabbit);
@@ -613,8 +613,8 @@ namespace Calindor.Server
                 EntityLocation locationRabbit = new EntityLocation();
                 locationRabbit.CurrentMap = mapManager.StartPointMap;
                 locationRabbit.Z = 0;
-                locationRabbit.X = (short)(56 + i);
-                locationRabbit.Y = (short)(110 + i);
+                locationRabbit.X = (short)(27 + i);
+                locationRabbit.Y = (short)(41 + i);
                 locationRabbit.Rotation = 180;
                 locationRabbit.IsSittingDown = false;
                 rabbit1.CreateSetInitialLocation(locationRabbit);
@@ -640,8 +640,8 @@ namespace Calindor.Server
                 EntityLocation locationsnake = new EntityLocation();
                 locationsnake.CurrentMap = mapManager.StartPointMap;
                 locationsnake.Z = 0;
-                locationsnake.X = (short)(19 + i);
-                locationsnake.Y = (short)(159 + i);
+                locationsnake.X = (short)(172 + i);
+                locationsnake.Y = (short)(175 + i);
                 locationsnake.Rotation = 180;
                 locationsnake.IsSittingDown = false;
                 snake1.CreateSetInitialLocation(locationsnake);
@@ -666,8 +666,8 @@ namespace Calindor.Server
             EntityLocation locationtroll = new EntityLocation();
             locationtroll.CurrentMap = mapManager.StartPointMap;
             locationtroll.Z = 0;
-            locationtroll.X = 131;
-            locationtroll.Y = 160;
+            locationtroll.X = 74;
+            locationtroll.Y = 63;
             locationtroll.Rotation = 90;
             locationtroll.IsSittingDown = false;
             troll1.CreateSetInitialLocation(locationtroll);
@@ -685,8 +685,8 @@ namespace Calindor.Server
             EntityLocation locationdeer = new EntityLocation();
             locationdeer.CurrentMap = mapManager.StartPointMap;
             locationdeer.Z = 0;
-            locationdeer.X = 156;
-            locationdeer.Y = 97;
+            locationdeer.X = 104;
+            locationdeer.Y = 19;
             locationdeer.Rotation = 0;
             locationdeer.IsSittingDown = false;
             deer1.CreateSetInitialLocation(locationdeer);
@@ -703,14 +703,14 @@ namespace Calindor.Server
 
             // create beaver
             ServerCharacter beaver1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
-            EntityAppearance appearancebeaver = new EntityAppearance(PredefinedModelType.BEAVER);
+            EntityAppearance appearancebeaver = new EntityAppearance(PredefinedModelType.DEER);
             beaver1.CreateSetInitialAppearance(appearancebeaver);
-            beaver1.Name = "Beaver";
+            beaver1.Name = "Deer";
             EntityLocation locationbeaver = new EntityLocation();
             locationbeaver.CurrentMap = mapManager.StartPointMap;
             locationbeaver.Z = 0;
-            locationbeaver.X = 74;
-            locationbeaver.Y = 32;
+            locationbeaver.X = 164;
+            locationbeaver.Y = 42;
             locationbeaver.Rotation = 0;
             locationbeaver.IsSittingDown = false;
             beaver1.CreateSetInitialLocation(locationbeaver);
@@ -735,13 +735,13 @@ namespace Calindor.Server
             appearance2.Pants = PredefinedModelPants.PANTS_GREEN;
             appearance2.Shirt = PredefinedModelShirt.SHIRT_BLUE;
             appearance2.Skin = PredefinedModelSkin.SKIN_PALE;
-            townperson.Name = "Boric the Brave";
+            townperson.Name = "Boric";
             townperson.CreateSetInitialAppearance(appearance2);
             EntityLocation location2 = new EntityLocation();
             location2.CurrentMap = mapManager.StartPointMap;
             location2.Z = 0;
-            location2.X = 82;
-            location2.Y = 136;
+            location2.X = 100;
+            location2.Y = 143;
             location2.Rotation = 180;
             location2.IsSittingDown = false;
             townperson.CreateSetInitialLocation(location2);

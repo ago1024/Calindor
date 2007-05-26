@@ -32,7 +32,19 @@ namespace Calindor.Server
                 // Right now only handling for changing IP and IP insides maps!!!
                 switch (pc.LocationCurrentMap.Name)
                 {
-                    case ("startmap.elm"):
+                    case ("calindor_startmap.elm"):
+                        {
+                            switch (msgUseMapObject.TargetObjectID)
+                            {
+                                case(78):
+                                    {
+                                        pc.LocationChangeLocation(118, 35);
+                                        break;
+                                    }
+                            }
+                            break;
+                        }
+                    /*case ("startmap.elm"):
                         {
                             switch (msgUseMapObject.TargetObjectID)
                             {
@@ -207,7 +219,7 @@ namespace Calindor.Server
                             }
 
                             break;
-                        }
+                        }*/
                     default:
                         break;
                 }
@@ -222,11 +234,12 @@ namespace Calindor.Server
 
                 switch (pc.LocationCurrentMap.Name)
                 {
-                    case ("startmap.elm"):
+                    case ("calindor_startmap.elm"):
                         {
                             switch (msgHarvest.TargetObjectID)
                             {
-                                case (1141):
+                                case(138):
+                                case (139):
                                     {
                                         
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
@@ -237,7 +250,7 @@ namespace Calindor.Server
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }
-                                case (575):
+                                case (274):
                                     {
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(3000, 1000);
                                         actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 10, 25));
@@ -247,7 +260,7 @@ namespace Calindor.Server
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }
-                                case (574):
+                                case (194):
                                     {
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(3000, 1000);
                                         actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 10, 25));
@@ -257,7 +270,7 @@ namespace Calindor.Server
                                         pc.HarvestStart(rscDef);
                                         break;
                                     }
-                                case (512):
+                                case (276):
                                     {
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(3000, 1000);
                                         actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 8, 20));
