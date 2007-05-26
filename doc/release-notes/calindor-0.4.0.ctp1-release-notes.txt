@@ -7,5 +7,6 @@ Implemented:
 - harvesting
 - npc dialogs
 - server characters
+- a new start map
 
 Be sure to run csu and upgrade your storage before running the server.

@@ -6,7 +6,7 @@
     <openingScreen value="Welcome to Calindor..."/>
     <checkProtocolVersion value="true"/>
     <logNormalOperation value="false"/>
-    <dataStoragePath value="E:\Calindor_storage"/>
-    <mapsPath value="E:\EL_maps"/>
-    <startingMap name="startmap.elm" startX="101" startY="146" deviation="5"/>
+    <dataStoragePath value="../storage"/>
+    <mapsPath value="../data/maps"/>
+    <startingMap name="calindor_startmap.elm" startX="112" startY="136" deviation="5"/>
 </configuration>

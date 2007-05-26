@@ -13,15 +13,26 @@ Installation Instructions for Calindor
    IP = 0.0.0.0 (any local interface)
    Port = 4242
    Server Storage = ./storage
-   Maps Path = ./maps
+   Maps Path = ./data/maps
 
 4. Installing maps
    
-   The server is distributed WITHOUT maps. The server will start without them, but
-   will not operate beyound starting point. At minimum you need one map, named
-   the starting map.
+   The server requires maps to run. It will start without them, but will not operate 
+   beyond starting point. At minimum you need one map, called the starting map.
 
-4.1. Installing starting map
+   The server is distributed with a predefined starting map. This means that the 
+   server is runnable 'out of the box'.
+
+   Currently it is not possible to program map objects behaviour externally - the 
+   behaviour is codded into the server.
+
+4.1. Using predefined map
+
+   The predefined map (calindor_startmap.elm) is located in directory ./data/maps.
+   Before connecting to the server, you need to copy this map to your client's
+   map directory.
+
+4.2. Installing other map as starting map
    
    The starting map is a minimal requirement for serwer to operate. You need to
    copy the map file (.elm, NOT .elm.gz) into "Maps Path" (see section 3). Then
@@ -36,22 +47,6 @@ Installation Instructions for Calindor
 
    This way you will be able to test your own maps live!
 
-4.2. Installing predefined map set
-
-   The server is preconfigured to use a set of original maps. If you would like to
-   use them, copy the following maps (.elm, NOT .elm.gz) from client to 
-   "Maps Path" (see section 3):
-   
-   cont2map5_insides.elm
-   map2.elm
-   map7_insides.elm
-   misc1.elm
-   startmap.elm
-   startmap_insides.elm
-
-   In order to use them, you don't have to change the <startingMap> configuration 
-   key.   
-
 5. Updating storage
 
    It is possible to update your existing storage to the new version of the server.
@@ -59,10 +54,10 @@ Installation Instructions for Calindor
    is located in the server's binaries directory.
 
    First, check if your previous version and current version of the server are
-   supported. This is done by running csu.exe /supports. The application will
+   supported. This is done by running 'csu.exe /supports'. The application will
    list the names of supported server versions.
 
-   If your versions are supported, run csu.exe /upgrade verFrom verTo, where verFrom
+   If your versions are supported, run 'csu.exe /upgrade verFrom verTo', where verFrom
    is a version you want to upgrade from and verTo is the version you want to upgrade to.
    Be sure to use version names provided by /supports command.
 
@@ -77,6 +72,10 @@ Installation Instructions for Calindor
 
 7. License
 
-   This software is licensed under the terms on GNU Lesser General Public Lincese.
+   This software is licensed under the terms of GNU Lesser General Public License.
    The license is attached to the installation package.
+
+   The binary data (maps, etc.) contained in the package is also to be considered FREE
+   as defined in GNU Lesser General Public License. A file(s) containing original authors
+   of the binary data is attached to the installation package.
 

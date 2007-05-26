@@ -1,0 +1,3 @@
+The list of maps and their creators:
+
+calindor_startmap.elm - evilmangopie

@@ -7,6 +7,6 @@
     <checkProtocolVersion value="true"/>
     <logNormalOperation value="false"/>
     <dataStoragePath value="./storage"/>
-    <mapsPath value="./maps"/>
-    <startingMap name="startmap.elm" startX="101" startY="146" deviation="5"/>
+    <mapsPath value="./data/maps"/>
+    <startingMap name="calindor_startmap.elm" startX="112" startY="136" deviation="5"/>
 </configuration>
