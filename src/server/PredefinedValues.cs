@@ -137,10 +137,8 @@ namespace Calindor.Misc.Predefines
 
     public enum PredefinedEntityImplementationKind
     {
-        ENTITY = 0,
-        CLIENT_ENTITY = 1,
-        SERVER_NPC = 2,
-        SERVER_ENTITY = 3,
+        ENTITY = 1,
+        ENTITY_NPC = 2,
     }
 
     public enum PredefinedModelPants

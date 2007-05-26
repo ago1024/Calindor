@@ -497,7 +497,7 @@ namespace Calindor.Server
             // TODO: Implement based on scripts!!!
 
             // create npc
-            ServerCharacter npcOwyn = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_NPC);
+            ServerCharacter npcOwyn = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY_NPC);
             EntityAppearance appearance = new EntityAppearance(PredefinedModelType.HUMAN_MALE);
             appearance.Boots = PredefinedModelBoots.BOOTS_BROWN;
             appearance.Hair = PredefinedModelHair.HAIR_BROWN;
@@ -524,7 +524,7 @@ namespace Calindor.Server
             for (int i = 0; i < 3; i++)
             {
                 // create rat
-                ServerCharacter rat1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                ServerCharacter rat1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
                 EntityAppearance appearancerat = new EntityAppearance(PredefinedModelType.RAT);
                 rat1.CreateSetInitialAppearance(appearancerat);
                 rat1.Name = "Rat";
@@ -551,7 +551,7 @@ namespace Calindor.Server
             for (int i = 0; i < 1; i++)
             {
                 // create rat
-                ServerCharacter rat1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                ServerCharacter rat1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
                 EntityAppearance appearancerat = new EntityAppearance(PredefinedModelType.RAT);
                 rat1.CreateSetInitialAppearance(appearancerat);
                 rat1.Name = "Rat";
@@ -579,7 +579,7 @@ namespace Calindor.Server
             for (int i = 0; i < 2; i++)
             {
                 // create rabbit
-                ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
                 EntityAppearance appearanceRabbit = new EntityAppearance(PredefinedModelType.BROWN_RABBIT);
                 rabbit1.CreateSetInitialAppearance(appearanceRabbit);
                 rabbit1.Name = "Rabbit";
@@ -606,7 +606,7 @@ namespace Calindor.Server
             for (int i = 0; i < 2; i++)
             {
                 // create rabbit
-                ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                ServerCharacter rabbit1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
                 EntityAppearance appearanceRabbit = new EntityAppearance(PredefinedModelType.BROWN_RABBIT);
                 rabbit1.CreateSetInitialAppearance(appearanceRabbit);
                 rabbit1.Name = "Rabbit";
@@ -633,7 +633,7 @@ namespace Calindor.Server
             for (int i = 0; i < 2; i++)
             {
                 // create snake
-                ServerCharacter snake1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+                ServerCharacter snake1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
                 EntityAppearance appearancesnake = new EntityAppearance(PredefinedModelType.SNAKE_1);
                 snake1.CreateSetInitialAppearance(appearancesnake);
                 snake1.Name = "Snake";
@@ -659,7 +659,7 @@ namespace Calindor.Server
 
 
             // create troll
-            ServerCharacter troll1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            ServerCharacter troll1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
             EntityAppearance appearancetroll = new EntityAppearance(PredefinedModelType.TROLL);
             troll1.CreateSetInitialAppearance(appearancetroll);
             troll1.Name = "Troll";
@@ -678,7 +678,7 @@ namespace Calindor.Server
             troll1.CreateRecalculateInitialEnergies();
 
             // create deer
-            ServerCharacter deer1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            ServerCharacter deer1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
             EntityAppearance appearancedeer = new EntityAppearance(PredefinedModelType.DEER);
             deer1.CreateSetInitialAppearance(appearancedeer);
             deer1.Name = "Deer";
@@ -702,7 +702,7 @@ namespace Calindor.Server
             deer1.CreateRecalculateInitialEnergies();
 
             // create beaver
-            ServerCharacter beaver1 = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            ServerCharacter beaver1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
             EntityAppearance appearancebeaver = new EntityAppearance(PredefinedModelType.BEAVER);
             beaver1.CreateSetInitialAppearance(appearancebeaver);
             beaver1.Name = "Beaver";
@@ -727,7 +727,7 @@ namespace Calindor.Server
 
 
             // create town person
-            ServerCharacter townperson = new ServerCharacter(PredefinedEntityImplementationKind.SERVER_ENTITY);
+            ServerCharacter townperson = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
             EntityAppearance appearance2 = new EntityAppearance(PredefinedModelType.DWARF_MALE);
             appearance2.Boots = PredefinedModelBoots.BOOTS_BROWN;
             appearance2.Hair = PredefinedModelHair.HAIR_BLOND;

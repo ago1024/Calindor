@@ -564,7 +564,7 @@ namespace Calindor.Server.Messaging
             if (innerDataLocation[4] == 1)
                 _return[25] = (byte)PredefinedActorFrame.frame_sit_idle;
             else
-                _return[25] = (byte)PredefinedActorFrame.frame_stand;
+                _return[25] = (byte)PredefinedActorFrame.frame_idle;
 
             // max health
             InPlaceBitConverter.GetBytes(innerDataEnergies[0], _return, 26);
@@ -1332,7 +1332,7 @@ namespace Calindor.Server.Messaging
             if (innerDataLocation[4] == 1)
                 _return[14] = (byte)PredefinedActorFrame.frame_sit_idle;
             else
-                _return[14] = (byte)PredefinedActorFrame.frame_stand;
+                _return[14] = (byte)PredefinedActorFrame.frame_idle;
 
             // max health
             InPlaceBitConverter.GetBytes(innerDataEnergies[0], _return, 15);

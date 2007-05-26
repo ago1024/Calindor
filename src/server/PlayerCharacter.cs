@@ -54,11 +54,11 @@ namespace Calindor.Server
         private OutgoingMessagesQueue outgoingMessages =
             new OutgoingMessagesQueue();
 
-        private PlayerCharacter() : base(PredefinedEntityImplementationKind.CLIENT_ENTITY)
+        private PlayerCharacter() : base(PredefinedEntityImplementationKind.ENTITY)
         {
         }
 
-        public PlayerCharacter(ServerClientConnection conn) : base(PredefinedEntityImplementationKind.CLIENT_ENTITY)
+        public PlayerCharacter(ServerClientConnection conn) : base(PredefinedEntityImplementationKind.ENTITY)
         {
             if (conn == null)
                 throw new ArgumentNullException("conn");

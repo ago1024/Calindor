@@ -53,7 +53,7 @@ namespace Calindor.Server
             // TODO: Recalculate based on attributes/perks/items
             energies.SetMaxHealth(50);
 
-            if (kind == PredefinedEntityImplementationKind.SERVER_NPC)
+            if (kind == PredefinedEntityImplementationKind.ENTITY_NPC)
             {
                 energies.SetMaxHealth(0);
             }
