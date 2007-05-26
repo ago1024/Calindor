@@ -12,6 +12,7 @@ using System;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using System.Globalization;
 
 namespace Calindor.Server
 {
@@ -87,6 +88,8 @@ namespace Calindor.Server
 
             ThreadStart ts = new ThreadStart(this.threadMain);
             innerThread = new Thread(ts);
+            innerThread.CurrentCulture = CultureInfo.InvariantCulture;
+            innerThread.CurrentUICulture = CultureInfo.InvariantCulture;
             innerThread.Start();
 
             return true;

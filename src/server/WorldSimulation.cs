@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Globalization;
 using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Entities;
@@ -149,6 +150,8 @@ namespace Calindor.Server
             // Creating thread
             ThreadStart ts = new ThreadStart(threadMain);
             innerThread = new Thread(ts);
+            innerThread.CurrentCulture = CultureInfo.InvariantCulture;
+            innerThread.CurrentUICulture = CultureInfo.InvariantCulture;
             isWorking = true;
             innerThread.Start();
 

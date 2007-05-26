@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.IO;
+using System.Globalization;
+using System.Threading;
 using Calindor.Server.Maps;
 
 
@@ -44,6 +46,10 @@ namespace Calindor.Server
         public static void Main(string[] args)
         {
             // Starting server...
+
+            // Setting up culture
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
         
             // Setting working directory
             try
