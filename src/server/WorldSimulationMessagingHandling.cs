@@ -136,14 +136,16 @@ namespace Calindor.Server
 
                             return;
                         }
-                        if (msgRawText.Text.ToLower().IndexOf("#change_health") != -1)
+                        if ((msgRawText.Text.ToLower().IndexOf("#change_health") != -1) &&
+                            serverConfiguration.EnableTestCommands)
                         {
                             string[] tokens = msgRawText.Text.Split(' ');
                             short changeVal = Convert.ToInt16(tokens[1]);
                             pc.EnergiesUpdateHealth(changeVal);
                             return;
                         }
-                        if (msgRawText.Text.ToLower().IndexOf("#add_item") != -1)
+                        if ((msgRawText.Text.ToLower().IndexOf("#add_item") != -1) &&
+                            serverConfiguration.EnableTestCommands)
                         {
                             string[] tokens = msgRawText.Text.Split(' ');
                             if (tokens.Length != 3)

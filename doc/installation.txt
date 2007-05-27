@@ -14,6 +14,7 @@ Installation Instructions for Calindor
    Port = 4242
    Server Storage = ./storage
    Maps Path = ./data/maps
+   Test Commands = disabled
 
 4. Installing maps
    
@@ -28,7 +29,7 @@ Installation Instructions for Calindor
 
 4.1. Using predefined map
 
-   The predefined map (calindor_startmap.elm) is located in directory ./data/maps.
+   The predefined map (calindor_startmap.elm) is located in "Maps Path" (see section 3).
    Before connecting to the server, you need to copy this map to your client's
    map directory.
 

@@ -9,4 +9,5 @@
     <dataStoragePath value="../storage"/>
     <mapsPath value="../data/maps"/>
     <startingMap name="calindor_startmap.elm" startX="112" startY="136" deviation="5"/>
+    <enableTestCommands value="true"/>
 </configuration>

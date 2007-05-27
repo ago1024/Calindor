@@ -81,7 +81,12 @@ namespace Calindor.Server
         {
             get { return startingPoint; }
         }
-	
+
+        private bool enableTestCommands;
+        public bool EnableTestCommands
+        {
+            get { return enableTestCommands; }
+        }
 	
 	
 	
@@ -132,6 +137,8 @@ namespace Calindor.Server
                 startingPoint.StartY = Convert.ToInt16(startingMapElement.Attributes["startY"].Value);
                 startingPoint.Deviation = Convert.ToInt16(startingMapElement.Attributes["deviation"].Value);
 
+                XmlNode enableTestCommandsElement = doc.SelectSingleNode("/configuration/enableTestCommands");
+                enableTestCommands = Convert.ToBoolean(enableTestCommandsElement.Attributes["value"].Value);
 
             }
             catch (Exception ex)
