@@ -132,6 +132,10 @@ namespace Calindor.Server.Entities
         {
             get { return location.CurrentMap; }
         }
+        public int LocationDimension
+        {
+            get { return location.Dimension; }
+        }
         protected double getDistanceToEntity(Entity en)
         {
             if (location.CurrentMap != en.location.CurrentMap)
@@ -179,15 +183,18 @@ namespace Calindor.Server.Entities
                 {
                     Entity testedEntity = enumEntities.Current;
 
-                    if (testedEntity != this)
-                    {
+                    if (testedEntity == this)
+                        continue; // Same entity
 
-                        // TODO: For now just a simple condition, change for future
-                        if (getDistanceToEntity(testedEntity) < 35.0)
-                        {
-                            addVisibleEntity(testedEntity); // I can see you
-                            testedEntity.addObserverEntity(this); // You know that I can see you
-                        }
+                    if (testedEntity.LocationDimension != this.LocationDimension)
+                        continue; // Same map but different dimensions
+
+
+                    // TODO: For now just a simple condition, change for future
+                    if (getDistanceToEntity(testedEntity) < 35.0)
+                    {
+                        addVisibleEntity(testedEntity); // I can see you
+                        testedEntity.addObserverEntity(this); // You know that I can see you
                     }
                 }
             }
@@ -254,7 +261,7 @@ namespace Calindor.Server.Entities
     #region Entity Appearance
     public class EntityAppearance
     {
-        private byte[] innerData = new byte[7];
+        private byte[] innerData = new byte[8];
 
         public PredefinedModelHead Head
         {
@@ -316,6 +323,7 @@ namespace Calindor.Server.Entities
         public EntityAppearance(PredefinedModelType type)
         {
             innerData[5] = (byte)type;
+            innerData[7] = 0;
         }
 
         public bool IsEnhancedModel
@@ -339,6 +347,12 @@ namespace Calindor.Server.Entities
                     return false;
             }
         }
+
+        public bool IsTransparent
+        {
+            get { return (innerData[7] & 0x01) == 0x01; }
+            set { if (value) innerData[7] |= 0x01; else innerData[7] &= 0xFE; }
+        }
     }
     #endregion
 
@@ -346,6 +360,7 @@ namespace Calindor.Server.Entities
     public class EntityLocation
     {
         private short[] innerData = new short[5];
+        private int dimension = (int)PredefinedDimension.LIFE;
 
         public short X
         {
@@ -375,6 +390,17 @@ namespace Calindor.Server.Entities
         {
             get { if (innerData[4] == 1) return true; else return false; }
             set { if (value) innerData[4] = 1; else innerData[4] = 0; }
+        }
+
+        public int Dimension
+        {
+            get { return dimension; }
+            set
+            {
+                if (value < 1)
+                    throw new ArgumentException("Invalid dimension number: " + value);
+                dimension = value;
+            }
         }
 
         /// <summary>
@@ -413,6 +439,7 @@ namespace Calindor.Server.Entities
             for (int i = 0; i < innerData.Length; i++)
                 sr.WriteValue(innerData[i]);
             sr.WriteValue(CurrentMapName);
+            sr.WriteValue(dimension);
         }
 
         public virtual void Deserialize(IDeserializer dsr)
@@ -420,6 +447,7 @@ namespace Calindor.Server.Entities
             for (int i = 0; i < innerData.Length; i++)
                 innerData[i] = dsr.ReadShort();
             loadedMapName = dsr.ReadString();
+            dimension = dsr.ReadSInt();
         }
 
         public void RatateBy(short additionalRotation)
@@ -690,6 +718,8 @@ namespace Calindor.Server.Entities
         {
             if (currentHealth > maxHealth)
                 currentHealth = maxHealth;
+            if (currentHealth < -10)
+                currentHealth = -10;
         }
 
         /// <summary>
@@ -721,6 +751,11 @@ namespace Calindor.Server.Entities
         public short GetHealthDifference()
         {
             return (short)(maxHealth - currentHealth);
+        }
+
+        public bool IsAlive
+        {
+            get { return currentHealth > 0; }
         }
     }
     #endregion

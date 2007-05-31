@@ -312,10 +312,13 @@ namespace Calindor.Server.Maps
             
         }
 
-        public bool IsLocationOccupied(short x, short y)
+        public bool IsLocationOccupied(short x, short y, int dimension)
         {
             foreach (Entity en in entitiesOnMap)
             {
+                if (en.LocationDimension != dimension)
+                    continue;
+
                 if ((en.LocationX == x) && (en.LocationY == y))
                     return true;
             }

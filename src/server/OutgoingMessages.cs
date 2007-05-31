@@ -460,7 +460,7 @@ namespace Calindor.Server.Messaging
             }
         }
 
-        protected byte [] innerDataAppearance = new byte[7];
+        protected byte [] innerDataAppearance = new byte[8];
         protected short[] innerDataLocation = new short[5];
         protected short[] innerDataEnergies = new short[2];
         protected byte kindOfEntityImplementation = 0;
@@ -488,6 +488,9 @@ namespace Calindor.Server.Messaging
             innerDataAppearance[4] = (byte)appearance.Boots;
             innerDataAppearance[5] = (byte)appearance.Type;
             innerDataAppearance[6] = (byte)appearance.Head;
+            innerDataAppearance[7] = 0;
+            if (appearance.IsTransparent)
+                innerDataAppearance[7] |= 0x01;
         }
 
         public void FromEnergies(EntityEnergies energies)
@@ -513,7 +516,10 @@ namespace Calindor.Server.Messaging
 
             // X
             InPlaceBitConverter.GetBytes(innerDataLocation[0], _return, 5);
-            
+
+            if ((innerDataAppearance[7] & 0x01) == 0x01)            
+                _return[6] |= 0x08; // is transparent
+
             // Y
             InPlaceBitConverter.GetBytes(innerDataLocation[1], _return, 7);
 

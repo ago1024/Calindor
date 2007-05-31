@@ -366,6 +366,50 @@ namespace Calindor.Server
         }
         #endregion
 
+        #region Energies Handling
+
+        protected override void energiesEntityDied()
+        {
+            // Change to shadows dimension
+            LocationChangeDimension(PredefinedDimension.SHADOWS);
+
+            // Send message
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Red2;
+            msgRawText.Text = "You feel shadows' cold touch on your skin...";
+            PutMessageIntoMyQueue(msgRawText);
+        }
+
+        protected override void energiesResurrectSendMessages()
+        {
+            SendPartialStatOutgoingMessage msgSendPartialStat =
+                (SendPartialStatOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_PARTIAL_STAT);
+            msgSendPartialStat.StatType = PredefinedPartialStatType.MAT_POINT_CUR;
+            msgSendPartialStat.Value = energies.CurrentHealth;
+            PutMessageIntoMyQueue(msgSendPartialStat);
+
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Green2;
+            msgRawText.Text = "Warm beams of sun touch your face again... and you feel you are alive...";
+            PutMessageIntoMyQueue(msgRawText);
+        }
+
+        protected override void energiesUpdateHealthSendMessages()
+        {
+            SendPartialStatOutgoingMessage msgSendPartialStat =
+                (SendPartialStatOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_PARTIAL_STAT);
+            msgSendPartialStat.StatType = PredefinedPartialStatType.MAT_POINT_CUR;
+            msgSendPartialStat.Value = energies.CurrentHealth;
+            PutMessageIntoMyQueue(msgSendPartialStat);
+        }
+
+
+        #endregion
+
     }
 
     public class PlayerCharacterList : List<PlayerCharacter>

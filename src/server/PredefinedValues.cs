@@ -267,4 +267,12 @@ namespace Calindor.Misc.Predefines
         MAT_POINT_CUR       =   42,
         MAT_POINT_BASE      =   43,
     }
+
+    public enum PredefinedDimension
+    {
+        NONE = 0,
+        LIFE = 1,
+        SHADOWS = 2,
+        LAST_RESERVED_DIMENSION = 999
+    }
 }

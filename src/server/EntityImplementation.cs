@@ -386,6 +386,25 @@ namespace Calindor.Server
             // No messages need to be send. Entity will disapear with next round of visibility
         }
 
+        public void LocationChangeDimension(PredefinedDimension dimension)
+        {
+            switch(dimension)
+            {
+                case(PredefinedDimension.LIFE):
+                    appearance.IsTransparent = false;
+                    // TODO: send buffs
+                    break;
+                case(PredefinedDimension.SHADOWS):
+                    appearance.IsTransparent = true;
+                    // TODO: send buffs
+                    break;
+                default:
+                    throw new ArgumentException("No handling for dimension " + dimension.ToString());
+            }
+
+            location.Dimension = (int)dimension;
+
+        }
         #endregion
 
         #region Following Handling
@@ -670,19 +689,25 @@ namespace Calindor.Server
         #endregion
 
         #region Energies Handling
+        
+        protected virtual void energiesEntityDied()
+        {
+        }
+
+        protected virtual void energiesUpdateHealthSendMessages()
+        {
+        }
+
         public void EnergiesUpdateHealth(short updValue)
         {
+            if (!energies.IsAlive)
+                return;
+
             short actualHealthChanged = energies.UpdateCurrentHealth(updValue);
 
             if (energies.CurrentHealth <= 0)
             {
-                // TODO: Death
-                RawTextOutgoingMessage msgRawText = 
-                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-                msgRawText.Color = PredefinedColor.Red2;
-                msgRawText.Text = "You have died...";
-                PutMessageIntoMyQueue(msgRawText);
+                energiesEntityDied();
             }
 
             // Send messages
@@ -704,16 +729,42 @@ namespace Calindor.Server
                 PutMessageIntoMyAndObserversQueue(msgGetActorHeal);
             }
 
-            SendPartialStatOutgoingMessage msgSendPartialStat =
-                (SendPartialStatOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_PARTIAL_STAT);
-            msgSendPartialStat.StatType = PredefinedPartialStatType.MAT_POINT_CUR;
-            msgSendPartialStat.Value = energies.CurrentHealth;
-            PutMessageIntoMyQueue(msgSendPartialStat);
+            energiesUpdateHealthSendMessages();
         }
 
         public void EnergiesRestoreAllHealth()
         {
             EnergiesUpdateHealth(energies.GetHealthDifference());
+        }
+
+        protected virtual void energiesResurrectSendMessages()
+        {
+        }
+
+        public void EnergiesResurrect()
+        {
+            if (energies.IsAlive)
+                return;
+
+            short actualHealthChanged = energies.UpdateCurrentHealth(
+                (short)((energies.CurrentHealth * -1) + (energies.MaxHealth / 4)));
+
+            // Send messages
+            if (actualHealthChanged >= 0)
+            {
+                GetActorHealOutgoingMessage msgGetActorHeal =
+                    (GetActorHealOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.GET_ACTOR_HEAL);
+                msgGetActorHeal.EntityID = EntityID;
+                msgGetActorHeal.Heal = (ushort)(actualHealthChanged); // actual health changed is more than 0
+                PutMessageIntoMyAndObserversQueue(msgGetActorHeal);
+            }
+            else
+                throw new InvalidOperationException("Less than 0 health change during resurrection!");
+
+            energiesResurrectSendMessages();
+
+            // Change dimension
+            LocationChangeDimension(PredefinedDimension.LIFE);
         }
         #endregion
     }

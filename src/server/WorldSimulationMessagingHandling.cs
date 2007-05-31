@@ -144,6 +144,13 @@ namespace Calindor.Server
                             pc.EnergiesUpdateHealth(changeVal);
                             return;
                         }
+                        if ((msgRawText.Text.ToLower().IndexOf("#resurrect") != -1) &&
+                            serverConfiguration.EnableTestCommands)
+                        {
+                            pc.EnergiesResurrect();
+                            return;
+                        }
+
                         if ((msgRawText.Text.ToLower().IndexOf("#add_item") != -1) &&
                             serverConfiguration.EnableTestCommands)
                         {

@@ -11,3 +11,4 @@ Test commands:
 
    #add_item itemID quantity - adds item with itemID to your inventory
    #change_health quantity - changes your health (negative or positive)
+   #resurrect - brings character back from shadows dimension

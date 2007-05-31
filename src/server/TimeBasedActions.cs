@@ -160,7 +160,8 @@ namespace Calindor.Server.TimeBasedActions
                 }
 
                 // Check if location is not occupied
-                if (targetEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y))
+                if (targetEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y, 
+                    targetEntityImplementation.LocationDimension))
                 {
                     shouldContinue = false;
                     return; // TODO: Needs to reroute

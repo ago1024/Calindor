@@ -21,3 +21,9 @@ current visibility model. Visibility is updated each cycle and it can
 become the bootleneck because the CPU consumption is not linear. Possible
 solution: make visibility update different for each entity but in such
 way, that all entities would update within a short time span (250ms)
+
+6. Create 'core' library - move the messaging/entities code ouf of the
+server and put it into a library. The library then can be used by both
+the server and the clients (bots? custom client?). The messaging codes
+needs to become 'two way' (each message needs both serialization and
+deserialization)

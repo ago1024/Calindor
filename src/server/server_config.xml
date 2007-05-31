@@ -4,7 +4,7 @@
     <bindPort value ="4242"/>
     <readBufferSize value="8192"/>
     <openingScreen value="Welcome to Calindor..."/>
-    <checkProtocolVersion value="true"/>
+    <checkProtocolVersion value="false"/>
     <logNormalOperation value="false"/>
     <dataStoragePath value="../storage"/>
     <mapsPath value="../data/maps"/>
