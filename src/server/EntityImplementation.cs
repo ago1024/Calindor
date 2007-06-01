@@ -386,7 +386,7 @@ namespace Calindor.Server
             // No messages need to be send. Entity will disapear with next round of visibility
         }
 
-        protected void locationChangeDimension(PredefinedDimension dimension)
+        public void LocationChangeDimension(PredefinedDimension dimension)
         {
             switch(dimension)
             {
@@ -777,7 +777,7 @@ namespace Calindor.Server
             PutMessageIntoMyQueue(msgRawText);
 
             // Change dimension
-            locationChangeDimension(PredefinedDimension.LIFE);
+            LocationChangeDimension(PredefinedDimension.LIFE);
         }
         #endregion
 

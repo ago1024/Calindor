@@ -496,7 +496,7 @@ namespace Calindor.Server
         {
             // TODO: Implement based on scripts!!!
 
-            // create npc
+            // create npc owyn
             ServerCharacter npcOwyn = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY_NPC);
             EntityAppearance appearance = new EntityAppearance(PredefinedModelType.HUMAN_MALE);
             appearance.Boots = PredefinedModelBoots.BOOTS_BROWN;
@@ -520,6 +520,29 @@ namespace Calindor.Server
             addEntityImplementationToWorld(npcOwyn);
             npcOwyn.LocationChangeMapAtEnterWorld();
             npcOwyn.CreateRecalculateInitialEnergies();
+
+
+            // create npc cerdis
+            ServerCharacter npcCerdiss = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY_NPC);
+            EntityAppearance appearanceCerdiss = new EntityAppearance(PredefinedModelType.SKELETON);
+            npcCerdiss.Name = "Cerdiss";
+            npcCerdiss.CreateSetInitialAppearance(appearanceCerdiss);
+            EntityLocation locationCerdiss = new EntityLocation();
+            locationCerdiss.CurrentMap = mapManager.StartPointMap;
+            locationCerdiss.Z = 0;
+            locationCerdiss.X = 109;
+            locationCerdiss.Y = 43;
+            locationCerdiss.Rotation = 0;
+            locationCerdiss.IsSittingDown = false;
+            npcCerdiss.CreateSetInitialLocation(locationCerdiss);
+            npcCerdiss.LocationChangeDimension(PredefinedDimension.SHADOWS);
+
+            // add npc to the world
+            addEntityImplementationToWorld(npcCerdiss);
+            npcCerdiss.LocationChangeMapAtEnterWorld();
+            npcCerdiss.CreateRecalculateInitialEnergies();
+
+
 
             for (int i = 0; i < 3; i++)
             {
@@ -725,6 +748,30 @@ namespace Calindor.Server
             beaver1.LocationChangeMapAtEnterWorld();
             beaver1.CreateRecalculateInitialEnergies();
 
+            // create armedSkell
+            ServerCharacter armedSkell1 = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
+            EntityAppearance appearancearmedSkell = new EntityAppearance(PredefinedModelType.ARMED_SKELETON);
+            armedSkell1.CreateSetInitialAppearance(appearancearmedSkell);
+            armedSkell1.Name = "Armed Skeleton";
+            EntityLocation locationarmedSkell = new EntityLocation();
+            locationarmedSkell.CurrentMap = mapManager.StartPointMap;
+            locationarmedSkell.Z = 0;
+            locationarmedSkell.X = 112;
+            locationarmedSkell.Y = 42;
+            locationarmedSkell.Rotation = 0;
+            locationarmedSkell.IsSittingDown = false;
+            armedSkell1.CreateSetInitialLocation(locationarmedSkell);
+            armedSkell1.LocationChangeDimension(PredefinedDimension.SHADOWS);
+
+            // AI
+            WonderingDumbNonAggresiveAIImplementation aiImplarmedSkell =
+                new WonderingDumbNonAggresiveAIImplementation(locationarmedSkell.X, locationarmedSkell.Y, 10, 5000);
+            armedSkell1.AIAttach(aiImplarmedSkell);
+
+            // add armedSkell to the world
+            addEntityImplementationToWorld(armedSkell1);
+            armedSkell1.LocationChangeMapAtEnterWorld();
+            armedSkell1.CreateRecalculateInitialEnergies();
 
             // create town person
             ServerCharacter townperson = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);

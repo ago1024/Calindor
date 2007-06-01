@@ -78,6 +78,7 @@ namespace Calindor.Misc.Predefines
         DEER = 15,
         BROWN_RABBIT = 19,
         SNAKE_1 = 22,
+        SKELETON = 31,
         TROLL = 35,
         GNOME_FEMALE = 37,
         GNOME_MALE = 38,
@@ -85,6 +86,7 @@ namespace Calindor.Misc.Predefines
         ORCHAN_MALE = 40,
         DRAEGONI_FEMALE = 41,
         DRAEGONI_MALE = 42,
+        ARMED_SKELETON = 59,
         SPIDER_SMALL_1 = 64,
 
     }

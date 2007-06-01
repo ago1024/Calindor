@@ -66,7 +66,7 @@ namespace Calindor.Server
         #region Player Conversation Handling
         protected PlayerCharacterConversationStateList playersInConversation =
             new PlayerCharacterConversationStateList();
-        // TODO: This is hardcoded implemenation to support Owyn only!!!!
+        // TODO: This is hardcoded implemenation to support Owyn/Cerdiss only!!!!
         // TODO: Remove conversation state (on what condition?) timeout on last received message??
         public void PlayerConversationStart(PlayerCharacter pc)
         {
@@ -86,12 +86,25 @@ namespace Calindor.Server
 
             pcConvToHandle.State = 0;
 
-            SendNPCInfoOutgoingMessage msgSendNPCInfo =
-                (SendNPCInfoOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_NPC_INFO);
-            msgSendNPCInfo.Name = "Owyn";
-            msgSendNPCInfo.Portrait = 4;
-            pcConvToHandle.PlayerInConversation.PutMessageIntoMyQueue(msgSendNPCInfo);
-            sendConversationPage(pcConvToHandle);
+            if (Name == "Owyn")
+            {
+                SendNPCInfoOutgoingMessage msgSendNPCInfo =
+                    (SendNPCInfoOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_NPC_INFO);
+                msgSendNPCInfo.Name = "Owyn";
+                msgSendNPCInfo.Portrait = 4;
+                pcConvToHandle.PlayerInConversation.PutMessageIntoMyQueue(msgSendNPCInfo);
+                sendConversationPage(pcConvToHandle);
+            }
+
+            if (Name == "Cerdiss")
+            {
+                SendNPCInfoOutgoingMessage msgSendNPCInfo =
+                    (SendNPCInfoOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_NPC_INFO);
+                msgSendNPCInfo.Name = "Cerdiss";
+                msgSendNPCInfo.Portrait = 100;
+                pcConvToHandle.PlayerInConversation.PutMessageIntoMyQueue(msgSendNPCInfo);
+                sendConversationPage(pcConvToHandle);
+            }
         }
 
         protected PlayerCharacterConversationState getConversationState(PlayerCharacter pc)
@@ -111,114 +124,146 @@ namespace Calindor.Server
                 (NPCOptionsListOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NPC_OPTIONS_LIST);
             msgNPCOptionsList.NPCEntityID = EntityID;
 
-            // TODO: Fill from scripts
-            NPCOption op = null;
-            NPCOptions ops = new NPCOptions();
-            op = new NPCOption();
-            op.Text = "Where am I?";
-            op.OptionID = 1;
-            ops.Add(op);
-            op = new NPCOption();
-            op.Text = "Who are you?";
-            op.OptionID = 2;
-            ops.Add(op);
-            op = new NPCOption();
-            op.Text = "Sell items";
-            op.OptionID = 3;
-            ops.Add(op);
-            op = new NPCOption();
-            op.Text = "Heal me";
-            op.OptionID = 4;
-            ops.Add(op);
-            msgNPCOptionsList.FromNPCOptions(ops);
-
-            switch (pcConv.State)
+            if (Name == "Owyn")
             {
-                case(0):
-                    msgNPCText.Text = "Hello " + pcConv.PlayerInConversation.Name + ". How may I help you?";
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
-                    break;
-                case (1):
-                    msgNPCText.Text = "Why.. you are on Calindor. Where else would you want to be?";
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
-                    break;
-                case (2):
-                    msgNPCText.Text = "My name is Owyn and I am a traveling merchant. Apart from buying and selling I also know a few priest prayers that can heal people.";
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
-                    pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
-                    break;
-                case (3):
-                    {
-                        // Get all sellable items. Change them into rolays.
-                        double royalsTotal = 0.0;
-                        Item itm = null;
-                        // Vegetables
-                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(2));
-                        if (itm != null)
-                        {
-                            royalsTotal += itm.Quantity * 0.5;
-                            itm.Quantity *= -1;
-                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
-                        }
-                        // Tiger Lilly
-                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(3));
-                        if (itm != null)
-                        {
-                            royalsTotal += itm.Quantity * 0.9;
-                            itm.Quantity *= -1;
-                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
-                        }
-                        // Red Snapdragon
-                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(7));
-                        if (itm != null)
-                        {
-                            royalsTotal += itm.Quantity * 0.7;
-                            itm.Quantity *= -1;
-                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
-                        }
+                // TODO: Fill from scripts
+                NPCOption op = null;
+                NPCOptions ops = new NPCOptions();
+                op = new NPCOption();
+                op.Text = "Where am I?";
+                op.OptionID = 1;
+                ops.Add(op);
+                op = new NPCOption();
+                op.Text = "Who are you?";
+                op.OptionID = 2;
+                ops.Add(op);
+                op = new NPCOption();
+                op.Text = "Sell items";
+                op.OptionID = 3;
+                ops.Add(op);
+                op = new NPCOption();
+                op.Text = "Heal me";
+                op.OptionID = 4;
+                ops.Add(op);
+                msgNPCOptionsList.FromNPCOptions(ops);
 
-                        msgNPCText.Text = "I will trade your items for " + Math.Round(royalsTotal, 0) + " royals.";
+                switch (pcConv.State)
+                {
+                    case (0):
+                        msgNPCText.Text = "Hello " + pcConv.PlayerInConversation.Name + ". How may I help you?";
                         pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
                         pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
-                        itm = new Item(ItemDefinitionCache.GetItemDefinitionByID(5));
-                        itm.Quantity = (int)Math.Round(royalsTotal, 0);
-                        pcConv.PlayerInConversation.InventoryUpdateItem(itm);
                         break;
-                    }
-                case (4):
-                    {
-                        // Get royals. If enough, subtract and heal
-                        Item itm = null;
-                        bool notEnough = false;
-                        // Royals
-                        itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(5));
-                        if (itm != null)
+                    case (1):
+                        msgNPCText.Text = "Why.. you are on Calindor. Where else would you want to be?";
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                        break;
+                    case (2):
+                        msgNPCText.Text = "My name is Owyn and I am a traveling merchant. Apart from buying and selling I also know a few priest prayers that can heal people.";
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                        break;
+                    case (3):
                         {
-                            if (itm.Quantity >= 100)
+                            // Get all sellable items. Change them into rolays.
+                            double royalsTotal = 0.0;
+                            Item itm = null;
+                            // Vegetables
+                            itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(2));
+                            if (itm != null)
                             {
-                                pcConv.PlayerInConversation.EnergiesRestoreAllHealth();
-                                itm.Quantity = -100;
+                                royalsTotal += itm.Quantity * 0.5;
+                                itm.Quantity *= -1;
                                 pcConv.PlayerInConversation.InventoryUpdateItem(itm);
-                                msgNPCText.Text = "You have been healed my friend. Take better care in future.... oh and thank you for 100 royals... my friend...";
+                            }
+                            // Tiger Lilly
+                            itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(3));
+                            if (itm != null)
+                            {
+                                royalsTotal += itm.Quantity * 0.9;
+                                itm.Quantity *= -1;
+                                pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                            }
+                            // Red Snapdragon
+                            itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(7));
+                            if (itm != null)
+                            {
+                                royalsTotal += itm.Quantity * 0.7;
+                                itm.Quantity *= -1;
+                                pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                            }
+
+                            msgNPCText.Text = "I will trade your items for " + Math.Round(royalsTotal, 0) + " royals.";
+                            pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                            pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                            itm = new Item(ItemDefinitionCache.GetItemDefinitionByID(5));
+                            itm.Quantity = (int)Math.Round(royalsTotal, 0);
+                            pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                            break;
+                        }
+                    case (4):
+                        {
+                            // Get royals. If enough, subtract and heal
+                            Item itm = null;
+                            bool notEnough = false;
+                            // Royals
+                            itm = pcConv.PlayerInConversation.InventoryGetItemByDefinition(ItemDefinitionCache.GetItemDefinitionByID(5));
+                            if (itm != null)
+                            {
+                                if (itm.Quantity >= 100)
+                                {
+                                    pcConv.PlayerInConversation.EnergiesRestoreAllHealth();
+                                    itm.Quantity = -100;
+                                    pcConv.PlayerInConversation.InventoryUpdateItem(itm);
+                                    msgNPCText.Text = "You have been healed my friend. Take better care in future.... oh and thank you for 100 royals... my friend...";
+                                }
+                                else
+                                    notEnough = true;
                             }
                             else
                                 notEnough = true;
+
+                            if (notEnough)
+                                msgNPCText.Text = "I'm sorry but I require a small donation of 100 royals for my prayers... my friend...";
+
+
+                            pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                            pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                            break;
                         }
-                        else
-                            notEnough = true;
+                    default:
+                        throw new ArgumentException("Unsupported conversation state");
+                }
+            }
 
-                        if (notEnough)
-                            msgNPCText.Text = "I'm sorry but I require a small donation of 100 royals for my prayers... my friend...";
+            if (Name == "Cerdiss")
+            {
+                NPCOption op = null;
+                NPCOptions ops = new NPCOptions();
 
-
+                switch (pcConv.State)
+                {
+                    case (0):
+                        msgNPCText.Text = "I CAN HEAR YOUR THOUGHS, SHADOW";
                         pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                        op = new NPCOption();
+                        op.Text = "I want to return to life...";
+                        op.OptionID = 1;
+                        ops.Add(op);
+                        msgNPCOptionsList.FromNPCOptions(ops);
                         pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
                         break;
-                    }
-                default:
-                    throw new ArgumentException("Unsupported conversation state");
+                    case (1):
+                        msgNPCText.Text = "BEGONE....";
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCText);
+                        msgNPCOptionsList.FromNPCOptions(ops);
+                        pcConv.PlayerInConversation.PutMessageIntoMyQueue(msgNPCOptionsList);
+                        pcConv.PlayerInConversation.EnergiesResurrect();
+                        break;
+                    default:
+                        throw new ArgumentException("Unsupported conversation state");
+                }
             }
         }
 
@@ -232,35 +277,48 @@ namespace Calindor.Server
             if (pc == null)
                 return;
 
-            // Analyze response to current state
-            if ((optionID == 1))
+            if (Name == "Owyn")
             {
-                pcConv.State = 1;
-                sendConversationPage(pcConv);
-                return;
+                // Analyze response to current state
+                if ((optionID == 1))
+                {
+                    pcConv.State = 1;
+                    sendConversationPage(pcConv);
+                    return;
+                }
+
+                if ((optionID == 2))
+                {
+                    pcConv.State = 2;
+                    sendConversationPage(pcConv);
+                    return;
+                }
+
+                if ((optionID == 3))
+                {
+                    pcConv.State = 3;
+                    sendConversationPage(pcConv);
+                    return;
+                }
+
+                if ((optionID == 4))
+                {
+                    pcConv.State = 4;
+                    sendConversationPage(pcConv);
+                    return;
+                }
             }
 
-            if ((optionID == 2))
+            if (Name == "Cerdiss")
             {
-                pcConv.State = 2;
-                sendConversationPage(pcConv);
-                return;
+                // Analyze response to current state
+                if ((optionID == 1))
+                {
+                    pcConv.State = 1;
+                    sendConversationPage(pcConv);
+                    return;
+                }
             }
-
-            if ((optionID == 3))
-            {
-                pcConv.State = 3;
-                sendConversationPage(pcConv);
-                return;
-            }
-
-            if ((optionID == 4))
-            {
-                pcConv.State = 4;
-                sendConversationPage(pcConv);
-                return;
-            }
-
         }
         #endregion
 

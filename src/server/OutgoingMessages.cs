@@ -1280,6 +1280,7 @@ namespace Calindor.Server.Messaging
         protected short[] innerDataEnergies = new short[2];
         protected byte kindOfEntityImplementation = 0;
         protected byte modelType = 0;
+        protected byte specialModifiers = 0;
 
         public AddNewActorOutgoingMessage()
         {
@@ -1313,7 +1314,12 @@ namespace Calindor.Server.Messaging
         {
             if (appearance.IsEnhancedModel)
                 throw new ArgumentException("Appearance is enhanced");
+
             modelType = (byte)appearance.Type;
+            specialModifiers = 0;
+            if (appearance.IsTransparent)
+                specialModifiers |= 0x01;
+
         }
 
         protected override void serializeSpecific(byte[] _return)
@@ -1323,6 +1329,9 @@ namespace Calindor.Server.Messaging
 
             // X
             InPlaceBitConverter.GetBytes(innerDataLocation[0], _return, 5);
+
+            if ((specialModifiers & 0x01) == 0x01)
+                _return[6] |= 0x08; // is transparent
 
             // Y
             InPlaceBitConverter.GetBytes(innerDataLocation[1], _return, 7);

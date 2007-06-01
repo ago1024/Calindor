@@ -377,7 +377,7 @@ namespace Calindor.Server
         protected override void energiesEntityDied()
         {
             // Change to shadows dimension
-            locationChangeDimension(PredefinedDimension.SHADOWS);
+            LocationChangeDimension(PredefinedDimension.SHADOWS);
 
             // Send message
             RawTextOutgoingMessage msgRawText =
