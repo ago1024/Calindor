@@ -136,13 +136,20 @@ namespace Calindor.Server.Entities
         {
             get { return location.Dimension; }
         }
-        protected double getDistanceToEntity(Entity en)
+        protected DistanceCalculationResult getDistanceToEntity(Entity en, out double distance)
         {
-            if (location.CurrentMap != en.location.CurrentMap)
-                return Double.MaxValue;
+            distance = Double.MaxValue;
 
-            return Math.Sqrt(((location.X - en.location.X) * (location.X - en.location.X)) +
+            if (location.CurrentMap != en.location.CurrentMap)
+                return DistanceCalculationResult.CALC_F_DIFF_MAPS; // Different maps
+
+            if (location.Dimension != en.location.Dimension)
+                return DistanceCalculationResult.CALC_F_DIFF_MAPS; // Different dimension
+
+            distance = Math.Sqrt(((location.X - en.location.X) * (location.X - en.location.X)) +
                 ((location.Y - en.location.Y) * (location.Y - en.location.Y)));
+
+            return DistanceCalculationResult.CALC_OK;
         }
         #endregion
 
@@ -172,6 +179,9 @@ namespace Calindor.Server.Entities
         public void UpdateVisibleEntities()
         {
             entitiesVisibleNow.Clear();
+            
+            double distance = Double.MaxValue;
+            DistanceCalculationResult result = DistanceCalculationResult.CALC_OK;
 
             if (location.CurrentMap != null)
             {
@@ -186,12 +196,12 @@ namespace Calindor.Server.Entities
                     if (testedEntity == this)
                         continue; // Same entity
 
-                    if (testedEntity.LocationDimension != this.LocationDimension)
-                        continue; // Same map but different dimensions
-
-
+                    result = getDistanceToEntity(testedEntity, out distance);
+                    if (result != DistanceCalculationResult.CALC_OK)
+                        continue;
+                    
                     // TODO: For now just a simple condition, change for future
-                    if (getDistanceToEntity(testedEntity) < 35.0)
+                    if (distance < 35.0)
                     {
                         addVisibleEntity(testedEntity); // I can see you
                         testedEntity.addObserverEntity(this); // You know that I can see you
@@ -757,6 +767,15 @@ namespace Calindor.Server.Entities
         {
             get { return currentHealth > 0; }
         }
+    }
+    #endregion
+
+    #region Misc
+    public enum DistanceCalculationResult
+    {
+        CALC_OK,
+        CALC_F_DIFF_MAPS,
+        CALC_F_DIFF_DIMS,
     }
     #endregion
 }

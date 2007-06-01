@@ -43,6 +43,7 @@ namespace Calindor.Server.Messaging
         GET_ACTOR_HEAL = 48,
         SEND_PARTIAL_STAT = 49,
         ADD_NEW_ENHANCED_ACTOR = 51,
+        SEND_BUFFS = 78,
         UPGRADE_TOO_OLD = 241,
         YOU_DONT_EXIST = 249,
         LOG_IN_OK = 250,
@@ -140,6 +141,7 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.GET_ACTOR_HEAL] = new GetActorHealOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.SEND_PARTIAL_STAT] = new SendPartialStatOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.ADD_NEW_ACTOR] = new AddNewActorOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.SEND_BUFFS] = new SendBuffsOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -1366,6 +1368,48 @@ namespace Calindor.Server.Messaging
         {
             // TODO: Implement
             return base.ToString() + "(" + EntityID + ", " + EntityName + ")";
+        }
+    }
+
+    public class SendBuffsOutgoingMessage : OutgoingMessage
+    {
+        private UInt16 entityID;
+
+        public UInt16 EntityID
+        {
+            get { return entityID; }
+            set { entityID = value; }
+        }
+
+        private byte buffs;
+
+        public bool IsTransparent
+        {
+            get { return (buffs & 0x01) == 0x01; }
+            set
+            {
+                if (value)
+                    buffs |= 0x01;
+                else
+                    buffs &= 0xFE;
+            }
+
+        }
+
+        public SendBuffsOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.SEND_BUFFS;
+            length = 6;
+        }
+        public override OutgoingMessage CreateNew()
+        {
+            return new SendBuffsOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(EntityID, _return, 3);
+            _return[5] = buffs;
         }
     }
 

@@ -443,9 +443,16 @@ namespace Calindor.Server
             }
 
             // Is is close enough
-            int xDiff = location.X - enImpl.LocationX;
-            int yDiff = location.Y - enImpl.LocationY;
-            if ((Math.Abs(xDiff) > 1) || (Math.Abs(yDiff) > 1) || (location.CurrentMap != enImpl.LocationCurrentMap))
+            double distance = Double.MaxValue;
+            DistanceCalculationResult result = getDistanceToEntity(enImpl, out distance);
+            if (result != DistanceCalculationResult.CALC_OK)
+            {
+                msgRawTextOutMe.Text = "The one you seek is not here...";
+                PutMessageIntoMyQueue(msgRawTextOutMe);
+                return;
+            }
+
+            if (distance > 3.0)
             {
                 msgRawTextOutMe.Text = "You need to stand closer...";
                 PutMessageIntoMyQueue(msgRawTextOutMe);
@@ -518,17 +525,17 @@ namespace Calindor.Server
             if (!isFollowingEntity)
                 return;
 
+            double distance = Double.MaxValue;
+            DistanceCalculationResult result = getDistanceToEntity(entityToFollow, out distance);
+
             // TODO: Move the unlink checks into external class implementing a check interface.
-            if (this.entityToFollow.LocationCurrentMap != this.location.CurrentMap)
+            if (result != DistanceCalculationResult.CALC_OK)
             {
                 FollowingStopFollowing();
                 return;
             }
 
-            int xDiff = Math.Abs(this.entityToFollow.LocationX - this.location.X);
-            int yDiff = Math.Abs(this.entityToFollow.LocationY - this.location.Y);
-
-            if ((xDiff > 1) || (yDiff > 1))
+            if (distance > 3.0)
             {
                 FollowingStopFollowing();
                 return;
@@ -778,7 +785,12 @@ namespace Calindor.Server
         protected void appearanceSetTransparent(bool _value)
         {
             appearance.IsTransparent = _value;
-            // TODO: Send buffs
+
+            SendBuffsOutgoingMessage msgSendBuff =
+                (SendBuffsOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_BUFFS);
+            msgSendBuff.EntityID = EntityID;
+            msgSendBuff.IsTransparent = appearance.IsTransparent;
+            PutMessageIntoMyAndObserversQueue(msgSendBuff);
         }
         #endregion
     }

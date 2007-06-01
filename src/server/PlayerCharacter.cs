@@ -310,8 +310,14 @@ namespace Calindor.Server
         {
             if (npcInConversation == null)
                 return false;
+            
+            double distance = Double.MaxValue;
+            DistanceCalculationResult result = getDistanceToEntity(npcInConversation, out distance);
+            
+            if (result != DistanceCalculationResult.CALC_OK)
+                return false;
 
-            if (getDistanceToEntity(npcInConversation) < 5.0)
+            if (distance < 5.0)
                 return true;
 
             return false;
