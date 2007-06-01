@@ -386,17 +386,15 @@ namespace Calindor.Server
             // No messages need to be send. Entity will disapear with next round of visibility
         }
 
-        public void LocationChangeDimension(PredefinedDimension dimension)
+        protected void locationChangeDimension(PredefinedDimension dimension)
         {
             switch(dimension)
             {
                 case(PredefinedDimension.LIFE):
-                    appearance.IsTransparent = false;
-                    // TODO: send buffs
+                    appearanceSetTransparent(false);
                     break;
                 case(PredefinedDimension.SHADOWS):
-                    appearance.IsTransparent = true;
-                    // TODO: send buffs
+                    appearanceSetTransparent(true);
                     break;
                 default:
                     throw new ArgumentException("No handling for dimension " + dimension.ToString());
@@ -694,10 +692,6 @@ namespace Calindor.Server
         {
         }
 
-        protected virtual void energiesUpdateHealthSendMessages()
-        {
-        }
-
         public void EnergiesUpdateHealth(short updValue)
         {
             if (!energies.IsAlive)
@@ -729,16 +723,17 @@ namespace Calindor.Server
                 PutMessageIntoMyAndObserversQueue(msgGetActorHeal);
             }
 
-            energiesUpdateHealthSendMessages();
+            SendPartialStatOutgoingMessage msgSendPartialStat =
+                (SendPartialStatOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_PARTIAL_STAT);
+            msgSendPartialStat.StatType = PredefinedPartialStatType.MAT_POINT_CUR;
+            msgSendPartialStat.Value = energies.CurrentHealth;
+            PutMessageIntoMyQueue(msgSendPartialStat);
+
         }
 
         public void EnergiesRestoreAllHealth()
         {
             EnergiesUpdateHealth(energies.GetHealthDifference());
-        }
-
-        protected virtual void energiesResurrectSendMessages()
-        {
         }
 
         public void EnergiesResurrect()
@@ -761,10 +756,29 @@ namespace Calindor.Server
             else
                 throw new InvalidOperationException("Less than 0 health change during resurrection!");
 
-            energiesResurrectSendMessages();
+            SendPartialStatOutgoingMessage msgSendPartialStat =
+                (SendPartialStatOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.SEND_PARTIAL_STAT);
+            msgSendPartialStat.StatType = PredefinedPartialStatType.MAT_POINT_CUR;
+            msgSendPartialStat.Value = energies.CurrentHealth;
+            PutMessageIntoMyQueue(msgSendPartialStat);
+
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Green2;
+            msgRawText.Text = "Warm beams of sun touch your face again... and you feel you are alive...";
+            PutMessageIntoMyQueue(msgRawText);
 
             // Change dimension
-            LocationChangeDimension(PredefinedDimension.LIFE);
+            locationChangeDimension(PredefinedDimension.LIFE);
+        }
+        #endregion
+
+        #region Appearance Handling
+        protected void appearanceSetTransparent(bool _value)
+        {
+            appearance.IsTransparent = _value;
+            // TODO: Send buffs
         }
         #endregion
     }
