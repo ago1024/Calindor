@@ -659,7 +659,7 @@ namespace Calindor.Server
         
         protected abstract bool isEntityImplementationInCreationPhase();
 
-        public void CreateSetInitialLocation(EntityLocation location)
+        public virtual void CreateSetInitialLocation(EntityLocation location)
         {
             if (!isEntityImplementationInCreationPhase())
                 throw new InvalidOperationException("This method can only be used during creation!");

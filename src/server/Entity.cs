@@ -466,6 +466,18 @@ namespace Calindor.Server.Entities
             if (innerData[3] < 0)
                 innerData[3] += 360;
         }
+
+        public EntityLocation CreateCopy()
+        {
+            EntityLocation _return = new EntityLocation();
+
+            _return.currentMap = currentMap;
+            _return.dimension = dimension;
+            innerData.CopyTo(_return.innerData, 0);
+            _return.loadedMapName = loadedMapName;
+
+            return _return;
+        }
     }
     #endregion
 

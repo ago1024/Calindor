@@ -13,6 +13,8 @@ using Calindor.Misc.Predefines;
 using Calindor.Server.Messaging;
 using Calindor.Server.Items;
 using Calindor.Server.AI;
+using Calindor.Server.TimeBasedActions;
+using Calindor.Server.Entities;
 
 
 namespace Calindor.Server
@@ -40,6 +42,9 @@ namespace Calindor.Server
         #endregion
 
         #region Creation Handling
+        protected EntityLocation templateLocation = null;
+        protected uint milisToRespawn = 0;
+
         protected override bool isEntityImplementationInCreationPhase()
         {
             return true;
@@ -54,6 +59,33 @@ namespace Calindor.Server
             energies.SetMaxHealth(50);
 
             energies.UpdateCurrentHealth(energies.GetHealthDifference());
+        }
+
+        public override void CreateSetInitialLocation(EntityLocation location)
+        {
+            base.CreateSetInitialLocation(location);
+            
+            // Build template
+            templateLocation = this.location.CreateCopy();
+            
+        }
+
+        public void CreateApplyTemplates()
+        {
+            // Location
+            location = templateLocation.CreateCopy();
+        }
+
+        public void CreateApplyInitialState()
+        {
+            CreateRecalculateInitialEnergies();
+
+            LocationChangeDimension((PredefinedDimension)location.Dimension);
+        }
+
+        public void CreateSetRespawnTime(uint milisToRespawn)
+        {
+            this.milisToRespawn = milisToRespawn;
         }
         #endregion
 
@@ -345,7 +377,31 @@ namespace Calindor.Server
             msgAddActorCommand.Command = PredefinedActorCommand.die1;
             PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
 
-            // TODO: start respawn time based action
+            // Respawn
+            RespawnTimeBasedAction respawn = new RespawnTimeBasedAction(this, milisToRespawn);
+            timeBasedActionsManager.AddAction(respawn);
+            
+        }
+
+        public void EnergiesRespawn()
+        {
+            if (energies.IsAlive)
+                return;
+
+            // Remove from view
+            RemoveActorOutgoingMessage msgRemoveActor =
+                (RemoveActorOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.REMOVE_ACTOR);
+            msgRemoveActor.EntityID = EntityID;
+            PutMessageIntoMyAndObserversQueue(msgRemoveActor);
+
+            // Apply templates
+            CreateApplyTemplates();
+
+            // Reset state
+            CreateApplyInitialState();
+
+            // Add to view
+            PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
         }
 
         #endregion

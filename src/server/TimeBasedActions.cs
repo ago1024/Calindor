@@ -271,4 +271,18 @@ namespace Calindor.Server.TimeBasedActions
             shouldContinue = true;
         }
     }
+
+    public class RespawnTimeBasedAction : TimeBasedAction
+    {
+        public RespawnTimeBasedAction(EntityImplementation enIml, uint milisToRespawn):base(enIml, milisToRespawn)
+        {
+        }
+
+        protected override void execute()
+        {
+            (targetEntityImplementation as ServerCharacter).EnergiesRespawn();
+
+            shouldContinue = false;
+        }
+    }
 }
