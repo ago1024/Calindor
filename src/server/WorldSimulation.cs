@@ -348,6 +348,9 @@ namespace Calindor.Server
                     case (IncommingMessageType.RESPOND_TO_NPC):
                         handleRespondToNPC(pc, msg);
                         break;
+                    case(IncommingMessageType.ATTACK_SOMEONE):
+                        handleAttackSomeone(pc, msg);
+                        break;
                     default:
                         Logger.LogWarning(LogSource.World,
                             string.Format("Message {0} - no action taken", msg.ToString()), null);

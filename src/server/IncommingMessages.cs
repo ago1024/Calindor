@@ -34,6 +34,7 @@ namespace Calindor.Server.Messaging
         DROP_ITEM = 22,
         TOUCH_PLAYER = 28,
         RESPOND_TO_NPC = 29,
+        ATTACK_SOMEONE = 40,
         LOG_IN = 140,
         CREATE_CHAR = 141,
         UNKNOWN = 256 //THIS MESSAGE DOES NOT EXIST
@@ -127,6 +128,7 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)IncommingMessageType.HARVEST] = new HarvestIncommingMessage();
             knownMessages[(int)IncommingMessageType.TOUCH_PLAYER] = new TouchPlayerIncommingMessage();
             knownMessages[(int)IncommingMessageType.RESPOND_TO_NPC] = new RespondToNPCIncommingMessage();
+            knownMessages[(int)IncommingMessageType.ATTACK_SOMEONE] = new AttackSomeoneClientMessage();
         }
         
         /// <summary>
@@ -821,4 +823,33 @@ namespace Calindor.Server.Messaging
         }
     }
 
+    public class AttackSomeoneClientMessage : IncommingMessage
+    {
+        private int targetObjectID = -1;
+
+        public int TargetObjectID
+        {
+            get { return targetObjectID; }
+        }
+
+        public AttackSomeoneClientMessage()
+        {
+            messageType = IncommingMessageType.ATTACK_SOMEONE;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new AttackSomeoneClientMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + TargetObjectID + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            targetObjectID = BitConverter.ToInt32(stream, startIndex + 3);
+        }
+    }
 }

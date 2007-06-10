@@ -62,6 +62,7 @@
     <Compile Include="TimeBasedExecution.cs" />
     <Compile Include="WorldCalendar.cs" />
     <Compile Include="WorldSimulation.cs" />
+    <Compile Include="WorldSimulationEntitiesInteractionHandling.cs" />
     <Compile Include="WorldSimulationEntityVinicityEventsHandling.cs" />
     <Compile Include="WorldSimulationGlobalEventsHandling.cs" />
     <Compile Include="WorldSimulationItemsHandling.cs" />
