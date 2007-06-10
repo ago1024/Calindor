@@ -530,9 +530,9 @@ namespace Calindor.Server
             EntityLocation locationCerdiss = new EntityLocation();
             locationCerdiss.CurrentMap = mapManager.StartPointMap;
             locationCerdiss.Z = 0;
-            locationCerdiss.X = 109;
-            locationCerdiss.Y = 43;
-            locationCerdiss.Rotation = 0;
+            locationCerdiss.X = 163;
+            locationCerdiss.Y = 29;
+            locationCerdiss.Rotation = 180;
             locationCerdiss.IsSittingDown = false;
             npcCerdiss.CreateSetInitialLocation(locationCerdiss);
             npcCerdiss.LocationChangeDimension(PredefinedDimension.SHADOWS);
@@ -663,15 +663,15 @@ namespace Calindor.Server
                 EntityLocation locationsnake = new EntityLocation();
                 locationsnake.CurrentMap = mapManager.StartPointMap;
                 locationsnake.Z = 0;
-                locationsnake.X = (short)(172 + i);
-                locationsnake.Y = (short)(175 + i);
+                locationsnake.X = (short)(149 + i);
+                locationsnake.Y = (short)(131 + i);
                 locationsnake.Rotation = 180;
                 locationsnake.IsSittingDown = false;
                 snake1.CreateSetInitialLocation(locationsnake);
 
                 // AI
                 WonderingDumbNonAggresiveAIImplementation aiImpl =
-                    new WonderingDumbNonAggresiveAIImplementation(locationsnake.X, locationsnake.Y, 40, 3000);
+                    new WonderingDumbNonAggresiveAIImplementation(locationsnake.X, locationsnake.Y, 20, 3000);
                 snake1.AIAttach(aiImpl);
 
                 // add snake to the world
@@ -756,8 +756,8 @@ namespace Calindor.Server
             EntityLocation locationarmedSkell = new EntityLocation();
             locationarmedSkell.CurrentMap = mapManager.StartPointMap;
             locationarmedSkell.Z = 0;
-            locationarmedSkell.X = 112;
-            locationarmedSkell.Y = 42;
+            locationarmedSkell.X = 158;
+            locationarmedSkell.Y = 26;
             locationarmedSkell.Rotation = 0;
             locationarmedSkell.IsSittingDown = false;
             armedSkell1.CreateSetInitialLocation(locationarmedSkell);
