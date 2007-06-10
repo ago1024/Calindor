@@ -67,7 +67,10 @@ namespace Calindor.Server.AI
         {
             if (me == null)
                 throw new InvalidOperationException("Server character not attached");
-            
+
+            if (!me.EnergiesIsAlive)
+                return; // Only for living entities
+
             // Make decision
             if (WorldRNG.NextDouble() < 0.35) //35%
             {

@@ -464,7 +464,7 @@ namespace Calindor.Server.Messaging
 
         protected byte [] innerDataAppearance = new byte[8];
         protected short[] innerDataLocation = new short[5];
-        protected short[] innerDataEnergies = new short[2];
+        protected short[] innerDataEnergies = new short[3];
         protected byte kindOfEntityImplementation = 0;
 
         public AddNewEnhancedActorOutgoingMessage()
@@ -499,6 +499,7 @@ namespace Calindor.Server.Messaging
         {
             innerDataEnergies[0] = energies.MaxHealth;
             innerDataEnergies[1] = energies.CurrentHealth;
+            innerDataEnergies[2] = energies.IsAlive ? (short)1 : (short)0;
         }
 
         public void FromLocation(EntityLocation location)
@@ -569,10 +570,17 @@ namespace Calindor.Server.Messaging
             _return[24] = 20/*none*/;//0x14;
 
             // frame
-            if (innerDataLocation[4] == 1)
-                _return[25] = (byte)PredefinedActorFrame.frame_sit_idle;
+            if (innerDataEnergies[2] == 1)
+            {
+                if (innerDataLocation[4] == 1)
+                    _return[25] = (byte)PredefinedActorFrame.frame_sit_idle;
+                else
+                    _return[25] = (byte)PredefinedActorFrame.frame_idle;
+            }
             else
-                _return[25] = (byte)PredefinedActorFrame.frame_idle;
+            {
+                _return[25] = (byte)PredefinedActorFrame.frame_die1;
+            }
 
             // max health
             InPlaceBitConverter.GetBytes(innerDataEnergies[0], _return, 26);
@@ -1277,7 +1285,7 @@ namespace Calindor.Server.Messaging
         }
 
         protected short[] innerDataLocation = new short[5];
-        protected short[] innerDataEnergies = new short[2];
+        protected short[] innerDataEnergies = new short[3];
         protected byte kindOfEntityImplementation = 0;
         protected byte modelType = 0;
         protected byte specialModifiers = 0;
@@ -1298,6 +1306,7 @@ namespace Calindor.Server.Messaging
         {
             innerDataEnergies[0] = energies.MaxHealth;
             innerDataEnergies[1] = energies.CurrentHealth;
+            innerDataEnergies[2] = energies.IsAlive ? (short)1 : (short)0;
         }
 
         public void FromLocation(EntityLocation location)
@@ -1346,10 +1355,17 @@ namespace Calindor.Server.Messaging
             _return[13] = modelType;
 
             // frame
-            if (innerDataLocation[4] == 1)
-                _return[14] = (byte)PredefinedActorFrame.frame_sit_idle;
+            if (innerDataEnergies[2] == 1)
+            {
+                if (innerDataLocation[4] == 1)
+                    _return[14] = (byte)PredefinedActorFrame.frame_sit_idle;
+                else
+                    _return[14] = (byte)PredefinedActorFrame.frame_idle;
+            }
             else
-                _return[14] = (byte)PredefinedActorFrame.frame_idle;
+            {
+                _return[14] = (byte)PredefinedActorFrame.frame_die1;
+            }
 
             // max health
             InPlaceBitConverter.GetBytes(innerDataEnergies[0], _return, 15);

@@ -53,12 +53,6 @@ namespace Calindor.Server
             // TODO: Recalculate based on attributes/perks/items
             energies.SetMaxHealth(50);
 
-            if (kind == PredefinedEntityImplementationKind.ENTITY_NPC)
-            {
-                energies.SetMaxHealth(0);
-            }
-
-
             energies.UpdateCurrentHealth(energies.GetHealthDifference());
         }
         #endregion
@@ -335,6 +329,25 @@ namespace Calindor.Server
             if (myAI != null)
                 myAI.Execute();
         }
+        #endregion
+
+        #region Energies Handling
+
+        protected override void energiesEntityDied()
+        {
+            // Cancel current action
+            TimeBasedActionCancelCurrent();
+
+            // Animate death
+            AddActorCommandOutgoingMessage msgAddActorCommand =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommand.EntityID = EntityID;
+            msgAddActorCommand.Command = PredefinedActorCommand.die1;
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+
+            // TODO: start respawn time based action
+        }
+
         #endregion
     }
 

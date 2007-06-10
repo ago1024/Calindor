@@ -60,9 +60,7 @@ namespace Calindor.Server
                 if (en == null)
                     return;
 
-                // TODO: Start fighting
-
-                (en as EntityImplementation).EnergiesUpdateHealth(-100);
+                pc.CombatAttack(en as EntityImplementation); 
             }
         }
     }
