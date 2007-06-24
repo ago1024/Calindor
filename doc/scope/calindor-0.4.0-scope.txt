@@ -15,7 +15,7 @@ Tasks:
 	+ list_skills command
 	- FightingTimeBasedAction
 	+ AnimalEntity
-	- death (animal and player)
+	+ death (animal and player)
 	+ health
 	+ health serialization
 	+ NCPEntity

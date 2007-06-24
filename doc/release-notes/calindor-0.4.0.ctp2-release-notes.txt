@@ -1,0 +1,21 @@
+(2007-06-24) 
+Second CTP of version 0.4.0.
+
+With this release, about 85% of 0.4.0 scope is completed.
+
+Changes:
+- improved following
+- implemented attack
+- implemented death / respawn / resurrection
+- implemented dimensions
+- updated starting map
+
+Be sure to run csu and upgrade your storage before running the server.
+
+In order to test player character death / dimensions, type the following command:
+#change_health -60
+
+Now go and find the resurrecting NPC :-)
+
+In order to test animal death / respawn, just attack an animal.
+
