@@ -114,7 +114,7 @@ namespace Calindor.Server
                 // Appearance
                 try
                 {
-                    sr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
+                    sr.Start(Name, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0);
                     sr.WriteValue(this.Name);
                     appearance.Serialize(sr);
                 }
@@ -126,7 +126,7 @@ namespace Calindor.Server
                 // Location
                 try
                 {
-                    sr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
+                    sr.Start(Name, PlayerCharacterDataType.PCLocation, FileVersion.VER_1_2_0);
                     location.Serialize(sr);
                 }
                 finally
@@ -175,7 +175,7 @@ namespace Calindor.Server
             // Appearance
             try
             {
-                dsr.Start(Name, PlayerCharacterDataType.PCAppearance, "VER.1.0.0");
+                dsr.Start(Name, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0);
                 this.Name = dsr.ReadString();
                 appearance.Deserialize(dsr);
             }
@@ -187,7 +187,7 @@ namespace Calindor.Server
             // Location
             try
             {
-                dsr.Start(Name, PlayerCharacterDataType.PCLocation, "VER.1.1.0");
+                dsr.Start(Name, PlayerCharacterDataType.PCLocation, FileVersion.VER_1_2_0);
                 location.Deserialize(dsr);
             }
             finally

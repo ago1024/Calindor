@@ -199,6 +199,7 @@ namespace Calindor.Server
     {
         VER_1_0_0 = 1000,
         VER_1_1_0 = 1100,
+        VER_1_2_0 = 1200,
     }
 
     public class PlayerCharacterDoesNotExistException : ApplicationException
