@@ -343,4 +343,94 @@ namespace Calindor.StorageUpdater
             //TODO: Implement
         }
     }
+
+    public class ServerVersion0_4_0_CTP2 : ServerVersion
+    {
+        public override string ServerVersionString
+        {
+            get { return "0.4.0CTP2"; }
+        }
+
+        public ServerVersion0_4_0_CTP2()
+        {
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, FileVersion.VER_1_2_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCEnergies, FileVersion.VER_1_0_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCInventory, FileVersion.VER_1_0_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCSkills, FileVersion.VER_1_0_0));
+        }
+
+        protected override void upgradeToThisVersionImplementation(string playerName)
+        {
+            string string_data = "";
+            byte[] byteBuffer = new byte[10];
+            
+            // Appearance - add buffs byte
+            try
+            {
+                pcDsr.Start(playerName, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_0_0);
+                // Read name
+                string_data = pcDsr.ReadString();
+                // Read binary
+                for (int i = 0; i < 7; i++)
+                   byteBuffer[i] = pcDsr.ReadByte();
+            }
+            finally
+            {
+                pcDsr.End();
+            }
+
+            try
+            {
+                pcSer.Start(playerName, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0);
+                pcSer.WriteValue(string_data);
+                for (int i = 0; i < 7; i++)
+                    pcSer.WriteValue(byteBuffer[i]);
+                pcSer.WriteValue((byte)0); //NEW VALUE
+            }
+            finally
+            {
+                pcSer.End();
+            }
+          
+            // Location - add dimensions int
+            try
+            {
+                pcDsr.Start(playerName, PlayerCharacterDataType.PCLocation, FileVersion.VER_1_1_0);
+                // Read binary
+                for (int i = 0; i < 10; i++)
+                    byteBuffer[i] = pcDsr.ReadByte();
+                // Read map name
+                string_data = pcDsr.ReadString();
+
+            }
+            finally
+            {
+                pcDsr.End();
+            }
+
+            try
+            {
+                pcSer.Start(playerName, PlayerCharacterDataType.PCLocation, FileVersion.VER_1_2_0);
+                for (int i = 0; i < 10; i++)
+                    pcSer.WriteValue(byteBuffer[i]);
+                pcSer.WriteValue(string_data);
+                pcSer.WriteValue((int)1); // NEW VALUE
+            }
+            finally
+            {
+                pcSer.End();
+            }
+
+            // Energies - no changes
+            // Inventory - no changes
+            // Skills - no changes
+        }
+
+        protected override void downgradeToPreviousVersionImplementation(string playerName)
+        {
+            //TODO: Implement
+        }
+    }
+
 }

@@ -39,6 +39,7 @@ namespace Calindor.StorageUpdater
             versions = new ServerVersions();
             versions.AddVersion(new ServerVersion0_3_0());
             versions.AddVersion(new ServerVersion0_4_0_CTP1());
+            versions.AddVersion(new ServerVersion0_4_0_CTP2());
         }
 
         private static void displayHelp()
