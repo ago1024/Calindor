@@ -12,8 +12,11 @@ Changes:
 
 Be sure to run csu and upgrade your storage before running the server.
 
-In order to test player character death / dimensions, type the following command:
-#change_health -60
+The default server configuration has test commands disabled. To enable them,
+change the configuration key to <enableTestCommands value="true"/>
+
+In order to test player character death / dimensions, enable test commands and 
+type the following command: #change_health -60
 
 Now go and find the resurrecting NPC :-)
 
