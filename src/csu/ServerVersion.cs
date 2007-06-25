@@ -92,15 +92,24 @@ namespace Calindor.StorageUpdater
             {
                 try
                 {
-                    // Iterate through versions and upgrade
-                    for (int i = verFrom.Order + 1; i <= verTo.Order; i++)
-                        GetVersion(i).UpgradeToThisVersion(playerName);
+                    if (!verTo.CheckFileVersions(playerName))
+                    {
+                        // UPGRADE
+                        // Iterate through versions and upgrade
+                        for (int i = verFrom.Order + 1; i <= verTo.Order; i++)
+                            GetVersion(i).UpgradeToThisVersion(playerName);
 
-                    logger.LogProgress(LogSource.Other, "DONE: " + playerName);
+                        logger.LogProgress(LogSource.Other, "UPDATE DONE: " + playerName);
+                    }
+                    else
+                    {
+                        // DO NOTHING
+                        logger.LogProgress(LogSource.Other, "UP TO DATE: " + playerName);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(LogSource.Other, "FAILED: " + playerName, null);
+                    logger.LogError(LogSource.Other, "UPDATE FAILED: " + playerName, null);
                     logger.LogError(LogSource.Other, "", ex);
                 }
 
@@ -153,7 +162,12 @@ namespace Calindor.StorageUpdater
         protected PlayerCharacterFileVersionList thisVersionFileVersions =
             new PlayerCharacterFileVersionList();
 
-        private bool checkFileVersions(string playerName)
+        /// <summary>
+        /// Checks if storage for player is in this version
+        /// </summary>
+        /// <param name="playerName">Player name to check</param>
+        /// <returns>True if storage is in this version</returns>
+        public bool CheckFileVersions(string playerName)
         {
             foreach (PlayerCharacterFileVersion pcFV in thisVersionFileVersions)
             {
@@ -185,11 +199,11 @@ namespace Calindor.StorageUpdater
                 throw new ArgumentException("previousVersion is null");
 
             // Check if not already in this version
-            if (checkFileVersions(playerName))
+            if (CheckFileVersions(playerName))
                 return; // Nothing to do
 
             // Check if in previous version
-            if (!previousVersion.checkFileVersions(playerName))
+            if (!previousVersion.CheckFileVersions(playerName))
                 throw new InvalidOperationException("Storage for player " + playerName + " is not in correct state to upgrade from " 
                     + previousVersion.ServerVersionString + " to " + ServerVersionString);
             
