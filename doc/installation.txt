@@ -1,13 +1,14 @@
 Installation Instructions for Calindor
 
-1. In order to run the server you need to have installed
+1. In order to run the server you need to have installed:
 
-   On Windows: .NET Framework 2.0.
-   It can be downloaded from:
-   http://www.microsoft.com/downloads/details.aspx?familyid=0856EACB-4362-4B0D-8EDD-AAB15C5E04F5&displaylang=en
+1.1. On Windows
 
-   On Linux: Mono 1.2.4
-   Refer to you packaging system manager for mono packages.
+   .NET Framework 2.0. - It can be downloaded from: http://www.microsoft.com/downloads/details.aspx?familyid=0856EACB-4362-4B0D-8EDD-AAB15C5E04F5&displaylang=en
+
+1.2. On Linux 
+
+   Mono 1.2.4 - Refer to you packaging system manager for mono packages.
 
 2. In order to connect to the server, you need Eternal Lands or compatible client
    software. The client needs to be configured with the correct IP and port. If 
@@ -22,7 +23,7 @@ Installation Instructions for Calindor
 
    Add the following line to servers.lst file:
 
-   calindor        calindor        127.0.0.1             4243    Calindor
+   calindor        calindor        127.0.0.1             4242    Calindor
 
    Then run the client by command line: el.exe calindor
 
