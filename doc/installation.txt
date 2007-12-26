@@ -1,13 +1,30 @@
 Installation Instructions for Calindor
 
-1. In order to run the server you need to have installed .NET Framework 2.0.
+1. In order to run the server you need to have installed
+
+   On Windows: .NET Framework 2.0.
    It can be downloaded from:
    http://www.microsoft.com/downloads/details.aspx?familyid=0856EACB-4362-4B0D-8EDD-AAB15C5E04F5&displaylang=en
+
+   On Linux: Mono 1.2.4
+   Refer to you packaging system manager for mono packages.
 
 2. In order to connect to the server, you need Eternal Lands or compatible client
    software. The client needs to be configured with the correct IP and port. If 
    the server is running local and on default settings, you should be able to 
    connect to it using IP 127.0.0.1 and port 4242.
+
+2.1. For EL client older than 1.5.0.
+
+   Change fields #server_address and #server_port in el.ini file.
+
+2.2. For EL client 1.5.0 or newer.
+
+   Add the following line to servers.lst file:
+
+   calindor        calindor        127.0.0.1             4243    Calindor
+
+   Then run the client by command line: el.exe calindor
 
 3. Default server configuration:
    IP = 0.0.0.0 (any local interface)
@@ -17,7 +34,7 @@ Installation Instructions for Calindor
    Test Commands = disabled
 
 4. Installing maps
-   
+
    The server requires maps to run. It will start without them, but will not operate 
    beyond starting point. At minimum you need one map, called the starting map.
 
@@ -34,11 +51,11 @@ Installation Instructions for Calindor
    map directory.
 
 4.2. Installing other map as starting map
-   
+
    The starting map is a minimal requirement for serwer to operate. You need to
    copy the map file (.elm, NOT .elm.gz) into "Maps Path" (see section 3). Then
    you need to configure the <startingMap> tag of coniguration:
-   
+
    name - name of the map (without path)
    startX - start location X coordinate - must be walkable
    startY - start location Y coordinate - must be walkable
@@ -67,7 +84,7 @@ Installation Instructions for Calindor
    If you have problems running the server or have any questions about its
    configuration, be sure to visit project page:
    http://www.calindor.net/
-   
+
    You can also post on the "Help" forum:
    http://sourceforge.net/forum/forum.php?forum_id=682930
 
