@@ -80,13 +80,6 @@ namespace Calindor.Server
             if (_return > 0.995)
                 _return = 0.995; // Always a chance for failure 5/1000
 
-           // RawTextOutgoingMessage msgRawText =
-           //(RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-           // msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-           // msgRawText.Color = PredefinedColor.Grey1;
-           // msgRawText.Text = "Chance: " + _return;
-           // PutMessageIntoMyQueue(msgRawText);
-
             return _return;
         }
 
@@ -116,13 +109,6 @@ namespace Calindor.Server
             if (_return < actDef.MinTime)
                 _return = (int)actDef.MinTime; // Can't work faster than min time
 
-           // RawTextOutgoingMessage msgRawText =
-           //(RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-           // msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-           // msgRawText.Color = PredefinedColor.Grey1;
-           // msgRawText.Text = "Time: " + _return;
-           // PutMessageIntoMyQueue(msgRawText);
-
             if (_return < 0)
                 return 0;
             else
@@ -139,6 +125,68 @@ namespace Calindor.Server
 
         #endregion
 
+        #region Combat Handling
+        public void CombatAttack(EntityImplementation enImpl)
+        {
+            // Check if not me
+            if (this == enImpl)
+                return;
+
+            // Check if not NPC
+            if ((enImpl is ServerCharacter) && 
+                ((enImpl as ServerCharacter).EntityImplementationKind == PredefinedEntityImplementationKind.ENTITY_NPC))
+                return;
+
+            // Check if entity is alive
+            if (!enImpl.EnergiesIsAlive)
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Red2;
+                msgRawTextOut.Text = "It's already dead...";
+                PutMessageIntoMyQueue(msgRawTextOut);
+                return;
+            }
+
+            // Check distance
+            double distance = Double.MaxValue;
+            DistanceCalculationResult result = getDistanceToEntity(enImpl, out distance);
+
+            if (result != DistanceCalculationResult.CALC_OK)
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Red2;
+                msgRawTextOut.Text = "You need to get closer to attack...";
+                PutMessageIntoMyQueue(msgRawTextOut);
+                return;
+            }
+
+            // TODO: allowed distance is based on weapon type
+            if (distance > 3.0)
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Red2;
+                msgRawTextOut.Text = "You need to get closer to attack...";
+                PutMessageIntoMyQueue(msgRawTextOut);
+                return;
+            }
+
+            // Checks ok. Start combat
+
+            // TODO: Start combat
+			
+            // TODO: Temp. Remove when combat available
+			// TODO: Temp. Award xp
+			int topDamageValue = (skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel + 1) * 5;
+            enImpl.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
+        }
+        #endregion
+        
         #region General Skills
         public void SkillsAwardExperience(ActionDescriptor actDesc)
         {
