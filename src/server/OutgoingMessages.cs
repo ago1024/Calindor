@@ -650,7 +650,7 @@ namespace Calindor.Server.Messaging
         public HereYourStatsOutgoingMessage()
         {
             messageType = OutgoingMessageType.HERE_YOUR_STATS;
-            length = 205;
+            length = 217;
             statsBuffer = new byte[length - 3];
         }
         protected override void serializeSpecific(byte[] _return)

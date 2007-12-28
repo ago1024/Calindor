@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -18,6 +19,11 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>calindor</AssemblyName>
+    <RootNamespace>Calindor.Server</RootNamespace>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -26,6 +32,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>calindor</AssemblyName>
+    <DebugSymbols>true</DebugSymbols>
+    <RootNamespace>Calindor.Server</RootNamespace>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -84,5 +96,7 @@
   -->
   <PropertyGroup>
     <PostBuildEvent>copy "$(ProjectDir)\server_config.xml" "$(TargetDir)\server_config.xml"</PostBuildEvent>
+    <ProjectGuid>{9B14DC47-A7A8-4F5D-9144-9F254BC9734E}</ProjectGuid>
+    <RootNamespace>Calindor.Server</RootNamespace>
   </PropertyGroup>
 </Project>
