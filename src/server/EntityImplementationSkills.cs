@@ -181,9 +181,14 @@ namespace Calindor.Server
             // TODO: Start combat
 			
             // TODO: Temp. Remove when combat available
-			// TODO: Temp. Award xp
 			int topDamageValue = (skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel + 1) * 5;
             enImpl.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
+            AttackActionDescriptor atckDescriptor = new AttackActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
+            atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
+            SkillsAwardExperience(atckDescriptor);
+            DefendActionDescriptor defDescriptor = new DefendActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
+            defDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.DefenseDodge, 2, 10));
+            SkillsAwardExperience(defDescriptor);
         }
         #endregion
         

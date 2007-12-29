@@ -95,6 +95,29 @@ namespace Calindor.Server.Actions
     {
         public HarvestActionDescriptor(uint baseTime, uint minTime) : base(baseTime, minTime)
         {
+            // baseTime is based on resource definition
+            // baseLevel is based on resource definition
+            // baseExperience is based on resource definition
+        }
+    }
+    
+    public class AttackActionDescriptor : ActionDescriptor
+    {
+        public AttackActionDescriptor(uint baseTime, uint minTime) : base(baseTime, minTime)
+        {
+            // baseTime is based on weapon type (?)
+            // baseLevel is based on weapon type (?)
+            // baseExperience is based on weapon type (?)
+        }
+    }
+
+    public class DefendActionDescriptor : ActionDescriptor
+    {
+        public DefendActionDescriptor(uint baseTime, uint minTime) : base(baseTime, minTime)
+        {
+            // baseTime is based on (?)
+            // baseLevel is based on (?)
+            // baseExperience is based (?)
         }
     }
 
