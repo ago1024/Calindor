@@ -1,0 +1,19 @@
+Quick start instructions for Calindor
+
+1. Install Eternal Lands(TM) client to C:\Program Files\Eternal Lands
+2. Unzip the Calindor binary package to C:\Calindor
+3. Copy calindor_startmap.elm from C:\Calindor\data\maps to
+   C:\Program Files\Eternal Lands\maps
+4. Open the following file in notepad:
+   C:\Program Files\Eternal Lands\servers.lst
+5. Add the following line to the servers.lst file:
+   calindor        calindor        127.0.0.1             4242    Calindor
+6. Start Calindor server: C:\Calindor\calindor.exe
+7. Open command line: Start Menu -> Run, type cmd.exe, press ENTER
+8. In the command line type:
+   C:\
+   cd C:\Program Files\Eternal Lands
+   el.exe calindor
+
+At this point the client should run and connect to local Calindor server.
+Please create your character... and have fun :)
