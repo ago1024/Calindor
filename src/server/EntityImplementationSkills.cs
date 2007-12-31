@@ -126,19 +126,19 @@ namespace Calindor.Server
         #endregion
 
         #region Combat Handling
-        public void CombatAttack(EntityImplementation enImpl)
+        public void CombatInitiateAttack(EntityImplementation defender)
         {
             // Check if not me
-            if (this == enImpl)
+            if (this == defender)
                 return;
 
             // Check if not NPC
-            if ((enImpl is ServerCharacter) && 
-                ((enImpl as ServerCharacter).EntityImplementationKind == PredefinedEntityImplementationKind.ENTITY_NPC))
+            if ((defender is ServerCharacter) && 
+                ((defender as ServerCharacter).EntityImplementationKind == PredefinedEntityImplementationKind.ENTITY_NPC))
                 return;
 
             // Check if entity is alive
-            if (!enImpl.EnergiesIsAlive)
+            if (!defender.EnergiesIsAlive)
             {
                 RawTextOutgoingMessage msgRawTextOut =
                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -148,10 +148,13 @@ namespace Calindor.Server
                 PutMessageIntoMyQueue(msgRawTextOut);
                 return;
             }
+            
+            // TODO: Check if it's not already fighting (remove in future when n<->n combat is available)
+            
 
             // Check distance
             double distance = Double.MaxValue;
-            DistanceCalculationResult result = getDistanceToEntity(enImpl, out distance);
+            DistanceCalculationResult result = getDistanceToEntity(defender, out distance);
 
             if (result != DistanceCalculationResult.CALC_OK)
             {
@@ -175,21 +178,81 @@ namespace Calindor.Server
                 PutMessageIntoMyQueue(msgRawTextOut);
                 return;
             }
+            
+            // Send animation frame
+            // TODO: Only if not already in combat
+            AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommandAttacker.EntityID = EntityID;
+            msgAddActorCommandAttacker.Command = PredefinedActorCommand.enter_combat;
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommandAttacker);
 
+            AddActorCommandOutgoingMessage msgAddActorCommandDefender =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommandDefender.EntityID = defender.EntityID;
+            msgAddActorCommandDefender.Command = PredefinedActorCommand.enter_combat;
+            defender.PutMessageIntoMyAndObserversQueue(msgAddActorCommandDefender);
+            
             // Checks ok. Start combat
+            timeBasedActionsManager.AddAction(
+                new AttackTimeBasedAction(defender,this));
+            
 
-            // TODO: Start combat
-			
-            // TODO: Temp. Remove when combat available
-			int topDamageValue = (skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel + 1) * 5;
-            enImpl.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
+        }
+        
+        public void CombatAttack(EntityImplementation defender)
+        {
+            // Send animation frame
+            AddActorCommandOutgoingMessage msgAddActorCommand =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommand.EntityID = EntityID;
+            msgAddActorCommand.Command = PredefinedActorCommand.attack_up_1;
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+            
+            
+            // TODO: Implement
+            
+            int topDamageValue = (skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel + 1) * 5;
+            defender.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
             AttackActionDescriptor atckDescriptor = new AttackActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
             atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
             SkillsAwardExperience(atckDescriptor);
+            
+        }
+        
+        public void CombatDefend()
+        {
+            // Send animation frame
+            AddActorCommandOutgoingMessage msgAddActorCommand =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommand.EntityID = EntityID;
+            msgAddActorCommand.Command = PredefinedActorCommand.pain1;
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+
+            // TODO: Implement
             DefendActionDescriptor defDescriptor = new DefendActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
             defDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.DefenseDodge, 2, 10));
             SkillsAwardExperience(defDescriptor);
         }
+        
+        public void CombatStopFighting()
+        {
+            //TODO: Check if this is a last fight performed, if yes, 
+            //      send animation frame
+            AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommandAttacker.EntityID = EntityID;
+            msgAddActorCommandAttacker.Command = PredefinedActorCommand.leave_combat;
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommandAttacker);
+            
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = PredefinedColor.Blue1;
+            msgRawText.Text = "You stopped fighting.";
+            PutMessageIntoMyQueue(msgRawText);
+        }
+        
         #endregion
         
         #region General Skills

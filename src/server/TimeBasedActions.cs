@@ -78,7 +78,7 @@ namespace Calindor.Server.TimeBasedActions
         private bool actionCanceled = false;
         protected bool shouldContinue = true;
 
-        public TimeBasedAction(EntityImplementation enImpl, uint actionDuration):base(actionDuration)
+        protected TimeBasedAction(EntityImplementation enImpl, uint actionDuration):base(actionDuration)
         {
             if (enImpl == null)
                 throw new ArgumentNullException("enImpl");
@@ -274,7 +274,8 @@ namespace Calindor.Server.TimeBasedActions
 
     public class RespawnTimeBasedAction : TimeBasedAction
     {
-        public RespawnTimeBasedAction(EntityImplementation enIml, uint milisToRespawn):base(enIml, milisToRespawn)
+        public RespawnTimeBasedAction(EntityImplementation enIml, uint milisToRespawn):
+            base(enIml, milisToRespawn)
         {
         }
 
@@ -284,5 +285,36 @@ namespace Calindor.Server.TimeBasedActions
 
             shouldContinue = false;
         }
+    }
+    
+    // TODO: PROTOTYPE IMPLEMENTATION
+    public class AttackTimeBasedAction : TimeBasedAction
+    {
+        protected EntityImplementation defenderEntityImplementation = null;
+        
+        public AttackTimeBasedAction(EntityImplementation attacker, EntityImplementation defender):
+            base(attacker, 2000) // TODO: Fixed for now
+        {
+            if (defender == null)
+                throw new ArgumentNullException("defender");
+            
+            defenderEntityImplementation = defender;
+            defenderEntityImplementation.TimeBasedActionSet(this);
+        }
+        
+        protected override void execute()
+        {
+            //TODO: Implement
+            targetEntityImplementation.CombatAttack(defenderEntityImplementation);
+            defenderEntityImplementation.CombatDefend();
+        }
+        
+        public override void Cancel()
+        {
+            base.Cancel();
+            targetEntityImplementation.CombatStopFighting();
+            defenderEntityImplementation.CombatStopFighting();
+        }
+
     }
 }

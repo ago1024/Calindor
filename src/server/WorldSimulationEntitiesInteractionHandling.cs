@@ -60,7 +60,7 @@ namespace Calindor.Server
                 if (en == null)
                     return;
 
-                pc.CombatAttack(en as EntityImplementation); 
+                pc.CombatInitiateAttack(en as EntityImplementation); 
             }
         }
     }
