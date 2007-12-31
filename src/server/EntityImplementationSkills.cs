@@ -195,7 +195,7 @@ namespace Calindor.Server
             
             // Checks ok. Start combat
             timeBasedActionsManager.AddAction(
-                new AttackTimeBasedAction(defender,this));
+                new AttackTimeBasedAction(this, defender));
             
 
         }

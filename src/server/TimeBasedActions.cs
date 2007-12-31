@@ -20,13 +20,19 @@ using Calindor.Misc;
 
 namespace Calindor.Server.TimeBasedActions
 {
-    public class TimeBasedActionsManager
+    public sealed class TimeBasedActionsManager
     {
+        private TimeBasedActionList actionsToAdd = new TimeBasedActionList();
         private TimeBasedActionList activeActions = new TimeBasedActionList();
         private TimeBasedActionList actionsToRemove = new TimeBasedActionList();
 
         public void ExecuteActions()
         {
+            // Adding queued actions
+            foreach (TimeBasedAction action in actionsToAdd)
+                activeActions.Add(action);
+            actionsToAdd.Clear();
+            
             // Executing actions
             foreach (TimeBasedAction action in activeActions)
             {
@@ -45,7 +51,7 @@ namespace Calindor.Server.TimeBasedActions
 
         public void AddAction(ITimeBasedAction action)
         {
-            activeActions.Add(action);
+            actionsToAdd.Add(action);
         }
     }
 
