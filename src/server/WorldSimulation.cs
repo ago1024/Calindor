@@ -419,7 +419,7 @@ namespace Calindor.Server
                 throw new InvalidOperationException("Could not allocate entityID to entity.");
 
             // Connect entity to time based actions manager
-            enImpl.TimeBasedActionSetManager(timeBasedActionsManager);
+            enImpl.TimeBasedActionConnectToManager(timeBasedActionsManager);
 
             // Connecct entity to map manager
             enImpl.LocationSetMapManager(mapManager);
@@ -482,7 +482,7 @@ namespace Calindor.Server
                 worldEntitiesByEntityID.Remove(enImpl.EntityID);
 
             // Cancel time based actions
-            enImpl.TimeBasedActionCancelCurrent();
+            enImpl.TimeBasedActionCancelExecuted();
 
             // Remove from current map
             enImpl.LocationLeaveMapAtExitWorld();
@@ -490,7 +490,7 @@ namespace Calindor.Server
             // Stop following
             enImpl.FollowingStopFollowing();
 
-            enImpl.TimeBasedActionSetManager(null);
+            enImpl.TimeBasedActionConnectToManager(null);
             enImpl.LocationSetMapManager(null);
 
         }

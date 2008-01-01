@@ -376,6 +376,8 @@ namespace Calindor.Server
 
         protected override void energiesEntityDied()
         {
+            base.energiesEntityDied();
+            
             // Change to shadows dimension
             LocationChangeDimension(PredefinedDimension.SHADOWS);
 

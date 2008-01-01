@@ -25,7 +25,7 @@ namespace Calindor.Server
         #region Harvest Skills
         public void HarvestStart(HarvestableResourceDescriptor rscDef)
         {
-            TimeBasedActionAdd(
+            TimeBasedActionSetExecuted(
                 new HarvestTimeBasedAction(this, rscDef));
 
             RawTextOutgoingMessage msgRawText =
@@ -194,9 +194,13 @@ namespace Calindor.Server
             defender.PutMessageIntoMyAndObserversQueue(msgAddActorCommandDefender);
             
             // Checks ok. Start combat
-            AttackTimeBasedAction attack = new AttackTimeBasedAction(this, defender);
-            TimeBasedActionAdd(attack);
-            defender.TimeBasedActionAdd(attack);
+            AttackTimeBasedAction attackDefender = new AttackTimeBasedAction(this, defender);
+            TimeBasedActionSetExecuted(attackDefender);
+            defender.TimeBasedActionAddAffecting(attackDefender);
+            // TODO: Only if defender is not attacking anyone already
+            AttackTimeBasedAction attackAttacker = new AttackTimeBasedAction(defender, this);
+            defender.TimeBasedActionSetExecuted(attackAttacker);
+            TimeBasedActionAddAffecting(attackAttacker);
         }
         
         public void CombatAttack(EntityImplementation defender)
@@ -222,11 +226,11 @@ namespace Calindor.Server
         public void CombatDefend()
         {
             // Send animation frame
-            AddActorCommandOutgoingMessage msgAddActorCommand =
+            /*AddActorCommandOutgoingMessage msgAddActorCommand =
                 (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
             msgAddActorCommand.EntityID = EntityID;
             msgAddActorCommand.Command = PredefinedActorCommand.pain1;
-            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);*/
 
             // TODO: Implement
             DefendActionDescriptor defDescriptor = new DefendActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now

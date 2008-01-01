@@ -40,8 +40,10 @@ namespace Calindor.Server
         }
 
         #region Time Based Actions Handling
-        // Time based action
-        private TimeBasedActionList timeBasedActions = new TimeBasedActionList();
+        // Time based action that is currently executed
+        private ITimeBasedAction executedTimeBasedAction = null;
+        // Time based action that are executed by other entities, but affect this one
+        //private TimeBasedActionList affectingTimeBasedActions = new TimeBasedActionList();
 
         private TimeBasedActionsManager timeBasedActionsManager = null;
         protected void timeBasedActionAddActionToManager(ITimeBasedAction actionToAdd)
@@ -52,29 +54,48 @@ namespace Calindor.Server
             timeBasedActionsManager.AddAction(actionToAdd);
         }
         
-        public void TimeBasedActionSetManager(TimeBasedActionsManager tbaManager)
+        public void TimeBasedActionConnectToManager(TimeBasedActionsManager tbaManager)
         {
             timeBasedActionsManager = tbaManager;
         }
         
-        public void TimeBasedActionAdd(ITimeBasedAction actionToAdd)
+        public void TimeBasedActionAddAffecting(ITimeBasedAction actionToAdd)
         {
+            // TODO: Implement
             // TODO: Check if action type matches current type
             // TODO: If not Cancel all current
-            TimeBasedActionCancelCurrent();
+            //TimeBasedActionCancelCurrent();
             // Add action to list
-            timeBasedActions.Add(actionToAdd);
+            //timeBasedActions.Add(actionToAdd);
             // TODO: Set current type of actions
             // Add action to manager (manager takes care of duplicated adds)
-            timeBasedActionAddActionToManager(actionToAdd);
+            //timeBasedActionAddActionToManager(actionToAdd);
         }
-
-        public void TimeBasedActionCancelCurrent()
+        
+        public void TimeBasedActionRemoveAffecting(ITimeBasedAction actionToRemove)
         {
-            foreach(ITimeBasedAction action in timeBasedActions)
-                action.Cancel();
+            // TODO: Implement
+        }
+        
+        public void TimeBasedActionSetExecuted(ITimeBasedAction actionToExecute)
+        {
+            // Only one action can be executed at any time
+            TimeBasedActionCancelExecuted();
             
-            timeBasedActions.Clear();
+            executedTimeBasedAction = actionToExecute;
+            
+            // Add action to manager (manager takes care of duplicated adds)
+            timeBasedActionAddActionToManager(actionToExecute);
+        }
+        
+
+        public void TimeBasedActionCancelExecuted()
+        {
+            if (executedTimeBasedAction != null)
+            {
+                executedTimeBasedAction.Cancel();
+                executedTimeBasedAction = null;
+            }
         }
         #endregion
 
@@ -114,7 +135,7 @@ namespace Calindor.Server
 
             if (itm != null)
             {
-                TimeBasedActionCancelCurrent();
+                TimeBasedActionCancelExecuted();
 
                 Item updateItem = new Item(itm.Definition);
                 updateItem.Quantity = -1 * quantity;
@@ -144,7 +165,7 @@ namespace Calindor.Server
 
             if (inventory.IsSlotFree(newSlot))
             {
-                TimeBasedActionCancelCurrent();
+                TimeBasedActionCancelExecuted();
 
                 Item itmToRemove = inventory.RemoveItemAtSlot(oldSlot);
 
@@ -200,7 +221,7 @@ namespace Calindor.Server
                 return;
 
             // Add walk time based action
-            TimeBasedActionAdd(new WalkTimeBasedAction(this, path));
+            TimeBasedActionSetExecuted(new WalkTimeBasedAction(this, path));
 
 
             // Move followers
@@ -233,7 +254,7 @@ namespace Calindor.Server
             if (location.IsSittingDown)
             {
                 if (!continueWalking)
-                    TimeBasedActionCancelCurrent(); //Cancel current time based action
+                    TimeBasedActionCancelExecuted(); //Cancel current time based action
 
                 AddActorCommandOutgoingMessage msgAddActorCommand =
                     (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
@@ -248,7 +269,7 @@ namespace Calindor.Server
         {
             if (!location.IsSittingDown)
             {
-                TimeBasedActionCancelCurrent(); //Cancel current time based action
+                TimeBasedActionCancelExecuted(); //Cancel current time based action
 
                 AddActorCommandOutgoingMessage msgAddActorCommand =
                     (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
@@ -263,7 +284,7 @@ namespace Calindor.Server
         {
             if (!location.IsSittingDown)
             {
-                TimeBasedActionCancelCurrent(); //Cancel current time based action
+                TimeBasedActionCancelExecuted(); //Cancel current time based action
 
                 AddActorCommandOutgoingMessage msgAddActorCommand =
                     (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
@@ -278,7 +299,7 @@ namespace Calindor.Server
         {
             if (!location.IsSittingDown)
             {
-                TimeBasedActionCancelCurrent(); //Cancel current time based action
+                TimeBasedActionCancelExecuted(); //Cancel current time based action
 
                 AddActorCommandOutgoingMessage msgAddActorCommand =
                     (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
@@ -425,7 +446,7 @@ namespace Calindor.Server
             {
                 entityToFollow.removeFollower(this);
 
-                TimeBasedActionCancelCurrent();
+                TimeBasedActionCancelExecuted();
                 
                 RawTextOutgoingMessage msgRawTextOut =
                                      (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -486,12 +507,12 @@ namespace Calindor.Server
 
             FollowingStopFollowing();
 
-            TimeBasedActionCancelCurrent();
+            TimeBasedActionCancelExecuted();
 
             if (enImpl.addFollower(this))
             {
                 this.entityToFollow = enImpl;
-                TimeBasedActionCancelCurrent();
+                TimeBasedActionCancelExecuted();
                 msgRawTextOutMe.Text = "You start following " + enImpl.Name;
                 PutMessageIntoMyQueue(msgRawTextOutMe);
 
@@ -708,6 +729,8 @@ namespace Calindor.Server
         
         protected virtual void energiesEntityDied()
         {
+            // Cancel current action
+            TimeBasedActionCancelExecuted();
         }
 
         public void EnergiesUpdateHealth(short updValue)

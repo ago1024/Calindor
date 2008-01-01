@@ -63,7 +63,7 @@ namespace Calindor.Server.TimeBasedActions
             actionsSignatures.Add(action.GetHashCode(), null);
         }
     }
-
+    
     public interface ITimeBasedAction
     {
         /// <summary>
@@ -320,13 +320,14 @@ namespace Calindor.Server.TimeBasedActions
             //TODO: Implement
             targetEntityImplementation.CombatAttack(defenderEntityImplementation);
             defenderEntityImplementation.CombatDefend();
+            if (!defenderEntityImplementation.EnergiesIsAlive)
+                Cancel();
         }
         
         public override void Cancel()
         {
             base.Cancel();
             targetEntityImplementation.CombatStopFighting();
-            defenderEntityImplementation.CombatStopFighting();
         }
 
     }

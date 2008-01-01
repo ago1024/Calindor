@@ -366,9 +366,7 @@ namespace Calindor.Server
         #region Energies Handling
 
         protected override void energiesEntityDied()
-        {
-            // Cancel current action
-            TimeBasedActionCancelCurrent();
+        {            base.energiesEntityDied();
 
             // Animate death
             AddActorCommandOutgoingMessage msgAddActorCommand =
@@ -379,7 +377,7 @@ namespace Calindor.Server
 
             // Respawn
             RespawnTimeBasedAction respawn = new RespawnTimeBasedAction(this, milisToRespawn);
-            TimeBasedActionAdd(respawn);
+            TimeBasedActionSetExecuted(respawn);
             
         }
 
