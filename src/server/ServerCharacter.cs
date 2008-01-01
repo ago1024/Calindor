@@ -379,7 +379,7 @@ namespace Calindor.Server
 
             // Respawn
             RespawnTimeBasedAction respawn = new RespawnTimeBasedAction(this, milisToRespawn);
-            timeBasedActionsManager.AddAction(respawn);
+            TimeBasedActionAdd(respawn);
             
         }
 

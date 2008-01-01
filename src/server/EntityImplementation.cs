@@ -41,29 +41,40 @@ namespace Calindor.Server
 
         #region Time Based Actions Handling
         // Time based action
-        // TODO: Probably an entity might have more than one time based action
-        protected ITimeBasedAction tbAction = null;
+        private TimeBasedActionList timeBasedActions = new TimeBasedActionList();
 
-        protected TimeBasedActionsManager timeBasedActionsManager = null;
+        private TimeBasedActionsManager timeBasedActionsManager = null;
+        protected void timeBasedActionAddActionToManager(ITimeBasedAction actionToAdd)
+        {
+            if (timeBasedActionsManager == null)
+                throw new NullReferenceException("timeBasedActionsManager");
+            
+            timeBasedActionsManager.AddAction(actionToAdd);
+        }
+        
         public void TimeBasedActionSetManager(TimeBasedActionsManager tbaManager)
         {
             timeBasedActionsManager = tbaManager;
         }
-
-        public void TimeBasedActionSet(ITimeBasedAction actionToSet)
+        
+        public void TimeBasedActionAdd(ITimeBasedAction actionToAdd)
         {
+            // TODO: Check if action type matches current type
+            // TODO: If not Cancel all current
             TimeBasedActionCancelCurrent();
-
-            tbAction = actionToSet;
+            // Add action to list
+            timeBasedActions.Add(actionToAdd);
+            // TODO: Set current type of actions
+            // Add action to manager (manager takes care of duplicated adds)
+            timeBasedActionAddActionToManager(actionToAdd);
         }
 
         public void TimeBasedActionCancelCurrent()
         {
-            if (tbAction != null)
-            {
-                tbAction.Cancel();
-                tbAction = null;
-            }
+            foreach(ITimeBasedAction action in timeBasedActions)
+                action.Cancel();
+            
+            timeBasedActions.Clear();
         }
         #endregion
 
@@ -189,7 +200,7 @@ namespace Calindor.Server
                 return;
 
             // Add walk time based action
-            timeBasedActionsManager.AddAction(new WalkTimeBasedAction(this, path));
+            TimeBasedActionAdd(new WalkTimeBasedAction(this, path));
 
 
             // Move followers

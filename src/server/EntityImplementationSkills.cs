@@ -25,7 +25,7 @@ namespace Calindor.Server
         #region Harvest Skills
         public void HarvestStart(HarvestableResourceDescriptor rscDef)
         {
-            timeBasedActionsManager.AddAction(
+            TimeBasedActionAdd(
                 new HarvestTimeBasedAction(this, rscDef));
 
             RawTextOutgoingMessage msgRawText =
@@ -194,10 +194,9 @@ namespace Calindor.Server
             defender.PutMessageIntoMyAndObserversQueue(msgAddActorCommandDefender);
             
             // Checks ok. Start combat
-            timeBasedActionsManager.AddAction(
-                new AttackTimeBasedAction(this, defender));
-            
-
+            AttackTimeBasedAction attack = new AttackTimeBasedAction(this, defender);
+            TimeBasedActionAdd(attack);
+            defender.TimeBasedActionAdd(attack);
         }
         
         public void CombatAttack(EntityImplementation defender)

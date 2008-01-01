@@ -22,6 +22,7 @@ namespace Calindor.Server.TimeBasedActions
 {
     public sealed class TimeBasedActionsManager
     {
+        private Dictionary<int, object> actionsSignatures = new Dictionary<int,object>();
         private TimeBasedActionList actionsToAdd = new TimeBasedActionList();
         private TimeBasedActionList activeActions = new TimeBasedActionList();
         private TimeBasedActionList actionsToRemove = new TimeBasedActionList();
@@ -44,14 +45,22 @@ namespace Calindor.Server.TimeBasedActions
 
             // Removing finished actions
             foreach (TimeBasedAction action in actionsToRemove)
+            {
                 activeActions.Remove(action);
+                actionsSignatures.Remove(action.GetHashCode());
+            }
 
             actionsToRemove.Clear();
         }
 
         public void AddAction(ITimeBasedAction action)
         {
+            // Don't add existing action
+            if (actionsSignatures.ContainsKey(action.GetHashCode()))
+                return;
+                
             actionsToAdd.Add(action);
+            actionsSignatures.Add(action.GetHashCode(), null);
         }
     }
 
@@ -90,7 +99,6 @@ namespace Calindor.Server.TimeBasedActions
                 throw new ArgumentNullException("enImpl");
 
             targetEntityImplementation = enImpl;
-            enImpl.TimeBasedActionSet(this);
         }
 
         protected override PreconditionsResult checkPreconditions()
@@ -305,7 +313,6 @@ namespace Calindor.Server.TimeBasedActions
                 throw new ArgumentNullException("defender");
             
             defenderEntityImplementation = defender;
-            defenderEntityImplementation.TimeBasedActionSet(this);
         }
         
         protected override void execute()
