@@ -154,10 +154,7 @@ namespace Calindor.Server
             
 
             // Check distance
-            double distance = Double.MaxValue;
-            DistanceCalculationResult result = getDistanceToEntity(defender, out distance);
-
-            if (result != DistanceCalculationResult.CALC_OK)
+            if (!combatIsInDistanceToAttack(defender))
             {
                 RawTextOutgoingMessage msgRawTextOut =
                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -167,18 +164,7 @@ namespace Calindor.Server
                 PutMessageIntoMyQueue(msgRawTextOut);
                 return;
             }
-
-            // TODO: allowed distance is based on weapon type
-            if (distance > 3.0)
-            {
-                RawTextOutgoingMessage msgRawTextOut =
-                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                msgRawTextOut.Color = PredefinedColor.Red2;
-                msgRawTextOut.Text = "You need to get closer to attack...";
-                PutMessageIntoMyQueue(msgRawTextOut);
-                return;
-            }
+            
             
             // Send animation frame
             // TODO: Only if not already in combat
@@ -202,8 +188,26 @@ namespace Calindor.Server
             attackAttacker.Activate();
         }
         
-        public void CombatAttack(EntityImplementation defender)
+        private bool combatIsInDistanceToAttack(EntityImplementation defender)
         {
+            double distance = Double.MaxValue;
+            DistanceCalculationResult result = getDistanceToEntity(defender, out distance);
+
+            if (result != DistanceCalculationResult.CALC_OK)
+                return false;
+            
+            // TODO: allowed distance is based on weapon type
+            if (distance > 3.0)
+                return false;
+            
+            return true;
+        }
+        
+        public bool CombatAttack(EntityImplementation defender)
+        {
+            if (!combatIsInDistanceToAttack(defender))
+                return false;
+            
             // Send animation frame
             AddActorCommandOutgoingMessage msgAddActorCommand =
                 (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
@@ -220,6 +224,7 @@ namespace Calindor.Server
             atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
             SkillsAwardExperience(atckDescriptor);
             
+            return true;
         }
         
         public void CombatDefend()

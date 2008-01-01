@@ -341,11 +341,27 @@ namespace Calindor.Server.TimeBasedActions
         
         protected override void execute()
         {
+            
             //TODO: Implement
-            executingEntityImplementation.CombatAttack(affectedEntityImplementation);
-            affectedEntityImplementation.CombatDefend();
             if (!affectedEntityImplementation.EnergiesIsAlive)
+            {
                 Cancel();
+                return;
+            }
+
+            if(!executingEntityImplementation.CombatAttack(affectedEntityImplementation))
+            {
+                Cancel();
+                return;
+            }
+            
+            affectedEntityImplementation.CombatDefend();
+
+            if (!affectedEntityImplementation.EnergiesIsAlive)
+            {
+                Cancel();
+                return;
+            }
         }
         
         public override void Cancel()
