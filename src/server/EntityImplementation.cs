@@ -88,14 +88,15 @@ namespace Calindor.Server
             timeBasedActionAddActionToManager(actionToExecute);
         }
         
+        public void TimeBasedActionRemoveExecuted()
+        {
+            executedTimeBasedAction = null;
+        }
 
         public void TimeBasedActionCancelExecuted()
         {
             if (executedTimeBasedAction != null)
-            {
                 executedTimeBasedAction.Cancel();
-                executedTimeBasedAction = null;
-            }
         }
         #endregion
 
@@ -221,7 +222,8 @@ namespace Calindor.Server
                 return;
 
             // Add walk time based action
-            TimeBasedActionSetExecuted(new WalkTimeBasedAction(this, path));
+            WalkTimeBasedAction walk = new WalkTimeBasedAction(this, path);
+            walk.Activate();
 
 
             // Move followers

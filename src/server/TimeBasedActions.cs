@@ -78,6 +78,11 @@ namespace Calindor.Server.TimeBasedActions
         /// Causes the action to be canceled
         /// </summary>
         void Cancel();
+        
+        /// <summary>
+        /// Call this method, to 'activate' the action
+        /// </summary>
+        void Activate();
     }
 
     public class TimeBasedActionList : List<ITimeBasedAction>
@@ -89,16 +94,28 @@ namespace Calindor.Server.TimeBasedActions
     /// </summary>
     public abstract class TimeBasedAction : TimeBasedExecution, ITimeBasedAction
     {
-        protected EntityImplementation targetEntityImplementation = null;
+        protected EntityImplementation executingEntityImplementation = null;
+        protected EntityImplementation affectedEntityImplementation = null;
         private bool actionCanceled = false;
         protected bool shouldContinue = true;
 
-        protected TimeBasedAction(EntityImplementation enImpl, uint actionDuration):base(actionDuration)
+        protected TimeBasedAction(EntityImplementation executing, uint actionDuration):
+            base(actionDuration)
         {
-            if (enImpl == null)
-                throw new ArgumentNullException("enImpl");
+            if (executing == null)
+                throw new ArgumentNullException("executing");
 
-            targetEntityImplementation = enImpl;
+            executingEntityImplementation = executing;
+        }
+        
+        // TODO: Maybe pass array of affected entities?
+        protected TimeBasedAction(EntityImplementation executing,
+            EntityImplementation affected, uint actionDuration):
+            this(executing, actionDuration)
+        {
+            if (affected == null)
+                throw new NullReferenceException("affected");
+            affectedEntityImplementation = affected;
         }
 
         protected override PreconditionsResult checkPreconditions()
@@ -111,17 +128,29 @@ namespace Calindor.Server.TimeBasedActions
             else
                 return PreconditionsResult.EXECUTE;
         }
+        
+
 
         #region ITimeBasedAction Members
 
         public virtual void Cancel()
         {
             actionCanceled = true;
+            executingEntityImplementation.TimeBasedActionRemoveExecuted();
+            if (affectedEntityImplementation != null)
+                affectedEntityImplementation.TimeBasedActionRemoveAffecting(this);
         }
 
         public bool ShouldContinue
         {
             get { return shouldContinue; }
+        }
+
+        public void Activate()
+        {
+            executingEntityImplementation.TimeBasedActionSetExecuted(this);
+            if (affectedEntityImplementation != null)
+                affectedEntityImplementation.TimeBasedActionAddAffecting(this);
         }
 
         #endregion
@@ -158,7 +187,7 @@ namespace Calindor.Server.TimeBasedActions
                 numberOfMoves++; // Add one move
                 firstStep = false; // No longer first step
                 walkPath.GetNext(); // Remove the first item (current location) from path 
-                targetEntityImplementation.LocationStandUp(true); // Stand up
+                executingEntityImplementation.LocationStandUp(true); // Stand up
             }
 
             for (int i = 0; i < numberOfMoves; i++)
@@ -174,8 +203,8 @@ namespace Calindor.Server.TimeBasedActions
                 }
 
                 // Check if location is not occupied
-                if (targetEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y, 
-                    targetEntityImplementation.LocationDimension))
+                if (executingEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y, 
+                    executingEntityImplementation.LocationDimension))
                 {
                     shouldContinue = false;
                     return; // TODO: Needs to reroute
@@ -183,8 +212,8 @@ namespace Calindor.Server.TimeBasedActions
 
 
                 // Check direction
-                int xDiff = targetEntityImplementation.LocationX - itm.X;
-                int yDiff = targetEntityImplementation.LocationY - itm.Y;
+                int xDiff = executingEntityImplementation.LocationX - itm.X;
+                int yDiff = executingEntityImplementation.LocationY - itm.Y;
 
                 if (Math.Abs(xDiff) > 1 || Math.Abs(yDiff) > 1)
                 {
@@ -195,34 +224,34 @@ namespace Calindor.Server.TimeBasedActions
                 if (xDiff == 0)
                 {
                     if (yDiff == -1)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.N);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.N);
 
                     if (yDiff == 1)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.S);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.S);
                 }
 
                 if (xDiff == -1)
                 {
                     if (yDiff == -1)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.NE);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.NE);
 
                     if (yDiff == 0)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.E);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.E);
 
                     if (yDiff == 1)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.SE);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.SE);
                 }
 
                 if (xDiff == 1)
                 {
                     if (yDiff == 1)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.SW);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.SW);
 
                     if (yDiff == 0)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.W);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.W);
 
                     if (yDiff == -1)
-                        targetEntityImplementation.LocationTakeStep(PredefinedDirection.NW);
+                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.NW);
 
                 }
             }
@@ -258,8 +287,8 @@ namespace Calindor.Server.TimeBasedActions
 
         private void calculateParameters()
         {
-            this.successRate = targetEntityImplementation.HarvestGetSuccessRate(rscDef);
-            setMilisBetweenExecutions(targetEntityImplementation.HarvestGetActionTime(rscDef));
+            this.successRate = executingEntityImplementation.HarvestGetSuccessRate(rscDef);
+            setMilisBetweenExecutions(executingEntityImplementation.HarvestGetActionTime(rscDef));
         }
 
         public override void Cancel()
@@ -271,13 +300,13 @@ namespace Calindor.Server.TimeBasedActions
             msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
             msgRawText.Color = PredefinedColor.Blue1;
             msgRawText.Text = "You stopped harvesting " + rscDef.HarvestedItem.Name;
-            targetEntityImplementation.PutMessageIntoMyQueue(msgRawText);
+            executingEntityImplementation.PutMessageIntoMyQueue(msgRawText);
         }
 
         protected override void execute()
         {
             if (WorldRNG.NextDouble() <= successRate)
-                targetEntityImplementation.HarvestItemHarvested(rscDef);
+                executingEntityImplementation.HarvestItemHarvested(rscDef);
             
             // After each harvest, recalculate
             calculateParameters();
@@ -295,7 +324,7 @@ namespace Calindor.Server.TimeBasedActions
 
         protected override void execute()
         {
-            (targetEntityImplementation as ServerCharacter).EnergiesRespawn();
+            (executingEntityImplementation as ServerCharacter).EnergiesRespawn();
 
             shouldContinue = false;
         }
@@ -304,30 +333,25 @@ namespace Calindor.Server.TimeBasedActions
     // TODO: PROTOTYPE IMPLEMENTATION
     public class AttackTimeBasedAction : TimeBasedAction
     {
-        protected EntityImplementation defenderEntityImplementation = null;
-        
+         
         public AttackTimeBasedAction(EntityImplementation attacker, EntityImplementation defender):
-            base(attacker, 2000) // TODO: Fixed for now
+            base(attacker, defender, 2000) // TODO: Fixed for now
         {
-            if (defender == null)
-                throw new ArgumentNullException("defender");
-            
-            defenderEntityImplementation = defender;
         }
         
         protected override void execute()
         {
             //TODO: Implement
-            targetEntityImplementation.CombatAttack(defenderEntityImplementation);
-            defenderEntityImplementation.CombatDefend();
-            if (!defenderEntityImplementation.EnergiesIsAlive)
+            executingEntityImplementation.CombatAttack(affectedEntityImplementation);
+            affectedEntityImplementation.CombatDefend();
+            if (!affectedEntityImplementation.EnergiesIsAlive)
                 Cancel();
         }
         
         public override void Cancel()
         {
             base.Cancel();
-            targetEntityImplementation.CombatStopFighting();
+            executingEntityImplementation.CombatStopFighting();
         }
 
     }

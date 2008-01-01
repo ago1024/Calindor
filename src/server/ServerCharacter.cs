@@ -377,7 +377,7 @@ namespace Calindor.Server
 
             // Respawn
             RespawnTimeBasedAction respawn = new RespawnTimeBasedAction(this, milisToRespawn);
-            TimeBasedActionSetExecuted(respawn);
+            respawn.Activate();
             
         }
 

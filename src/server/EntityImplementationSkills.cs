@@ -25,8 +25,9 @@ namespace Calindor.Server
         #region Harvest Skills
         public void HarvestStart(HarvestableResourceDescriptor rscDef)
         {
-            TimeBasedActionSetExecuted(
-                new HarvestTimeBasedAction(this, rscDef));
+            HarvestTimeBasedAction harvest =
+                new HarvestTimeBasedAction(this, rscDef);
+            harvest.Activate();
 
             RawTextOutgoingMessage msgRawText =
                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -195,12 +196,10 @@ namespace Calindor.Server
             
             // Checks ok. Start combat
             AttackTimeBasedAction attackDefender = new AttackTimeBasedAction(this, defender);
-            TimeBasedActionSetExecuted(attackDefender);
-            defender.TimeBasedActionAddAffecting(attackDefender);
+            attackDefender.Activate();
             // TODO: Only if defender is not attacking anyone already
             AttackTimeBasedAction attackAttacker = new AttackTimeBasedAction(defender, this);
-            defender.TimeBasedActionSetExecuted(attackAttacker);
-            TimeBasedActionAddAffecting(attackAttacker);
+            attackAttacker.Activate();
         }
         
         public void CombatAttack(EntityImplementation defender)
