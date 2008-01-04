@@ -155,7 +155,13 @@ namespace Calindor.Server.TimeBasedActions
 
         #endregion
     }
-
+    
+    /*
+     * -------------------------------------------------------------------------
+     * IMPLEMENTATION
+     * -------------------------------------------------------------------------
+     */
+    
     public class WalkTimeBasedAction : TimeBasedAction
     {
         protected WalkPath walkPath = null;
@@ -210,51 +216,17 @@ namespace Calindor.Server.TimeBasedActions
                     return; // TODO: Needs to reroute
                 }
 
-
-                // Check direction
-                int xDiff = executingEntityImplementation.LocationX - itm.X;
-                int yDiff = executingEntityImplementation.LocationY - itm.Y;
-
-                if (Math.Abs(xDiff) > 1 || Math.Abs(yDiff) > 1)
+                // Move and check result
+                PredefinedDirection dir = 
+                    executingEntityImplementation.LocationTakeStepTo(itm.X, itm.Y);
+                
+                if (dir == PredefinedDirection.NO_DIRECTION)
                 {
                     shouldContinue = false;
                     return; // Error. Stop.
                 }
-
-                if (xDiff == 0)
-                {
-                    if (yDiff == -1)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.N);
-
-                    if (yDiff == 1)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.S);
-                }
-
-                if (xDiff == -1)
-                {
-                    if (yDiff == -1)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.NE);
-
-                    if (yDiff == 0)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.E);
-
-                    if (yDiff == 1)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.SE);
-                }
-
-                if (xDiff == 1)
-                {
-                    if (yDiff == 1)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.SW);
-
-                    if (yDiff == 0)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.W);
-
-                    if (yDiff == -1)
-                        executingEntityImplementation.LocationTakeStep(PredefinedDirection.NW);
-
-                }
-            }
+                
+              }
 
             shouldContinue = true; // Keep on executing
         }
@@ -340,8 +312,7 @@ namespace Calindor.Server.TimeBasedActions
         }
         
         protected override void execute()
-        {
-            
+        {   
             //TODO: Implement
             if (!affectedEntityImplementation.EnergiesIsAlive)
             {

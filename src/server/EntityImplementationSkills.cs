@@ -165,9 +165,15 @@ namespace Calindor.Server
                 return;
             }
             
+            // Rotate to face defender
+            // TODO: Should be moved to combat action
+            LocationTurnToFace(defender.LocationX, defender.LocationY);
+            defender.LocationTurnToFace(LocationX, LocationY);
+            
             
             // Send animation frame
             // TODO: Only if not already in combat
+            // TODO: Should be moved to combat action
             AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
                 (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
             msgAddActorCommandAttacker.EntityID = EntityID;

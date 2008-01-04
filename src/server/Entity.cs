@@ -460,7 +460,7 @@ namespace Calindor.Server.Entities
             dimension = dsr.ReadSInt();
         }
 
-        public void RatateBy(short additionalRotation)
+        public void RotateBy(short additionalRotation)
         {
             innerData[3] = (short)((int)(innerData[3] + additionalRotation) % 360);
             if (innerData[3] < 0)

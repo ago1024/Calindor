@@ -101,7 +101,7 @@ namespace Calindor.Server
         #endregion
 
         #region Inventory Handling
-        public  void InventoryUpdateItem(Item itm)
+        public void InventoryUpdateItem(Item itm)
         {
             if (itm != null)
             {
@@ -117,7 +117,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void InventoryLookAtItem(byte slot)
+        public void InventoryLookAtItem(byte slot)
         {
             Item itm = inventory.GetItemAtSlot(slot);
 
@@ -130,7 +130,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void InventoryDropItemToGround(byte slot, int quantity)
+        public void InventoryDropItemToGround(byte slot, int quantity)
         {
             Item itm = inventory.GetItemAtSlot(slot);
 
@@ -156,7 +156,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void InventoryMoveItemInInventory(byte oldSlot, byte newSlot)
+        public void InventoryMoveItemInInventory(byte oldSlot, byte newSlot)
         {
             if (oldSlot > 35)
                 return; //TODO: Add handling for equipment
@@ -208,7 +208,7 @@ namespace Calindor.Server
 
         protected MapManager mapManager = null;
 
-        public  void LocationMoveTo(short x, short y)
+        public void LocationMoveTo(short x, short y)
         {
             // Check if destination tile is walkable
             if (!location.CurrentMap.IsLocationWalkable(x, y))
@@ -246,12 +246,12 @@ namespace Calindor.Server
             }
         }
 
-        public  void LocationStandUp()
+        public void LocationStandUp()
         {
             LocationStandUp(false);
         }
 
-        public  void LocationStandUp(bool continueWalking)
+        public void LocationStandUp(bool continueWalking)
         {
             if (location.IsSittingDown)
             {
@@ -267,7 +267,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void LocationSitDown()
+        public void LocationSitDown()
         {
             if (!location.IsSittingDown)
             {
@@ -282,7 +282,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void LocationTurnLeft()
+        public void LocationTurnLeft()
         {
             if (!location.IsSittingDown)
             {
@@ -293,11 +293,11 @@ namespace Calindor.Server
                 msgAddActorCommand.EntityID = EntityID;
                 msgAddActorCommand.Command = PredefinedActorCommand.turn_left;
                 PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                location.RatateBy(45);
+                location.RotateBy(45);
             }
         }
 
-        public  void LocationTurnRight()
+        public void LocationTurnRight()
         {
             if (!location.IsSittingDown)
             {
@@ -308,68 +308,209 @@ namespace Calindor.Server
                 msgAddActorCommand.EntityID = EntityID;
                 msgAddActorCommand.Command = PredefinedActorCommand.turn_right;
                 PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-                location.RatateBy(-45);
+                location.RotateBy(-45);
             }
         }
-
-        public  void LocationTakeStep(PredefinedDirection dir)
+        
+        public PredefinedDirection LocationTurnToFace(short x, short y)
         {
-            AddActorCommandOutgoingMessage msgAddActorCommand =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommand.EntityID = EntityID;
-
-            switch (dir)
+            if (!location.IsSittingDown)
             {
-                case(PredefinedDirection.N):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_n;
-                    location.Rotation = 0;
-                    location.Y++;
-                    break;
-                case(PredefinedDirection.NE):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_ne;
-                    location.Rotation = 45;
-                    location.Y++;
-                    location.X++;
-                    break;
-                case (PredefinedDirection.E):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_e;
-                    location.Rotation = 90;
-                    location.X++;
-                    break;
-                case (PredefinedDirection.SE):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_se;
-                    location.Rotation = 135;
-                    location.Y--;
-                    location.X++;
-                    break;
-                case (PredefinedDirection.S):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_s;
-                    location.Rotation = 180;
-                    location.Y--;
-                    break;
-                case (PredefinedDirection.SW):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_sw;
-                    location.Rotation = 225;
-                    location.Y--;
-                    location.X--;
-                    break;
-                case (PredefinedDirection.W):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_w;
-                    location.Rotation = 270;
-                    location.X--;
-                    break;
-                case (PredefinedDirection.NW):
-                    msgAddActorCommand.Command = PredefinedActorCommand.move_nw;
-                    location.Rotation = 315;
-                    location.Y++;
-                    location.X--;
-                    break;
+                PredefinedDirection dir = locationCalculateDirectionTo(x, y);
+                
+                if (dir != PredefinedDirection.NO_DIRECTION)
+                    LocationTurnTo(dir);
+                
+                return dir;
+            }
+            
+            return PredefinedDirection.NO_DIRECTION;
+        }
+        
+        public void LocationTurnTo(PredefinedDirection dir)
+        {
+            if (!location.IsSittingDown)
+            {
+                if (dir == PredefinedDirection.NO_DIRECTION)
+                    return;
+                
+                AddActorCommandOutgoingMessage msgAddActorCommand =
+                    (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+                msgAddActorCommand.EntityID = EntityID;
+
+                switch (dir)
+                {
+                    case(PredefinedDirection.N):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_n;
+                        location.Rotation = 0;
+                        break;
+                    case(PredefinedDirection.NE):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_ne;
+                        location.Rotation = 45;
+                        break;
+                    case (PredefinedDirection.E):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_e;
+                        location.Rotation = 90;
+                        break;
+                    case (PredefinedDirection.SE):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_se;
+                        location.Rotation = 135;
+                        break;
+                    case (PredefinedDirection.S):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_s;
+                        location.Rotation = 180;
+                        break;
+                    case (PredefinedDirection.SW):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_sw;
+                        location.Rotation = 225;
+                        break;
+                    case (PredefinedDirection.W):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_w;
+                        location.Rotation = 270;
+                        break;
+                    case (PredefinedDirection.NW):
+                        msgAddActorCommand.Command = PredefinedActorCommand.turn_nw;
+                        location.Rotation = 315;
+                        break;
+                }
+
+                PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+            }
+        }
+        
+        protected PredefinedDirection locationCalculateDirectionTo(short x, short y)
+        {
+            int xDiff = LocationX - x;
+            int yDiff = LocationY - y;
+            
+            if (xDiff != 0)
+                xDiff /= Math.Abs(xDiff);
+            
+            if (yDiff != 0)
+                yDiff /= Math.Abs(yDiff);
+            
+            if (xDiff == 0)
+            {
+                if (yDiff == -1)
+                    return PredefinedDirection.N;
+
+                if (yDiff == 1)
+                    return PredefinedDirection.S;
             }
 
-            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+            if (xDiff == -1)
+            {
+                if (yDiff == -1)
+                    return PredefinedDirection.NE;
+
+                if (yDiff == 0)
+                    return PredefinedDirection.E;
+
+                if (yDiff == 1)
+                    return PredefinedDirection.SE;
+            }
+
+            if (xDiff == 1)
+            {
+                if (yDiff == 1)
+                    return PredefinedDirection.SW;
+
+                if (yDiff == 0)
+                    return PredefinedDirection.W;
+
+                if (yDiff == -1)
+                    return PredefinedDirection.NW;
+
+            }
+            
+            // x == 0 && y == 0
+            return PredefinedDirection.NO_DIRECTION;
+        }
+        public PredefinedDirection LocationTakeStepTo(short x, short y)
+        {
+            if (!location.IsSittingDown)
+            {
+                int xDiff = LocationX - x;
+                int yDiff = LocationY - y;
+
+                if (Math.Abs(xDiff) > 1 || Math.Abs(yDiff) > 1)
+                    return PredefinedDirection.NO_DIRECTION;
+
+                PredefinedDirection dir = locationCalculateDirectionTo(x, y);
+                
+                if (dir != PredefinedDirection.NO_DIRECTION)
+                    LocationTakeStep(dir);
+                
+                return dir;
+            }
+            
+            return PredefinedDirection.NO_DIRECTION;
+        }
+        
+        public void LocationTakeStep(PredefinedDirection dir)
+        {
+            if (!location.IsSittingDown)
+            {
+                if (dir == PredefinedDirection.NO_DIRECTION)
+                    return;
+                
+                AddActorCommandOutgoingMessage msgAddActorCommand =
+                    (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+                msgAddActorCommand.EntityID = EntityID;
+
+                switch (dir)
+                {
+                    case(PredefinedDirection.N):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_n;
+                        location.Rotation = 0;
+                        location.Y++;
+                        break;
+                    case(PredefinedDirection.NE):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_ne;
+                        location.Rotation = 45;
+                        location.Y++;
+                        location.X++;
+                        break;
+                    case (PredefinedDirection.E):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_e;
+                        location.Rotation = 90;
+                        location.X++;
+                        break;
+                    case (PredefinedDirection.SE):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_se;
+                        location.Rotation = 135;
+                        location.Y--;
+                        location.X++;
+                        break;
+                    case (PredefinedDirection.S):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_s;
+                        location.Rotation = 180;
+                        location.Y--;
+                        break;
+                    case (PredefinedDirection.SW):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_sw;
+                        location.Rotation = 225;
+                        location.Y--;
+                        location.X--;
+                        break;
+                    case (PredefinedDirection.W):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_w;
+                        location.Rotation = 270;
+                        location.X--;
+                        break;
+                    case (PredefinedDirection.NW):
+                        msgAddActorCommand.Command = PredefinedActorCommand.move_nw;
+                        location.Rotation = 315;
+                        location.Y++;
+                        location.X--;
+                        break;
+                }
+
+                PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+            }
         }
 
-        public  void LocationChangeMap(string newMapName, short x, short y)
+        public void LocationChangeMap(string newMapName, short x, short y)
         {
             mapManager.ChangeMapForEntity(this, location, newMapName, x, y);
 
@@ -389,7 +530,7 @@ namespace Calindor.Server
 
         }
 
-        public  void LocationChangeLocation(short newX, short newY)
+        public void LocationChangeLocation(short newX, short newY)
         {
             // TODO: Should check if new locaiton is walkable?
 
@@ -405,7 +546,7 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
         }
 
-        public  void LocationSetMapManager(MapManager mapMngr)
+        public void LocationSetMapManager(MapManager mapMngr)
         {
             mapManager = mapMngr;
         }
@@ -461,7 +602,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void FollowingFollow(EntityImplementation enImpl)
+        public void FollowingFollow(EntityImplementation enImpl)
         {
             RawTextOutgoingMessage msgRawTextOutMe =
                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -533,7 +674,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void FollowingReleaseFollowers()
+        public void FollowingReleaseFollowers()
         {
             if (isFollowedByEntities)
             {
@@ -554,7 +695,7 @@ namespace Calindor.Server
             }
         }
 
-        public  void FollowingCheckForStopFollowing()
+        public void FollowingCheckForStopFollowing()
         {
             if (!isFollowingEntity)
                 return;
@@ -606,14 +747,14 @@ namespace Calindor.Server
         #endregion
 
         #region Message Queue
-        public  void PutMessageIntoObserversQueue(OutgoingMessage msg)
+        public void PutMessageIntoObserversQueue(OutgoingMessage msg)
         {
             foreach (Entity en in entitiesObservers)
                 if (en is EntityImplementation)
                     (en as EntityImplementation).PutMessageIntoMyQueue(msg);
         }
 
-        public  void PutMessageIntoMyAndObserversQueue(OutgoingMessage msg)
+        public void PutMessageIntoMyAndObserversQueue(OutgoingMessage msg)
         {
             PutMessageIntoMyQueue(msg);
 
@@ -646,7 +787,7 @@ namespace Calindor.Server
         #endregion
 
         #region Visibility Handling
-        public  void VisibilityUpdateVisibleEntities()
+        public void VisibilityUpdateVisibleEntities()
         {
             // Remove entities
             calculateRemovedVisibleEntities();

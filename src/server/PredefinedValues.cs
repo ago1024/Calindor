@@ -261,7 +261,8 @@ namespace Calindor.Misc.Predefines
         S = 4,
         SW = 5,
         W = 6,
-        NW = 7
+        NW = 7,
+        NO_DIRECTION = 100
     }
 
     public enum PredefinedPartialStatType
