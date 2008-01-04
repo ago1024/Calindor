@@ -75,14 +75,16 @@ namespace Calindor.Server.TimeBasedActions
         }
 
         /// <summary>
-        /// Causes the action to be canceled
-        /// </summary>
-        void Cancel();
-        
-        /// <summary>
-        /// Call this method, to 'activate' the action
+        /// Makes action active
         /// </summary>
         void Activate();
+        
+        /// <summary>
+        /// Makes action inactive
+        /// </summary>
+        void DeActivate();
+        
+
     }
 
     public class TimeBasedActionList : List<ITimeBasedAction>
@@ -92,12 +94,12 @@ namespace Calindor.Server.TimeBasedActions
     /// <summary>
     /// Default implementation
     /// </summary>
-    public abstract class TimeBasedAction : TimeBasedExecution, ITimeBasedAction
+    public abstract class TimeBasedAction : TimeBasedSkippingExecution, 
+                                            ITimeBasedAction
     {
         protected EntityImplementation executingEntityImplementation = null;
-        protected EntityImplementation affectedEntityImplementation = null;
-        private bool actionCanceled = false;
-        protected bool shouldContinue = true;
+        protected EntityImplementation affectedEntityImplementation = null;        private bool actionDeactivated = true;
+        private bool immediateExecution = false;
 
         protected TimeBasedAction(EntityImplementation executing, uint actionDuration):
             base(actionDuration)
@@ -120,39 +122,68 @@ namespace Calindor.Server.TimeBasedActions
 
         protected override PreconditionsResult checkPreconditions()
         {
-            if (actionCanceled)
+            if (!actionDeactivated)
             {
-                shouldContinue = false;
-                return PreconditionsResult.NO_EXECUTE;
+                if (immediateExecution)
+                    return PreconditionsResult.IMMEDIATE_EXECUTE;
+                else
+                    return PreconditionsResult.EXECUTE;
             }
-            else
-                return PreconditionsResult.EXECUTE;
+
+            return PreconditionsResult.NO_EXECUTE;
         }
         
+        /// <summary>
+        /// Code to be execute on activation of action 
+        /// </summary>
+        protected virtual void onActivation()
+        {
+        }
+        
+        /// <summary>
+        /// Code to be executed on deactivation of action
+        /// </summary>
+        protected virtual void onDeActivation()
+        {
+        }
+        
+        protected void setImmediateExecution()
+        {
+            immediateExecution = true;
+        }
+        protected void resetImmediateExecution()
+        {
+            immediateExecution = false;
 
-
+        }
         #region ITimeBasedAction Members
 
-        public virtual void Cancel()
-        {
-            actionCanceled = true;
-            executingEntityImplementation.TimeBasedActionRemoveExecuted();
-            if (affectedEntityImplementation != null)
-                affectedEntityImplementation.TimeBasedActionRemoveAffecting(this);
-        }
+
 
         public bool ShouldContinue
         {
-            get { return shouldContinue; }
+            get { return !actionDeactivated; }
         }
 
         public void Activate()
         {
+            actionDeactivated = false;
             executingEntityImplementation.TimeBasedActionSetExecuted(this);
             if (affectedEntityImplementation != null)
                 affectedEntityImplementation.TimeBasedActionAddAffecting(this);
+            
+            onActivation();
         }
-
+        
+        public void DeActivate()
+        {
+            actionDeactivated = true;
+            executingEntityImplementation.TimeBasedActionRemoveExecuted();
+            if (affectedEntityImplementation != null)
+                affectedEntityImplementation.TimeBasedActionRemoveAffecting(this);
+            
+            onDeActivation();
+        }
         #endregion
     }
     
@@ -164,81 +195,59 @@ namespace Calindor.Server.TimeBasedActions
     
     public class WalkTimeBasedAction : TimeBasedAction
     {
-        protected WalkPath walkPath = null;
-        private const int WALK_COMMAND_DELAY = 250; // Delay (in milis) of sending commands
-        private bool firstStep = true; 
+        private const int WALK_COMMAND_DELAY = 250; // Delay (in milis) of moves
 
-        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath) : base(enImpl, WALK_COMMAND_DELAY)
+        protected WalkPath walkPath = null;
+
+        public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath):
+            base(enImpl, WALK_COMMAND_DELAY)
         {
            if (walkPath == null)
                 throw new ArgumentNullException("walkPath");
 
             this.walkPath = walkPath;
-
-            updateLastExecutionTime();
-
-            firstStep = true;
+            // Remove the first item (current location) from path
+            this.walkPath.GetNext(); 
+            
+            setImmediateExecution();
+        }
+        
+        protected override void onActivation ()
+        {
+            // Stand up
+            executingEntityImplementation.LocationStandUp(true); 
         }
 
         protected override void execute()
-        {
-            int milisSinceLastExecute = getMilisSinceLastExecution();
+        {            resetImmediateExecution();
 
-            // How many moves should be executed
-            int numberOfMoves = milisSinceLastExecute / WALK_COMMAND_DELAY;
+            WalkPathItem itm = null;
 
-            // If this is first step
-            if (firstStep)
+            itm = walkPath.GetNext();
+
+            if (itm == null)
             {
-                numberOfMoves++; // Add one move
-                firstStep = false; // No longer first step
-                walkPath.GetNext(); // Remove the first item (current location) from path 
-                executingEntityImplementation.LocationStandUp(true); // Stand up
+                DeActivate();
+                return; //Move finished
             }
 
-            for (int i = 0; i < numberOfMoves; i++)
+            // Check if location is not occupied
+            if (executingEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y, 
+                executingEntityImplementation.LocationDimension))
             {
-                WalkPathItem itm = null;
+                DeActivate();
+                return; // TODO: Needs to reroute
+            }
 
-                itm = walkPath.GetNext();
+            // Move and check result
+            PredefinedDirection dir = 
+                executingEntityImplementation.LocationTakeStepTo(itm.X, itm.Y);
 
-                if (itm == null)
-                {
-                    shouldContinue = false;
-                    return; //Move finished
-                }
-
-                // Check if location is not occupied
-                if (executingEntityImplementation.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y, 
-                    executingEntityImplementation.LocationDimension))
-                {
-                    shouldContinue = false;
-                    return; // TODO: Needs to reroute
-                }
-
-                // Move and check result
-                PredefinedDirection dir = 
-                    executingEntityImplementation.LocationTakeStepTo(itm.X, itm.Y);
-                
-                if (dir == PredefinedDirection.NO_DIRECTION)
-                {
-                    shouldContinue = false;
-                    return; // Error. Stop.
-                }
-                
-              }
-
-            shouldContinue = true; // Keep on executing
-        }
-
-        protected override PreconditionsResult checkPreconditions()
-        {
-            PreconditionsResult pResult = base.checkPreconditions();
-
-            if (firstStep)
-                pResult = PreconditionsResult.IMMEDIATE_EXECUTE;
-
-            return pResult;
+            if (dir == PredefinedDirection.NO_DIRECTION)
+            {
+                DeActivate();
+                return; // Error. Stop.
+            }
         }
     }
 
@@ -263,11 +272,8 @@ namespace Calindor.Server.TimeBasedActions
             setMilisBetweenExecutions(executingEntityImplementation.HarvestGetActionTime(rscDef));
         }
 
-        public override void Cancel()
-        {
-            base.Cancel();
-
-            RawTextOutgoingMessage msgRawText =
+        protected override void onDeActivation()
+        {            RawTextOutgoingMessage msgRawText =
                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
             msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
             msgRawText.Color = PredefinedColor.Blue1;
@@ -281,10 +287,7 @@ namespace Calindor.Server.TimeBasedActions
                 executingEntityImplementation.HarvestItemHarvested(rscDef);
             
             // After each harvest, recalculate
-            calculateParameters();
-
-            shouldContinue = true;
-        }
+            calculateParameters();        }
     }
 
     public class RespawnTimeBasedAction : TimeBasedAction
@@ -297,32 +300,31 @@ namespace Calindor.Server.TimeBasedActions
         protected override void execute()
         {
             (executingEntityImplementation as ServerCharacter).EnergiesRespawn();
-
-            shouldContinue = false;
         }
     }
     
     // TODO: PROTOTYPE IMPLEMENTATION
     public class AttackTimeBasedAction : TimeBasedAction
     {
-         
+            
         public AttackTimeBasedAction(EntityImplementation attacker, EntityImplementation defender):
-            base(attacker, defender, 2000) // TODO: Fixed for now
+            base(attacker, defender, 2000) // TODO: Fixed time for now
         {
+            // TODO: Maybe add immediate execution for 'backstab' attacks?
         }
-        
+            
         protected override void execute()
         {   
             //TODO: Implement
             if (!affectedEntityImplementation.EnergiesIsAlive)
             {
-                Cancel();
+                DeActivate();
                 return;
             }
 
             if(!executingEntityImplementation.CombatAttack(affectedEntityImplementation))
             {
-                Cancel();
+                DeActivate();
                 return;
             }
             
@@ -330,15 +332,28 @@ namespace Calindor.Server.TimeBasedActions
 
             if (!affectedEntityImplementation.EnergiesIsAlive)
             {
-                Cancel();
+                DeActivate();
                 return;
             }
         }
         
-        public override void Cancel()
+        protected override void onDeActivation()
         {
-            base.Cancel();
             executingEntityImplementation.CombatStopFighting();
+        }
+            
+        protected override void onActivation()
+        {
+            // Animation for attacker
+            // TODO: Move to EntityImplementation?
+            executingEntityImplementation.LocationTurnToFace
+                (affectedEntityImplementation.LocationX, affectedEntityImplementation.LocationY);
+
+            AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommandAttacker.EntityID = executingEntityImplementation.EntityID;
+            msgAddActorCommandAttacker.Command = PredefinedActorCommand.enter_combat;
+            executingEntityImplementation.PutMessageIntoMyAndObserversQueue(msgAddActorCommandAttacker);
         }
 
     }

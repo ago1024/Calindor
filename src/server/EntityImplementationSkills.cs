@@ -165,27 +165,6 @@ namespace Calindor.Server
                 return;
             }
             
-            // Rotate to face defender
-            // TODO: Should be moved to combat action
-            LocationTurnToFace(defender.LocationX, defender.LocationY);
-            defender.LocationTurnToFace(LocationX, LocationY);
-            
-            
-            // Send animation frame
-            // TODO: Only if not already in combat
-            // TODO: Should be moved to combat action
-            AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommandAttacker.EntityID = EntityID;
-            msgAddActorCommandAttacker.Command = PredefinedActorCommand.enter_combat;
-            PutMessageIntoMyAndObserversQueue(msgAddActorCommandAttacker);
-
-            AddActorCommandOutgoingMessage msgAddActorCommandDefender =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommandDefender.EntityID = defender.EntityID;
-            msgAddActorCommandDefender.Command = PredefinedActorCommand.enter_combat;
-            defender.PutMessageIntoMyAndObserversQueue(msgAddActorCommandDefender);
-            
             // Checks ok. Start combat
             AttackTimeBasedAction attackDefender = new AttackTimeBasedAction(this, defender);
             attackDefender.Activate();

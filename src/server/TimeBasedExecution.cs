@@ -26,9 +26,23 @@ namespace Calindor.Misc
             setMilisBetweenExecutions(milisBetweenExecutions);
         }
 
-        protected int getMilisSinceLastExecution()
+        protected uint getMilisSinceLastExecution()
         {
-            return (int)((DateTime.Now.Ticks - lastExecutedTick)) / 10000;
+            return (uint)((DateTime.Now.Ticks - lastExecutedTick)) / 10000;
+        }
+        
+        protected uint getExecutionsCount()
+        {
+            uint executionsCount = getMilisSinceLastExecution() 
+                / milisBetweenExecutions;
+            
+            // IMMEDIATE_EXECUTE does not increae the number of executions, it
+            // forces one 'now'
+            if ((executionsCount == 0) && 
+                (checkPreconditions() == PreconditionsResult.IMMEDIATE_EXECUTE))
+                executionsCount++;
+            
+            return executionsCount;
         }
 
         protected void updateLastExecutionTime()
@@ -41,26 +55,80 @@ namespace Calindor.Misc
             this.milisBetweenExecutions = milisBetweenExecutions;
         }
 
-        public virtual void Execute()
-        {
-            PreconditionsResult pResult = checkPreconditions();
-            if (pResult == PreconditionsResult.NO_EXECUTE)
-                return;
-
-            if ((getMilisSinceLastExecution() > milisBetweenExecutions) || 
-                (pResult == PreconditionsResult.IMMEDIATE_EXECUTE))
-            {
-                // TODO: this should be called the number of times getMilisSinceLastExecution is greater than milisBetweenExecutions
-                execute();
-                updateLastExecutionTime();
-            }
-        }
-
+        public abstract void Execute();
+            
         protected abstract void execute();
 
         protected virtual PreconditionsResult checkPreconditions()
         {
             return PreconditionsResult.EXECUTE;
+        }
+    }
+    
+    public abstract class TimeBasedSkippingExecution : TimeBasedExecution
+    {
+        protected TimeBasedSkippingExecution(uint milisBetweenExecutions):
+            base(milisBetweenExecutions)
+        {
+            setMilisBetweenExecutions(milisBetweenExecutions);
+        }
+        
+        public override void Execute()
+        {
+            PreconditionsResult pResult = checkPreconditions();
+            if (pResult == PreconditionsResult.NO_EXECUTE)
+                return;
+
+            /*
+             * This implementation skips execution if time between 2 calls
+             * to Execute() is greater than 2*milisBetweenExecution.
+             * THIS IS DONE ON PURPOSE to ballance the 'slowlynes' over
+             * all objects by 'loosing' an execution()
+             */
+            uint executionsCount = getExecutionsCount();
+            
+            if (executionsCount > 0)
+            {
+                execute();
+                updateLastExecutionTime();
+            }
+        }
+    }
+    
+    public abstract class TimeBasedNonSkippingExecution : TimeBasedExecution
+    {
+        protected TimeBasedNonSkippingExecution(uint milisBetweenExecutions):
+            base(milisBetweenExecutions)
+        {
+            setMilisBetweenExecutions(milisBetweenExecutions);
+        }
+
+        public override void Execute()
+        {
+            PreconditionsResult pResult = checkPreconditions();
+            if (pResult == PreconditionsResult.NO_EXECUTE)
+                return;
+
+            /*
+             * This implementation WILL NOT SKIP any execution that should
+             * take place. Use this approach with care as it may block other
+             * objects from operation.
+             */
+            
+            uint executionsCount = getExecutionsCount();
+            
+            // Update just before real execution as it might take time
+            if (executionsCount > 0)
+                updateLastExecutionTime();
+
+            for(uint i = 0; i < executionsCount; i++)
+            {
+                pResult = checkPreconditions();
+                if (pResult == PreconditionsResult.NO_EXECUTE)
+                    return;
+                
+                execute();
+            }
         }
     }
 

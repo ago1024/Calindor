@@ -15,7 +15,7 @@ namespace Calindor.Server.AI
     /// <summary>
     /// Abstract AI class
     /// </summary>
-    public abstract class AIImplementation : TimeBasedExecution
+    public abstract class AIImplementation : TimeBasedSkippingExecution
     {
         protected ServerCharacter me = null;
         private long lastDecitionTicks = DateTime.Now.Ticks;

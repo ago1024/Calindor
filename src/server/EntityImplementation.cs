@@ -96,7 +96,7 @@ namespace Calindor.Server
         public void TimeBasedActionCancelExecuted()
         {
             if (executedTimeBasedAction != null)
-                executedTimeBasedAction.Cancel();
+                executedTimeBasedAction.DeActivate();
         }
         #endregion
 
