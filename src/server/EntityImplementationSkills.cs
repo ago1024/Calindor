@@ -145,7 +145,7 @@ namespace Calindor.Server
         }
         
         /// <summary>
-        /// Selects one of the attacker and initiates attack with it
+        /// Selects one of the attackers and initiates attack with it
         /// </summary>
         public void CombatInitiateAttackOnAnyAttacker()
         {
@@ -153,6 +153,9 @@ namespace Calindor.Server
             foreach(ITimeBasedAction action in affectingTimeBasedActions)
                 if (action is AttackTimeBasedAction)
                     selectedActions.Add(action);
+            
+            if (selectedActions.Count == 0)
+                return;
             
             int index = WorldRNG.Next(0, selectedActions.Count);
             
@@ -218,6 +221,21 @@ namespace Calindor.Server
             return true;
         }
         
+        private ushort combatGetPenalizedDesenseSkillLevel(EntityImplementation defender)
+        {
+            ushort defenseSkillLevel = 
+                defender.skills.GetSkill(EntitySkillType.DefenseDodge).CurrentLevel;
+            
+            // Change defense level based on attackers count
+            double penalty = 1.0 / (double)defender.CombatGetNumberOfAttackers();
+            penalty += 0.4;
+            if (penalty > 1.0) penalty = 1.0;
+            if (penalty < 0.5) penalty = 0.5; // No less than 50%
+            defenseSkillLevel = (ushort)(defenseSkillLevel * penalty);
+            
+            return defenseSkillLevel;
+        }
+        
         public bool CombatGetHitChance(EntityImplementation defender, out double chance)
         {
             chance = 0.0;
@@ -225,8 +243,28 @@ namespace Calindor.Server
             if (!combatIsInDistanceToAttack(defender))
                 return false;
             
-            // TODO: Implement, take into account miltiple attacker lowering defense
-            chance = WorldRNG.NextDouble();
+            // TODO: Use attack/defense descriptors in final implementation
+            // TODO: Implement new rules for hitting
+            
+            
+            
+            int levelDiff = 
+                skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel 
+                    - combatGetPenalizedDesenseSkillLevel(defender);
+
+            // 50% at equal levels
+            double skillSuccessRate = 0.0;
+            if (levelDiff < 0)
+                skillSuccessRate = (10.0 + levelDiff) * 0.05; // Linear
+            else
+                skillSuccessRate = (20.0 + levelDiff) * 0.025; // Linear
+
+           chance = skillSuccessRate;
+
+            if (chance < 0.001)
+                chance = 0.001; // Always a chance for lucky success 1/1000
+            if (chance > 0.995)
+                chance = 0.995; // Always a chance for failure 5/1000
             
             return true;
         }
@@ -251,14 +289,19 @@ namespace Calindor.Server
             // If defender is not attacking, send 'pain' command
             if (!defender.CombatIsAttacking)
                 defender.SendAnimationCommand(PredefinedActorCommand.pain1);
+         
+            // TODO: Use attack/defense descriptors in final implementation
             
-            // TODO: Calculate damage
+            // Calculate damage
             int topDamageValue = 5 + skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel;
             defender.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
             
-            // TODO: Award attack experience
+            // Award attack experience
             AttackActionDescriptor atckDescriptor = new AttackActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
-            atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
+            atckDescriptor.AddExperienceDescriptor(
+                new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 
+                    combatGetPenalizedDesenseSkillLevel(defender), 10));
+            
             SkillsAwardExperience(atckDescriptor);       
         }
         
@@ -273,9 +316,16 @@ namespace Calindor.Server
             // Send attacker animation frame
             attacker.SendAnimationCommand(combatGetAnimationForAttack());
             
-            // TODO: Award defense experience
+            // TODO: Use attack/defense descriptors in final implementation
+            
+            // Award defense experience
             DefendActionDescriptor defDescriptor = new DefendActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
-            defDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.DefenseDodge, 2, 10));
+            defDescriptor.AddExperienceDescriptor(
+                new ExperienceDescriptor(
+                    EntitySkillType.DefenseDodge,
+                    attacker.skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel,
+                    10));
+            
             SkillsAwardExperience(defDescriptor);          
         }
         

@@ -101,6 +101,7 @@ namespace Calindor.Server.Actions
         }
     }
     
+    // TODO: Use at later stage when more than one combat skill will be available
     public class AttackActionDescriptor : ActionDescriptor
     {
         public AttackActionDescriptor(uint baseTime, uint minTime) : base(baseTime, minTime)
@@ -111,6 +112,7 @@ namespace Calindor.Server.Actions
         }
     }
 
+    // TODO: Use at later stage when more than one combat skill will be available
     public class DefendActionDescriptor : ActionDescriptor
     {
         public DefendActionDescriptor(uint baseTime, uint minTime) : base(baseTime, minTime)
