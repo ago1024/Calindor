@@ -61,7 +61,7 @@ namespace Calindor.Server
                 throw new InvalidOperationException("This method can only be used during creation!");
 
             // TODO: Recalculate based on attributes/perks/items
-            energies.SetMaxHealth(50);
+            energies.SetMaxHealth((short)(25 + WorldRNG.Next(0,50)));
 
             energies.UpdateCurrentHealth(energies.GetHealthDifference());
         }
@@ -406,8 +406,20 @@ namespace Calindor.Server
             // Add to view
             PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
         }
-
         #endregion
+        
+        #region Calendar Events Handling
+        public override void CalendarNewMinute(ushort minuteOfTheDay)
+        {
+            // Heal a bit
+            if (energies.GetHealthDifference() != 0)
+            {
+                short healedHealth = (short)WorldRNG.Next(1,4);
+                EnergiesUpdateHealth(healedHealth);
+            }
+        }
+        #endregion
+
     }
 
     public class ServerCharacterList : List<ServerCharacter>

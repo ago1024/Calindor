@@ -334,47 +334,51 @@ namespace Calindor.Server
                 if (dir == PredefinedDirection.NO_DIRECTION)
                     return;
                 
-                AddActorCommandOutgoingMessage msgAddActorCommand =
-                    (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-                msgAddActorCommand.EntityID = EntityID;
-
+                PredefinedActorCommand command = PredefinedActorCommand.turn_n;
+                short rotation = 0;
+                
                 switch (dir)
                 {
                     case(PredefinedDirection.N):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_n;
-                        location.Rotation = 0;
+                        command = PredefinedActorCommand.turn_n;
+                        rotation = 0;
                         break;
                     case(PredefinedDirection.NE):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_ne;
-                        location.Rotation = 45;
+                        command = PredefinedActorCommand.turn_ne;
+                        rotation = 45;
                         break;
                     case (PredefinedDirection.E):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_e;
-                        location.Rotation = 90;
+                        command = PredefinedActorCommand.turn_e;
+                        rotation = 90;
                         break;
                     case (PredefinedDirection.SE):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_se;
-                        location.Rotation = 135;
+                        command = PredefinedActorCommand.turn_se;
+                        rotation = 135;
                         break;
                     case (PredefinedDirection.S):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_s;
-                        location.Rotation = 180;
+                        command = PredefinedActorCommand.turn_s;
+                        rotation = 180;
                         break;
                     case (PredefinedDirection.SW):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_sw;
-                        location.Rotation = 225;
+                        command = PredefinedActorCommand.turn_sw;
+                        rotation = 225;
                         break;
                     case (PredefinedDirection.W):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_w;
-                        location.Rotation = 270;
+                        command = PredefinedActorCommand.turn_w;
+                        rotation = 270;
                         break;
                     case (PredefinedDirection.NW):
-                        msgAddActorCommand.Command = PredefinedActorCommand.turn_nw;
-                        location.Rotation = 315;
+                        command = PredefinedActorCommand.turn_nw;
+                        rotation = 315;
                         break;
                 }
 
-                PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+                if (location.Rotation != rotation)
+                {
+                    // Rotate only if new rotation different
+                    location.Rotation = rotation;
+                    SendAnimationCommand(command);
+                }
             }
         }
         
@@ -1001,5 +1005,25 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(msgSendBuff);
         }
         #endregion
+        
+        #region Calendar Events Handling
+        public virtual void CalendarNewMinute(ushort minuteOfTheDay)
+        {
+            // New minute event
+            NewMinuteOutgoingMessage msg =
+                    (NewMinuteOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NEW_MINUTE);
+            msg.MinuteOfTheDay = minuteOfTheDay;
+            
+            PutMessageIntoMyQueue(msg);
+            
+            // Heal a bit
+            if (energies.GetHealthDifference() != 0)
+            {
+                short healedHealth = (short)WorldRNG.Next(1,4);
+                EnergiesUpdateHealth(healedHealth);
+            }
+        }
+        #endregion
+        
     }
 }

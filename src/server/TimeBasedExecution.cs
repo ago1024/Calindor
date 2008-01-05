@@ -33,10 +33,14 @@ namespace Calindor.Misc
         
         protected uint getExecutionsCount()
         {
-            uint executionsCount = getMilisSinceLastExecution() 
-                / milisBetweenExecutions;
+            uint executionsCount = 0;
             
-            // IMMEDIATE_EXECUTE does not increae the number of executions, it
+            if (milisBetweenExecutions == 0)
+                executionsCount = getMilisSinceLastExecution();
+            else
+                executionsCount = getMilisSinceLastExecution() / milisBetweenExecutions;
+            
+            // IMMEDIATE_EXECUTE does not increase the number of executions, it
             // forces one 'now'
             if ((executionsCount == 0) && 
                 (checkPreconditions() == PreconditionsResult.IMMEDIATE_EXECUTE))

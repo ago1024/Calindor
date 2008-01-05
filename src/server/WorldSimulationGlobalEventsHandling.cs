@@ -29,18 +29,17 @@ namespace Calindor.Server
         {
             // TODO: Test
             calendar.UpdateTime();
+            
+            ushort minuteOfTheDay = calendar.MinuteOfTheDay;
 
-            if (calendar.MinuteOfTheDay != lastMinuteOfTheDay)
+            if (minuteOfTheDay != lastMinuteOfTheDay)
             { 
                 // Minute changes. Send information.
-                NewMinuteOutgoingMessage msg =
-                    (NewMinuteOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NEW_MINUTE);
-             
-                msg.MinuteOfTheDay = calendar.MinuteOfTheDay;
-
-                sendMessageToAllPlayers(msg);
-
-                lastMinuteOfTheDay = msg.MinuteOfTheDay;
+                foreach (PlayerCharacter pc in activePlayerCharacters)
+                    pc.CalendarNewMinute(minuteOfTheDay);
+                foreach(ServerCharacter sc in activeServerCharacters)
+                    sc.CalendarNewMinute(minuteOfTheDay);
+                                lastMinuteOfTheDay = minuteOfTheDay;
             }
         }
     }

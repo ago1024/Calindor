@@ -293,10 +293,12 @@ namespace Calindor.Server.TimeBasedActions
             base(enIml, milisToRespawn)
         {
         }
-
+            
         protected override void execute()
         {
             (executingEntityImplementation as ServerCharacter).EnergiesRespawn();
+
+            DeActivate();    
         }
     }
     
@@ -318,6 +320,8 @@ namespace Calindor.Server.TimeBasedActions
                 DeActivate();
                 return;
             }
+
+            rotateToFaceDefender();
 
             if(!executingEntityImplementation.CombatAttack(affectedEntityImplementation))
             {
@@ -344,13 +348,18 @@ namespace Calindor.Server.TimeBasedActions
             executingEntityImplementation.SendLocalChatMessage(
                 "You stopped attacking.", PredefinedColor.Blue1);
         }
-            
+        
+        private void rotateToFaceDefender()
+        {
+            executingEntityImplementation.LocationTurnToFace
+                (affectedEntityImplementation.LocationX, affectedEntityImplementation.LocationY);            
+        }
+
         protected override void onActivation()
         {
             // Animation for attacker
             // TODO: Move to EntityImplementation?
-            executingEntityImplementation.LocationTurnToFace
-                (affectedEntityImplementation.LocationX, affectedEntityImplementation.LocationY);
+            rotateToFaceDefender();
 
             executingEntityImplementation.SendAnimationCommand(
                 PredefinedActorCommand.enter_combat);
