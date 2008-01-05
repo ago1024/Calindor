@@ -74,31 +74,24 @@ namespace Calindor.Server
          * CAUTION: These messages will be used for a number of connection at once. They cannot be modified.
          */
         // Opening message
-        RawTextOutgoingMessage msgStdOpeningMessage 
+        private RawTextOutgoingMessage msgStdOpeningMessage 
             = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
 
         // Wrong client version
-        RawTextOutgoingMessage msgStdWrongClientVersion
+        private RawTextOutgoingMessage msgStdWrongClientVersion
             = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
 
-        UpgradeTooOldOutgoingMessage msgStdUpgradeClient
-            = (UpgradeTooOldOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.UPGRADE_TOO_OLD);
-
         // LogInOk
-        LogInOkOutgoingMessage msgStdLogInOk
+        private LogInOkOutgoingMessage msgStdLogInOk
             = (LogInOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.LOG_IN_OK);
 
         // CreateCharOk
-        CreateCharOkOutgoingMessage msgStdCreateCharOk
+        private CreateCharOkOutgoingMessage msgStdCreateCharOk
             = (CreateCharOkOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.CREATE_CHAR_OK);
 
         // You Dont Exist
-        YouDontExistOutgoingMessage msgStdYouDontExist
+        private YouDontExistOutgoingMessage msgStdYouDontExist
             = (YouDontExistOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.YOU_DONT_EXIST);
-
-        // Kill All Actors
-        KillAllActorsOutgoingMessage msgStdKillAllActors
-            = (KillAllActorsOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.KILL_ALL_ACTORS);
 
         private void createStandardMessages()
         {

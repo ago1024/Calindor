@@ -141,12 +141,7 @@ namespace Calindor.Server
             // Check if entity is alive
             if (!defender.EnergiesIsAlive)
             {
-                RawTextOutgoingMessage msgRawTextOut =
-                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                msgRawTextOut.Color = PredefinedColor.Red2;
-                msgRawTextOut.Text = "It's already dead...";
-                PutMessageIntoMyQueue(msgRawTextOut);
+                SendLocalChatMessage("It's already dead...", PredefinedColor.Red2);
                 return;
             }
             
@@ -156,16 +151,12 @@ namespace Calindor.Server
             // Check distance
             if (!combatIsInDistanceToAttack(defender))
             {
-                RawTextOutgoingMessage msgRawTextOut =
-                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                msgRawTextOut.Color = PredefinedColor.Red2;
-                msgRawTextOut.Text = "You need to get closer to attack...";
-                PutMessageIntoMyQueue(msgRawTextOut);
+                SendLocalChatMessage("You need to get closer to attack...", 
+                                     PredefinedColor.Red2);
                 return;
             }
             
-            // Checks ok. Start combat
+            // Checks ok. Start attack for attacker.
             AttackTimeBasedAction attackDefender = new AttackTimeBasedAction(this, defender);
             attackDefender.Activate();
             // TODO: Only if defender is not attacking anyone already
@@ -188,44 +179,71 @@ namespace Calindor.Server
             return true;
         }
         
-        public bool CombatAttack(EntityImplementation defender)
+        public bool CombatGetHitChance(EntityImplementation defender, out double chance)
         {
+            chance = 0.0;
+            
             if (!combatIsInDistanceToAttack(defender))
                 return false;
             
-            // Send animation frame
-            AddActorCommandOutgoingMessage msgAddActorCommand =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommand.EntityID = EntityID;
-            msgAddActorCommand.Command = PredefinedActorCommand.attack_up_1;
-            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
-            
-            
             // TODO: Implement
-            
-            int topDamageValue = (skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel + 1) * 5;
-            defender.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
-            AttackActionDescriptor atckDescriptor = new AttackActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
-            atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
-            SkillsAwardExperience(atckDescriptor);
+            chance = WorldRNG.NextDouble();
             
             return true;
         }
         
-        public void CombatDefend()
+        protected PredefinedActorCommand combatGetAnimationForAttack()
         {
-            // Send animation frame
-            /*AddActorCommandOutgoingMessage msgAddActorCommand =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommand.EntityID = EntityID;
-            msgAddActorCommand.Command = PredefinedActorCommand.pain1;
-            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);*/
-
             // TODO: Implement
+            return PredefinedActorCommand.attack_up_1;
+        }
+        
+        /// <summary>
+        /// Invoked on attacker
+        /// </summary>
+        /// <param name="defender">
+        /// A <see cref="EntityImplementation"/>
+        /// </param>
+        public void CombatHitDefender(EntityImplementation defender)
+        {
+            // Send attacker animation frame
+            SendAnimationCommand(combatGetAnimationForAttack());            
+            
+            // TODO: If defender is not attacking, send 'hurt' command
+            
+            // Calculate damage
+            int topDamageValue = 5 + skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel;
+            defender.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
+            
+            // Award attack experience
+            AttackActionDescriptor atckDescriptor = new AttackActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
+            atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
+            SkillsAwardExperience(atckDescriptor);       
+        }
+        
+        /// <summary>
+        /// Invoked on defender
+        /// </summary>
+        /// <param name="attacker">
+        /// A <see cref="EntityImplementation"/>
+        /// </param>
+        public void CombatEvadeAttacker(EntityImplementation attacker)
+        {
+            // Send attacker animation frame
+            attacker.SendAnimationCommand(combatGetAnimationForAttack());
+            
+            // Award defense experience
             DefendActionDescriptor defDescriptor = new DefendActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
             defDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.DefenseDodge, 2, 10));
-            SkillsAwardExperience(defDescriptor);
+            SkillsAwardExperience(defDescriptor);          
         }
+        
+        public uint CombatGetActionTime()
+        {
+            // TODO: Random for now, should be based on attributes / skills
+            return (uint)(1500 + WorldRNG.Next(0,1500)); 
+        }
+        
         #endregion
         
         #region General Skills
