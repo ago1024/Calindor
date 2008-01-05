@@ -127,6 +127,42 @@ namespace Calindor.Server
         #endregion
 
         #region Combat Handling
+        private int attackersCount = 0;
+        public bool CombatIsAttacking
+        {
+            get 
+            {
+                if (executedTimeBasedAction != null)
+                    return (executedTimeBasedAction is AttackTimeBasedAction);
+                else
+                    return false;
+            }
+        }
+        
+        public int CombatGetNumberOfAttackers()
+        {
+            return attackersCount; 
+        }
+        
+        /// <summary>
+        /// Selects one of the attacker and initiates attack with it
+        /// </summary>
+        public void CombatInitiateAttackOnAnyAttacker()
+        {
+            TimeBasedActionList selectedActions = new TimeBasedActionList();
+            foreach(ITimeBasedAction action in affectingTimeBasedActions)
+                if (action is AttackTimeBasedAction)
+                    selectedActions.Add(action);
+            
+            int index = WorldRNG.Next(0, selectedActions.Count);
+            
+            AttackTimeBasedAction attackAction =
+                (AttackTimeBasedAction)selectedActions[index];
+            
+            CombatInitiateAttack(attackAction.Attacker);
+                 
+        }
+        
         public void CombatInitiateAttack(EntityImplementation defender)
         {
             // Check if not me
@@ -145,9 +181,6 @@ namespace Calindor.Server
                 return;
             }
             
-            // TODO: Check if it's not already fighting (remove in future when n<->n combat is available)
-            
-
             // Check distance
             if (!combatIsInDistanceToAttack(defender))
             {
@@ -157,11 +190,17 @@ namespace Calindor.Server
             }
             
             // Checks ok. Start attack for attacker.
-            AttackTimeBasedAction attackDefender = new AttackTimeBasedAction(this, defender);
+            AttackTimeBasedAction attackDefender = 
+                new AttackTimeBasedAction(this, defender);
             attackDefender.Activate();
-            // TODO: Only if defender is not attacking anyone already
-            AttackTimeBasedAction attackAttacker = new AttackTimeBasedAction(defender, this);
-            attackAttacker.Activate();
+
+            // Start attack for defender only if it is not attacking already
+            if (!defender.CombatIsAttacking)
+            {
+                AttackTimeBasedAction attackAttacker = 
+                    new AttackTimeBasedAction(defender, this);
+                attackAttacker.Activate();
+            }
         }
         
         private bool combatIsInDistanceToAttack(EntityImplementation defender)
@@ -186,7 +225,7 @@ namespace Calindor.Server
             if (!combatIsInDistanceToAttack(defender))
                 return false;
             
-            // TODO: Implement
+            // TODO: Implement, take into account miltiple attacker lowering defense
             chance = WorldRNG.NextDouble();
             
             return true;
@@ -209,13 +248,15 @@ namespace Calindor.Server
             // Send attacker animation frame
             SendAnimationCommand(combatGetAnimationForAttack());            
             
-            // TODO: If defender is not attacking, send 'hurt' command
+            // If defender is not attacking, send 'pain' command
+            if (!defender.CombatIsAttacking)
+                defender.SendAnimationCommand(PredefinedActorCommand.pain1);
             
-            // Calculate damage
+            // TODO: Calculate damage
             int topDamageValue = 5 + skills.GetSkill(EntitySkillType.AttackUnarmed).CurrentLevel;
             defender.EnergiesUpdateHealth((short)(WorldRNG.Next(0,topDamageValue) * -1));
             
-            // Award attack experience
+            // TODO: Award attack experience
             AttackActionDescriptor atckDescriptor = new AttackActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
             atckDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.AttackUnarmed, 2, 10));
             SkillsAwardExperience(atckDescriptor);       
@@ -232,7 +273,7 @@ namespace Calindor.Server
             // Send attacker animation frame
             attacker.SendAnimationCommand(combatGetAnimationForAttack());
             
-            // Award defense experience
+            // TODO: Award defense experience
             DefendActionDescriptor defDescriptor = new DefendActionDescriptor(2000, 1000); //TODO: Time values are meaningless for now
             defDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.DefenseDodge, 2, 10));
             SkillsAwardExperience(defDescriptor);          

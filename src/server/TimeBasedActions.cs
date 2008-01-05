@@ -314,7 +314,17 @@ namespace Calindor.Server.TimeBasedActions
             
             setMilisBetweenExecutions(executingEntity.CombatGetActionTime());
         }
-            
+        
+        public EntityImplementation Attacker
+        {
+            get { return executingEntity; }
+        }
+        
+        public EntityImplementation Defender
+        {
+            get { return affectedEntity; }
+        }
+        
         protected override void execute()
         {   
             if (!affectedEntity.EnergiesIsAlive)

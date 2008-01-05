@@ -63,6 +63,41 @@ namespace Calindor.Server.AI
             else
                 return true;
         }
+        
+        protected void moveSomewhere()
+        {
+            // Move to new location (try up to 5 times / lame)
+            for (int i = 0; i < 5; i++)
+            {
+                short newX = (short)(me.LocationX + WorldRNG.Next(-maxAxisMove, maxAxisMove));
+                short newY = (short)(me.LocationY + WorldRNG.Next(-maxAxisMove, maxAxisMove));
+                
+                // is walkable
+                if (!me.LocationCurrentMap.IsLocationWalkable(newX, newY))
+                    continue;
+
+                // is within habitation region
+                if (isLocationWithinHabitationRegion(newX, newY))
+                {
+                    me.LocationMoveTo(newX, newY);
+                    break;
+                }
+            }      
+        }
+        
+        protected void maybeMove()
+        {
+            // Make decision
+            if (WorldRNG.NextDouble() < 0.35) //35%
+            {
+                moveSomewhere();
+            }
+            else
+            {
+                // Stay at current location
+            }      
+        }
+        
         protected override void execute()
         {
             if (me == null)
@@ -71,31 +106,22 @@ namespace Calindor.Server.AI
             if (!me.EnergiesIsAlive)
                 return; // Only for living entities
 
-            // Make decision
-            if (WorldRNG.NextDouble() < 0.35) //35%
+            if (me.CombatGetNumberOfAttackers() > 0)
             {
-                // Move to new location (try up to 5 times / lame)
-                for (int i = 0; i < 5; i++)
-                {
-                    short newX = (short)(me.LocationX + WorldRNG.Next(-maxAxisMove, maxAxisMove));
-                    short newY = (short)(me.LocationY + WorldRNG.Next(-maxAxisMove, maxAxisMove));
-                    
-                    // is walkable
-                    if (!me.LocationCurrentMap.IsLocationWalkable(newX, newY))
-                        continue;
-
-                    // is within habitation region
-                    if (isLocationWithinHabitationRegion(newX, newY))
-                    {
-                        me.LocationMoveTo(newX, newY);
-                        break;
-                    }
-                }
+                // Combat mode
+                
+                // TODO: Run if low morale (requires morale implementation)
+                
+                // If not attacking anyone, attack any attacker
+                if (!me.CombatIsAttacking)
+                    me.CombatInitiateAttackOnAnyAttacker();
             }
             else
             {
-                // Stay at current location
+                // Peace mode
+                maybeMove();
             }
+            
         }
     }
 }

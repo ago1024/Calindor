@@ -43,7 +43,7 @@ namespace Calindor.Server
         // Time based action that is currently executed
         private ITimeBasedAction executedTimeBasedAction = null;
         // Time based action that are executed by other entities, but affect this one
-        //private TimeBasedActionList affectingTimeBasedActions = new TimeBasedActionList();
+        private TimeBasedActionList affectingTimeBasedActions = new TimeBasedActionList();
 
         private TimeBasedActionsManager timeBasedActionsManager = null;
         protected void timeBasedActionAddActionToManager(ITimeBasedAction actionToAdd)
@@ -61,20 +61,26 @@ namespace Calindor.Server
         
         public void TimeBasedActionAddAffecting(ITimeBasedAction actionToAdd)
         {
-            // TODO: Implement
-            // TODO: Check if action type matches current type
-            // TODO: If not Cancel all current
-            //TimeBasedActionCancelCurrent();
-            // Add action to list
-            //timeBasedActions.Add(actionToAdd);
-            // TODO: Set current type of actions
-            // Add action to manager (manager takes care of duplicated adds)
-            //timeBasedActionAddActionToManager(actionToAdd);
+            affectingTimeBasedActions.Add(actionToAdd);
+            
+            // Additional handling for attack action
+            if (actionToAdd is AttackTimeBasedAction)
+                attackersCount++;
         }
         
         public void TimeBasedActionRemoveAffecting(ITimeBasedAction actionToRemove)
         {
-            // TODO: Implement
+            bool actionRemoved = affectingTimeBasedActions.Remove(actionToRemove);
+            
+            // Additional handling for attack action
+            if (actionRemoved && (actionToRemove is AttackTimeBasedAction))
+                attackersCount--;
+            
+            // Failsafe
+            if (attackersCount < 0)
+                throw new InvalidOperationException(
+                    "Attacker count less than 0 for " + Name + "(" + EntityID + ")");
+            
         }
         
         public void TimeBasedActionSetExecuted(ITimeBasedAction actionToExecute)
