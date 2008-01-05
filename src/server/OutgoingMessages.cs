@@ -146,6 +146,16 @@ namespace Calindor.Server.Messaging
 
         public static OutgoingMessage Create(OutgoingMessageType type)
         {
+            /*
+             * TODO: Since all messages are create by a factory,
+             * it is possible to optimize memory usage by implementing
+             * a caching mechanizm in the factory. A message object would
+             * have to be stored on the list in the factory and signalized
+             * weather it is used or not. 'Creating' a object would start it
+             * usage, and putting in into network stream would signal stop of
+             * usage.
+             */
+            
             OutgoingMessage _return = null;
 
             if (knownMessages[(int)type] != null)

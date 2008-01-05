@@ -762,6 +762,32 @@ namespace Calindor.Server
         }
 
         public abstract void PutMessageIntoMyQueue(OutgoingMessage msg);
+        
+        /// <summary>
+        /// Sends a local chat message to the entity
+        /// </summary>
+        /// <param name="message">
+        /// A <see cref="System.String"/>
+        /// </param>
+        /// <param name="color">
+        /// A <see cref="PredefinedColor"/>
+        /// </param>
+        public abstract void SendLocalChatMessage(string message, PredefinedColor color);
+        
+        /// <summary>
+        /// Sends AddActorCommand to entity and all observers
+        /// </summary>
+        /// <param name="command">
+        /// A <see cref="PredefinedActorCommand"/>
+        /// </param>
+        public void SendAnimationCommand(PredefinedActorCommand command)
+        {
+            AddActorCommandOutgoingMessage msgAddActorCommand =
+                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
+            msgAddActorCommand.EntityID = EntityID;
+            msgAddActorCommand.Command = command;
+            PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+        }
 
         #endregion
 

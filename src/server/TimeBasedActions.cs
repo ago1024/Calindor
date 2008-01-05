@@ -273,13 +273,10 @@ namespace Calindor.Server.TimeBasedActions
         }
 
         protected override void onDeActivation()
-        {            RawTextOutgoingMessage msgRawText =
-                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-            msgRawText.Color = PredefinedColor.Blue1;
-            msgRawText.Text = "You stopped harvesting " + rscDef.HarvestedItem.Name;
-            executingEntityImplementation.PutMessageIntoMyQueue(msgRawText);
-        }
+        {
+            executingEntityImplementation.SendLocalChatMessage(
+                "You stopped harvesting " + rscDef.HarvestedItem.Name,
+                PredefinedColor.Blue1);        }
 
         protected override void execute()
         {
@@ -339,7 +336,13 @@ namespace Calindor.Server.TimeBasedActions
         
         protected override void onDeActivation()
         {
-            executingEntityImplementation.CombatStopFighting();
+            //TODO: Check if this is a last fight performed, if yes, 
+            //      send animation frame
+            executingEntityImplementation.SendAnimationCommand(
+                PredefinedActorCommand.leave_combat);
+            
+            executingEntityImplementation.SendLocalChatMessage(
+                "You stopped attacking.", PredefinedColor.Blue1);
         }
             
         protected override void onActivation()
@@ -349,11 +352,8 @@ namespace Calindor.Server.TimeBasedActions
             executingEntityImplementation.LocationTurnToFace
                 (affectedEntityImplementation.LocationX, affectedEntityImplementation.LocationY);
 
-            AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommandAttacker.EntityID = executingEntityImplementation.EntityID;
-            msgAddActorCommandAttacker.Command = PredefinedActorCommand.enter_combat;
-            executingEntityImplementation.PutMessageIntoMyAndObserversQueue(msgAddActorCommandAttacker);
+            executingEntityImplementation.SendAnimationCommand(
+                PredefinedActorCommand.enter_combat);
         }
 
     }

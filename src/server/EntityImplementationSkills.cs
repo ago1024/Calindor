@@ -226,25 +226,6 @@ namespace Calindor.Server
             defDescriptor.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.DefenseDodge, 2, 10));
             SkillsAwardExperience(defDescriptor);
         }
-        
-        public void CombatStopFighting()
-        {
-            //TODO: Check if this is a last fight performed, if yes, 
-            //      send animation frame
-            AddActorCommandOutgoingMessage msgAddActorCommandAttacker =
-                (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
-            msgAddActorCommandAttacker.EntityID = EntityID;
-            msgAddActorCommandAttacker.Command = PredefinedActorCommand.leave_combat;
-            PutMessageIntoMyAndObserversQueue(msgAddActorCommandAttacker);
-            
-            RawTextOutgoingMessage msgRawText =
-                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
-            msgRawText.Color = PredefinedColor.Blue1;
-            msgRawText.Text = "You stopped fighting.";
-            PutMessageIntoMyQueue(msgRawText);
-        }
-        
         #endregion
         
         #region General Skills

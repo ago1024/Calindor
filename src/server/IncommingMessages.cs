@@ -139,6 +139,15 @@ namespace Calindor.Server.Messaging
         /// <returns></returns>
         public static IncommingMessage Deserialize(byte[] stream, int startIndex)
         {
+            /*
+             * TODO: Since all messages are create by a factory,
+             * it is possible to optimize memory usage by implementing
+             * a caching mechanizm in the factory. A message object would
+             * have to be stored on the list in the factory and signalized
+             * weather it is used or not. 'Deserializing' a object would start it
+             * usage, and processing a message would signal stop of usage.
+             */
+            
             IncommingMessage _return = null;
             
             byte type = IncommingMessage.GetMessageType(stream, startIndex);

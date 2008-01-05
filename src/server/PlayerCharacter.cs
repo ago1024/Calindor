@@ -272,6 +272,17 @@ namespace Calindor.Server
         {
             outgoingMessages.Enqueue(msg);
         }
+        
+        public override void SendLocalChatMessage (string message, PredefinedColor color)
+        {
+            RawTextOutgoingMessage msgRawText =
+                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+            msgRawText.Channel = PredefinedChannel.CHAT_LOCAL;
+            msgRawText.Color = color;
+            msgRawText.Text = message;
+            PutMessageIntoMyQueue(msgRawText);            
+        }
+
 
         #endregion
 

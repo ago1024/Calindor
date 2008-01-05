@@ -32,6 +32,11 @@ namespace Calindor.Server
         {
             return; // There is no queue for server character
         }
+        public override void SendLocalChatMessage (string message, PredefinedColor color)
+        {
+            return; // There is no local chat for server character
+        }
+
         #endregion
 
         #region Movement Handling
