@@ -28,6 +28,13 @@ namespace Calindor.Server
             get { return logger; }
             set { logger = value; }
         }
+        
+        protected bool logNormalOperation = false;
+        public bool LogNormalOperation
+        {
+            get { return logNormalOperation; }
+            set { logNormalOperation = value; }
+        }
 
         // List of active connections
         protected ServerClientConnectionList activeConnections =
@@ -83,7 +90,10 @@ namespace Calindor.Server
                     catch (Exception ex)
                     {
                         // Error on read.
-                        Logger.LogError(LogSource.Communication, "Failed to perform data read on connection.", ex);
+                        if (!(ex is ConnectionBrokenException) || LogNormalOperation)
+                            Logger.LogError(LogSource.Communication, 
+                                string.Format("Failed to perform data read on connection IP: {0}, Port: {1}",
+                                    conn.ClientIP, conn.ClientPort), ex);
                     }
 
                     // Write data
@@ -94,7 +104,10 @@ namespace Calindor.Server
                     catch (Exception ex)
                     {
                         // Error on write.
-                        Logger.LogError(LogSource.Communication, "Failed to perform data write on connection.", ex);
+                        if (!(ex is ConnectionBrokenException) || LogNormalOperation)
+                            Logger.LogError(LogSource.Communication, 
+                                string.Format("Failed to perform data write on connection IP: {0}, Port: {1}",
+                                    conn.ClientIP, conn.ClientPort), ex);                        
                     }
 
                     // Check if connection needs to be closed
@@ -111,12 +124,17 @@ namespace Calindor.Server
                         
                         try
                         {
-                            Logger.LogProgress(LogSource.Communication, "Shutting down connection for " + conn.ClientIP);
+                            Logger.LogProgress(LogSource.Communication, 
+                                string.Format("Shutting down connection for IP: {0}, Port: {1}", 
+                                                conn.ClientIP, conn.ClientPort));
                             conn.Shutdown();
                         }
                         catch (Exception ex)
                         {
-                            Logger.LogError(LogSource.Communication, "Failed to shutdown connection.", ex);
+                            if (!(ex is ConnectionBrokenException) || LogNormalOperation)                          
+                                Logger.LogError(LogSource.Communication, 
+                                    string.Format("Failed to shutdown connection for IP: {0}, Port: {1}.",
+                                        conn.ClientIP, conn.ClientPort), ex);
                         }
                     }
                     toBeRemovedConnections.Clear();

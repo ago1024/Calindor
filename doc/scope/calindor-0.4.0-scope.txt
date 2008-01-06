@@ -13,7 +13,7 @@ Tasks:
 	+ skills model (leveling)
 	+ skills serialization
 	+ list_skills command
-	- FightingTimeBasedAction
+	+ FightingTimeBasedAction
 	+ AnimalEntity
 	+ death (animal and player)
 	+ health

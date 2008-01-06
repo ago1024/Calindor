@@ -121,6 +121,7 @@ namespace Calindor.Server
                     ServerClientConnection conn =
                         new ServerClientConnection(newClientSocket, serverConfiguration.ConnectionReadBufferSize);
                     conn.Logger = Logger;
+                    conn.LogNormalOperation = serverConfiguration.LogNormalOperation;
 
                     // Creating a new player
                     PlayerCharacter pc = new PlayerCharacter(conn);

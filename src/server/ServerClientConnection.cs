@@ -8,10 +8,6 @@
  * version 2.1 of the License, or (at your option) any later version.
  */
 
-#if DEBUG
-    #define LOG_NORMAL_PROGRESS
-#endif
-
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -68,11 +64,26 @@ namespace Calindor.Server
             get { return logger; }
             set { logger = value; }
         }
+        
+        protected bool logNornalOperation = false;
+        public bool LogNormalOperation
+        {
+            get { return logNornalOperation; }
+            set { logNornalOperation = value; }
+        }
 
+        protected string clientIP = "255.255.255.255";
         public string ClientIP
         {
-            get { return (connectionSocket.RemoteEndPoint as IPEndPoint).Address.ToString(); }
+            get { return clientIP; }
         }
+        
+        protected int clientPort = 65536;
+        public int ClientPort
+        {
+            get { return clientPort;}
+        }
+        
         public ServerClientConnection(Socket toClientSocket) : this(toClientSocket, 8192)
         {
         }
@@ -89,6 +100,8 @@ namespace Calindor.Server
             connectionSocket = toClientSocket;
             bytesInBuffer = 0;
             this.readBufferSize = readBufferSize;
+            clientIP = (connectionSocket.RemoteEndPoint as IPEndPoint).Address.ToString();
+            clientPort = (connectionSocket.RemoteEndPoint as IPEndPoint).Port;
 
             updateLastCommunicationTime();
         }
@@ -148,6 +161,11 @@ namespace Calindor.Server
                     bytesInBuffer = connectionSocket.Receive(readBuffer);
                     updateLastCommunicationTime();
                 }
+                catch (SocketException ex)
+                {
+                    connectionBroken = true;
+                    throw new ConnectionBrokenException(ex);
+                }
                 catch (Exception)
                 {
                     connectionBroken = true;
@@ -202,10 +220,10 @@ namespace Calindor.Server
 
                     if (msg != null)
                     {
-#if LOG_NORMAL_PROGRESS
-                        Logger.LogProgress(LogSource.Communication,
-                            string.Format("Received message: {0} from client {1}", msg.ToString(), ClientIP));
-#endif
+                        if (LogNormalOperation)
+                            Logger.LogProgress(LogSource.Communication,
+                                string.Format("Received message: {0} from client {1}", msg.ToString(), ClientIP));
+
                         Monitor.Enter(incommingMessages);
 
                         try
@@ -239,13 +257,19 @@ namespace Calindor.Server
                 foreach (OutgoingMessage msg in outgoingMessages)
                 {
                     connectionSocket.Send(msg.Serialize());
-#if LOG_NORMAL_PROGRESS
-                    Logger.LogProgress(LogSource.Communication,
-                        string.Format("Send message: {0} to client {1}", msg.ToString(), ClientIP));
-#endif
+
+                    if (LogNormalOperation)
+                        Logger.LogProgress(LogSource.Communication,
+                            string.Format("Send message: {0} to client {1}", msg.ToString(), ClientIP));
+
                     updateLastCommunicationTime();
                 }
                 
+            }
+            catch (SocketException ex)
+            {
+                connectionBroken = true;
+                throw new ConnectionBrokenException(ex);
             }
             catch (Exception)
             {
@@ -318,7 +342,22 @@ namespace Calindor.Server
 
         public void Shutdown()
         {
-            connectionSocket.Shutdown(SocketShutdown.Both);
+            try
+            {
+                connectionSocket.Shutdown(SocketShutdown.Both);
+            }
+            catch(SocketException ex)
+            {
+                throw new ConnectionBrokenException(ex);
+            }
+        }
+    }
+    
+    public class ConnectionBrokenException : ApplicationException
+    {
+        public ConnectionBrokenException(Exception innerException):
+            base("Connection is broken", innerException)
+        {
         }
     }
 

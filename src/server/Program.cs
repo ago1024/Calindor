@@ -140,6 +140,7 @@ namespace Calindor.Server
             // Creating communication manager thread
             commManager = new CommunicationManager();
             commManager.Logger = logger;
+            commManager.LogNormalOperation = conf.LogNormalOperation;
             commManager.StartManager();
             
 
