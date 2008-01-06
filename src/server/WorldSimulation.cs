@@ -19,6 +19,7 @@ using Calindor.Server.Entities;
 using Calindor.Server.Maps;
 using Calindor.Server.TimeBasedActions;
 using Calindor.Server.AI; //TODO: Remove when script available
+using Calindor.Misc.Profiling;
 
 namespace Calindor.Server
 {
@@ -165,9 +166,17 @@ namespace Calindor.Server
 
             // Adds server characters to the world
             addServerCharacters();
+            
+            // Create execution loop profiler
+            SimplePerformanceProfiler execProf = 
+                new SimplePerformanceProfiler("WorldSimulation", 10000);
+            
+            execProf.PeriodElapsed += 
+                new PerformanceProfilerEventHandler(onPeriodElapsed);
 
             while (isWorking)
             {
+                execProf.StartCycle();
                 // Perform world simulation/update players state
                 // 1. Global events (time)
                 // 2. Map events (weather)
@@ -270,7 +279,9 @@ namespace Calindor.Server
 
                     Monitor.Exit(newPlayers);
                 }
-
+                
+                execProf.StopCycle();
+                
                 // Sleep
                 Thread.Sleep(50);
             }
@@ -809,6 +820,19 @@ namespace Calindor.Server
             addEntityImplementationToWorld(townperson);
             townperson.LocationChangeMapAtEnterWorld();
 
+        }
+        
+        private void onPeriodElapsed(object o, PerformanceProfilerEventArgs args)
+        {
+            SimplePerformanceProfilerEventArgs sppArgs =
+                (SimplePerformanceProfilerEventArgs)args;
+            
+            double avgMilisPerCycleLastPeriod = (double)sppArgs.AverageTicksPerCycleLastPeriod / 10000.0;
+            double avgMilisPerCycleTotal = (double)sppArgs.AverageTicksPerCycleTotal / 10000.0;
+            
+            Logger.LogWarning(LogSource.World,
+                string.Format("Profiler({0}): last period ({1:f2} ms), total ({2:f2} ms)", 
+                sppArgs.ProfilerName, avgMilisPerCycleLastPeriod, avgMilisPerCycleTotal), null);
         }
     }
 

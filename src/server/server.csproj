@@ -82,6 +82,7 @@
     <Compile Include="WorldSimulationMapObjectsUsageHandling.cs" />
     <Compile Include="WorldSimulationMessagingHandling.cs" />
     <Compile Include="WorldSimulationMovementHandling.cs" />
+    <Compile Include="PerformanceProfiler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="server_config.xml" />

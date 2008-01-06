@@ -33,12 +33,8 @@ namespace Calindor.Misc
         
         protected uint getExecutionsCount()
         {
-            uint executionsCount = 0;
-            
-            if (milisBetweenExecutions == 0)
-                executionsCount = getMilisSinceLastExecution();
-            else
-                executionsCount = getMilisSinceLastExecution() / milisBetweenExecutions;
+            uint executionsCount 
+                = getMilisSinceLastExecution() / milisBetweenExecutions;
             
             // IMMEDIATE_EXECUTE does not increase the number of executions, it
             // forces one 'now'
@@ -54,8 +50,17 @@ namespace Calindor.Misc
             lastExecutedTick = DateTime.Now.Ticks;
         }
 
+        /// <summary>
+        /// Sets miliseconds between executions.
+        /// </summary>
+        /// <param name="milisBetweenExecutions">
+        /// If  value is 0, it's changed do 1 <see cref="System.UInt32"/>
+        /// </param>
         protected void setMilisBetweenExecutions(uint milisBetweenExecutions)
         {
+            if (milisBetweenExecutions == 0)
+                milisBetweenExecutions = 1;
+            
             this.milisBetweenExecutions = milisBetweenExecutions;
         }
 

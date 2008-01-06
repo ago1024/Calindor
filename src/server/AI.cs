@@ -98,6 +98,15 @@ namespace Calindor.Server.AI
             }      
         }
         
+        protected void shouldIFight()
+        {
+            // TODO: Run if low morale (requires morale implementation)
+            
+            // If not attacking anyone, attack any attacker
+            if (!me.CombatIsAttacking)
+                me.CombatInitiateAttackOnAnyAttacker();           
+        }
+        
         protected override void execute()
         {
             if (me == null)
@@ -109,12 +118,7 @@ namespace Calindor.Server.AI
             if (me.CombatGetNumberOfAttackers() > 0)
             {
                 // Combat mode
-                
-                // TODO: Run if low morale (requires morale implementation)
-                
-                // If not attacking anyone, attack any attacker
-                if (!me.CombatIsAttacking)
-                    me.CombatInitiateAttackOnAnyAttacker();
+                shouldIFight();
             }
             else
             {
