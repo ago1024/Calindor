@@ -567,6 +567,7 @@ namespace Calindor.Server
                 locationrat.IsSittingDown = false;
                 rat1.CreateSetInitialLocation(locationrat);
                 rat1.CreateSetRespawnTime(30000);
+                rat1.MaxCombatXP = 2000; // easy
                 rat1.CreateApplyInitialState();
 
                 // AI
@@ -595,6 +596,7 @@ namespace Calindor.Server
                 locationrat.IsSittingDown = false;
                 rat1.CreateSetInitialLocation(locationrat);
                 rat1.CreateSetRespawnTime(30000);
+                rat1.MaxCombatXP = 4000; // medium
                 rat1.CreateApplyInitialState();
 
                 // AI
@@ -624,6 +626,7 @@ namespace Calindor.Server
                 locationRabbit.IsSittingDown = false;
                 rabbit1.CreateSetInitialLocation(locationRabbit);
                 rabbit1.CreateSetRespawnTime(40000);
+                rabbit1.MaxCombatXP = 4000; // medium
                 rabbit1.CreateApplyInitialState();
 
                 // AI
@@ -652,6 +655,7 @@ namespace Calindor.Server
                 locationRabbit.IsSittingDown = false;
                 rabbit1.CreateSetInitialLocation(locationRabbit);
                 rabbit1.CreateSetRespawnTime(40000);
+                rabbit1.MaxCombatXP = 4000; // medium
                 rabbit1.CreateApplyInitialState();
 
                 // AI
@@ -680,6 +684,7 @@ namespace Calindor.Server
                 locationsnake.IsSittingDown = false;
                 snake1.CreateSetInitialLocation(locationsnake);
                 snake1.CreateSetRespawnTime(30000);
+                snake1.MaxCombatXP = 6000; // hard
                 snake1.CreateApplyInitialState();
 
                 // AI
@@ -707,6 +712,7 @@ namespace Calindor.Server
             locationtroll.IsSittingDown = false;
             troll1.CreateSetInitialLocation(locationtroll);
             troll1.CreateSetRespawnTime(60000);
+            troll1.MaxCombatXP = 20000; // Impossible
             troll1.CreateApplyInitialState();
 
             // add troll to the world
@@ -727,6 +733,7 @@ namespace Calindor.Server
             locationdeer.IsSittingDown = false;
             deer1.CreateSetInitialLocation(locationdeer);
             deer1.CreateSetRespawnTime(60000);
+            deer1.MaxCombatXP = 6000; // hard
             deer1.CreateApplyInitialState();
 
             // AI
@@ -752,7 +759,9 @@ namespace Calindor.Server
             locationbeaver.IsSittingDown = false;
             beaver1.CreateSetInitialLocation(locationbeaver);
             beaver1.CreateSetRespawnTime(60000);
+            beaver1.MaxCombatXP = 4000; // medium
             beaver1.CreateApplyInitialState();
+            
 
             // AI
             WonderingDumbNonAggresiveAIImplementation aiImplbeaver = 
@@ -778,7 +787,9 @@ namespace Calindor.Server
             locationarmedSkell.Dimension = (int)PredefinedDimension.SHADOWS;
             armedSkell1.CreateSetInitialLocation(locationarmedSkell);
             armedSkell1.CreateSetRespawnTime(60000);
+            armedSkell1.MaxCombatXP = 6000; // hard
             armedSkell1.CreateApplyInitialState();
+            
 
             // AI
             WonderingDumbNonAggresiveAIImplementation aiImplarmedSkell =
@@ -809,7 +820,9 @@ namespace Calindor.Server
             location2.IsSittingDown = false;
             townperson.CreateSetInitialLocation(location2);
             townperson.CreateSetRespawnTime(0);
+            townperson.MaxCombatXP = 6000; // hard
             townperson.CreateApplyInitialState();
+            
 
             // AI
             WonderingDumbNonAggresiveAIImplementation aiImpltownperson =
@@ -830,9 +843,9 @@ namespace Calindor.Server
             double avgMilisPerCycleLastPeriod = (double)sppArgs.AverageTicksPerCycleLastPeriod / 10000.0;
             double avgMilisPerCycleTotal = (double)sppArgs.AverageTicksPerCycleTotal / 10000.0;
             
-            Logger.LogWarning(LogSource.World,
+            Logger.LogProgress(LogSource.World,
                 string.Format("Profiler({0}): last period ({1:f2} ms), total ({2:f2} ms)", 
-                sppArgs.ProfilerName, avgMilisPerCycleLastPeriod, avgMilisPerCycleTotal), null);
+                sppArgs.ProfilerName, avgMilisPerCycleLastPeriod, avgMilisPerCycleTotal));
         }
     }
 

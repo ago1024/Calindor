@@ -23,7 +23,7 @@ namespace Calindor.Server
 
         public static UInt16 SecondDigit
         {
-            get { return 17; }
+            get { return 19; }
         }
     }
 }

@@ -22,6 +22,9 @@ namespace Calindor.Server
 
     public class ServerCharacter : EntityImplementation
     {
+        // TEMPORARY FIELD! TODO: REMOVE WHEN SCRIPTS AVAILABLE
+        public int MaxCombatXP = 1;
+        
         public ServerCharacter(PredefinedEntityImplementationKind kind) : base(kind)
         {
 
@@ -86,6 +89,11 @@ namespace Calindor.Server
             CreateRecalculateInitialEnergies();
 
             LocationChangeDimension((PredefinedDimension)location.Dimension);
+            
+            // TODO: Move to separate method
+            // Set random fighting skills
+            skills.GetSkill(EntitySkillType.AttackUnarmed).AddXP((uint)WorldRNG.Next(0, MaxCombatXP));
+            skills.GetSkill(EntitySkillType.DefenseDodge).AddXP((uint)WorldRNG.Next(0, MaxCombatXP));
         }
 
         public void CreateSetRespawnTime(uint milisToRespawn)

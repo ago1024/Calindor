@@ -195,12 +195,10 @@ namespace Calindor.Server.TimeBasedActions
     
     public class WalkTimeBasedAction : TimeBasedAction
     {
-        private const int WALK_COMMAND_DELAY = 250; // Delay (in milis) of moves
-
         protected WalkPath walkPath = null;
 
         public WalkTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath):
-            base(enImpl, WALK_COMMAND_DELAY)
+            base(enImpl, 250)
         {
            if (walkPath == null)
                 throw new ArgumentNullException("walkPath");
