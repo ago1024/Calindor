@@ -29,6 +29,7 @@ cd..
 cd..
 copy "doc\release-notes\calindor-%calindor_version%-release-notes.txt" setup\%dest_dir%\
 copy doc\installation.txt setup\%dest_dir%\
+copy doc\quick_start.txt setup\%dest_dir%\
 copy doc\compilation.txt setup\%dest_dir%\
 copy doc\license.txt setup\%dest_dir%\
 copy doc\features.txt setup\%dest_dir%\

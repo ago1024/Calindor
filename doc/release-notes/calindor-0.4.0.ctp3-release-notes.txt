@@ -1,0 +1,30 @@
+(2008-01-08) 
+Third CTP of version 0.4.0.
+
+With this release, about 95% of 0.4.0 scope is completed.
+
+Changes:
+- implemented combat (asymetric, multiple fighters, PK)
+- implemented damage during combat
+- implemented gaining experience during combat
+- implemented combat mode for AI
+- random starting skills of server characters
+- random health of server characters
+- refactoring of actions system
+- removed unneeded loging messages in release builds
+- added simple execution time profiler
+
+Be sure to run csu and upgrade your storage before running the server.
+
+The default server configuration has test commands disabled. To enable them,
+change the configuration key to <enableTestCommands value="true"/>
+
+Please remember that animals have random starting skills and they level in
+the same way as the players do. It might me very at the beginning to defeat 
+them.
+
+Don't attack the troll.... noooooooo... I told you not to attack the troll...
+
+All characters gain health every minutes, regardless of food level.
+
+
