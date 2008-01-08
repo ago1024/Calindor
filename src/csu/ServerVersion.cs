@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
+ * Copyright (C) 2007-2008 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
  * 
  * This program is free software; you can redistribute it and/or
@@ -444,6 +444,41 @@ namespace Calindor.StorageUpdater
         protected override void downgradeToPreviousVersionImplementation(string playerName)
         {
             //TODO: Implement
+        }
+    }
+
+    public class ServerVersion0_4_0_CTP3 : ServerVersion
+    {
+        public override string ServerVersionString
+        {
+            get { return "0.4.0CTP3"; }
+        }
+
+        public ServerVersion0_4_0_CTP3()
+        {
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, FileVersion.VER_1_2_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCEnergies, FileVersion.VER_1_0_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCInventory, FileVersion.VER_1_0_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCSkills, FileVersion.VER_1_0_0));
+        }
+
+        protected override void upgradeToThisVersionImplementation(string playerName)
+        {
+            // Appearance - no changes
+            // Location - no changes
+            // Energies - no changes
+            // Inventory - no changes
+            // Skills - no changes
+        }
+
+        protected override void downgradeToPreviousVersionImplementation(string playerName)
+        {
+            // Appearance - no changes
+            // Location - no changes
+            // Energies - no changes
+            // Inventory - no changes
+            // Skills - no changes
         }
     }
 

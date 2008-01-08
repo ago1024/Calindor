@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
+ * Copyright (C) 2007-2008 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
  * 
  * This program is free software; you can redistribute it and/or
@@ -40,6 +40,7 @@ namespace Calindor.StorageUpdater
             versions.AddVersion(new ServerVersion0_3_0());
             versions.AddVersion(new ServerVersion0_4_0_CTP1());
             versions.AddVersion(new ServerVersion0_4_0_CTP2());
+            versions.AddVersion(new ServerVersion0_4_0_CTP3());
         }
 
         private static void displayHelp()
@@ -74,6 +75,7 @@ namespace Calindor.StorageUpdater
                 version = version.Replace(" ", ".");
                 version = version.ToLower();
                 Console.WriteLine(version);
+                return;
             }
 
             // Display supported versions
@@ -88,6 +90,8 @@ namespace Calindor.StorageUpdater
                     Console.WriteLine(versionsEnum.Current.ServerVersionString);
                     versionsEnum.MoveNext();
                 }
+                
+                return;
             }
 
             // Upgrade
@@ -103,12 +107,21 @@ namespace Calindor.StorageUpdater
                 versionTo = args[2];
                 op = Operation.Upgrade;
                 shouldExitAfterParsingCommandLine = false;
+                
+                return;
             }
 
             // Downgrade
             if (args[0] == "/downgrade")
             {
+                // TODO: Implement
+                Console.WriteLine("Downgrade option is not implemented");
+                return;
             }
+            
+            // Uknown command
+            Console.WriteLine("Unknown option!");
+            displayHelp();
         }
 
         public static void Main(string[] args)

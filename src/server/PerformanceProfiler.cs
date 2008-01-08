@@ -12,6 +12,7 @@ using System;
 
 namespace Calindor.Misc.Profiling
 {
+    // Abstracts
     public interface IPerformanceProfiler
     {
         void StartCycle();
@@ -36,16 +37,17 @@ namespace Calindor.Misc.Profiling
         }
     }
     
-    public class SimplePerformanceProfiler : IPerformanceProfiler
+    // Implementation
+    public class ExecutionTimeProfiler : IPerformanceProfiler
     {
-        private enum SimplePerformanceProfilerState
+        private enum ExecutionTimeProfilerState
         {
             ExpectingStart = 0,
             ExpectingStop = 0
         }
         
-        private SimplePerformanceProfilerState state =
-            SimplePerformanceProfilerState.ExpectingStart;
+        private ExecutionTimeProfilerState state =
+            ExecutionTimeProfilerState.ExpectingStart;
         
         public event PerformanceProfilerEventHandler PeriodElapsed;
         
@@ -53,8 +55,8 @@ namespace Calindor.Misc.Profiling
         {
             if (PeriodElapsed != null)
             {
-                SimplePerformanceProfilerEventArgs args =
-                    new SimplePerformanceProfilerEventArgs();
+                ExecutionTimeProfilerEventArgs args =
+                    new ExecutionTimeProfilerEventArgs();
                 args.AverageTicksPerCycleLastPeriod = periodAverageTicksPerCycle;
                 args.AverageTicksPerCycleTotal = totalAverageTicksPerCycle;
                 args.ProfilerName = Name;
@@ -74,16 +76,18 @@ namespace Calindor.Misc.Profiling
         private long periodStartTicks = 0;
         private long cycleStartTicks = 0;
         private long cycleStopTicks = 0;
-        // Period        
+        
+        // Period
         private long periodCycleDifferenceTicksSum = 0;
         private int periodCyclesCount = 0;
         private long periodAverageTicksPerCycle = 0;
+        
         // Total
-        private long totalCycleDifferenceTicksSum = 0;
-        private int totalCyclesCount = 0;
+        private long totalPeriodDifferenceTicksSum = 0;
+        private int totalPeriodsCount = 0;
         private long totalAverageTicksPerCycle = 0;
         
-        private SimplePerformanceProfiler()
+        private ExecutionTimeProfiler()
         {
         }
         /// <summary>
@@ -95,7 +99,7 @@ namespace Calindor.Misc.Profiling
         /// <param name="periodLength">
         /// Lenght of averaging period in miliseconds  <see cref="System.Int32"/>
         /// </param>
-        public SimplePerformanceProfiler(string name, int periodLength)
+        public ExecutionTimeProfiler(string name, int periodLength)
         {
             this.name = name;
             this.periodLengthInTicks = periodLength * 10000;
@@ -116,8 +120,11 @@ namespace Calindor.Misc.Profiling
                 else
                     periodAverageTicksPerCycle = -1;
 
-                if (totalCyclesCount > 0)
-                    totalAverageTicksPerCycle = totalCycleDifferenceTicksSum / totalCyclesCount;
+                totalPeriodDifferenceTicksSum += periodAverageTicksPerCycle;
+                totalPeriodsCount++;
+                
+                if (totalPeriodsCount > 0)
+                    totalAverageTicksPerCycle = totalPeriodDifferenceTicksSum / totalPeriodsCount;
                 else
                     totalAverageTicksPerCycle = -1;
 
@@ -139,23 +146,21 @@ namespace Calindor.Misc.Profiling
         {
             periodCycleDifferenceTicksSum += (cycleStopTicks - cycleStartTicks);
             periodCyclesCount++;
-            totalCycleDifferenceTicksSum += (cycleStopTicks - cycleStartTicks);
-            totalCyclesCount++;
         }
         
         public void StartCycle()
         {
-            if (state != SimplePerformanceProfilerState.ExpectingStart)
+            if (state != ExecutionTimeProfilerState.ExpectingStart)
                 throw new PerformanceProfilerException("Profiler should expect start");
             
             cycleStartTicks = DateTime.Now.Ticks;
             
-            state = SimplePerformanceProfilerState.ExpectingStop;
+            state = ExecutionTimeProfilerState.ExpectingStop;
         }
         
         public void StopCycle()
         {
-            if (state != SimplePerformanceProfilerState.ExpectingStop)
+            if (state != ExecutionTimeProfilerState.ExpectingStop)
                 throw new PerformanceProfilerException("Profiler should expect stop");
             
             cycleStopTicks = DateTime.Now.Ticks;
@@ -164,11 +169,11 @@ namespace Calindor.Misc.Profiling
             
             checkForPeriodEnd();
             
-            state = SimplePerformanceProfilerState.ExpectingStart;
+            state = ExecutionTimeProfilerState.ExpectingStart;
         }
     }
     
-    public class SimplePerformanceProfilerEventArgs : PerformanceProfilerEventArgs
+    public class ExecutionTimeProfilerEventArgs : PerformanceProfilerEventArgs
     {
         private long averageTicksPerCycleLastPeriod = 0;
         public long AverageTicksPerCycleLastPeriod

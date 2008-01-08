@@ -168,8 +168,8 @@ namespace Calindor.Server
             addServerCharacters();
             
             // Create execution loop profiler
-            SimplePerformanceProfiler execProf = 
-                new SimplePerformanceProfiler("WorldSimulation", 10000);
+            ExecutionTimeProfiler execProf = 
+                new ExecutionTimeProfiler("WorldSimulation", 30000);
             
             execProf.PeriodElapsed += 
                 new PerformanceProfilerEventHandler(onPeriodElapsed);
@@ -837,8 +837,8 @@ namespace Calindor.Server
         
         private void onPeriodElapsed(object o, PerformanceProfilerEventArgs args)
         {
-            SimplePerformanceProfilerEventArgs sppArgs =
-                (SimplePerformanceProfilerEventArgs)args;
+            ExecutionTimeProfilerEventArgs sppArgs =
+                (ExecutionTimeProfilerEventArgs)args;
             
             double avgMilisPerCycleLastPeriod = (double)sppArgs.AverageTicksPerCycleLastPeriod / 10000.0;
             double avgMilisPerCycleTotal = (double)sppArgs.AverageTicksPerCycleTotal / 10000.0;
@@ -846,6 +846,11 @@ namespace Calindor.Server
             Logger.LogProgress(LogSource.World,
                 string.Format("Profiler({0}): last period ({1:f2} ms), total ({2:f2} ms)", 
                 sppArgs.ProfilerName, avgMilisPerCycleLastPeriod, avgMilisPerCycleTotal));
+
+            // TODO: Remove from here
+            System.Diagnostics.Process p = System.Diagnostics.Process.GetCurrentProcess();
+            if (p != null)
+                Logger.LogProgress(LogSource.World, "Used memory: " + p.WorkingSet64);
         }
     }
 
