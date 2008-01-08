@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
+ * Copyright (C) 2007-2008 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
  * 
  * This program is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Licensed under terms of LGPL")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: AssemblyInformationalVersionAttribute ("0.4.0 CTP2")]
+[assembly: AssemblyInformationalVersionAttribute ("0.4.0 CTP3")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
