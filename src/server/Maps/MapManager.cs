@@ -62,8 +62,8 @@ namespace Calindor.Server.Maps
 
         public bool LoadMaps()
         {
-            MapDefinition md1 = new MapDefinition();
-            md1.Read(new StreamReader("test.xml"));
+            //MapDefinition md1 = new MapDefinition();
+            //md1.Read(new StreamReader("test.xml"));
             logger.LogProgress(LogSource.Server, "Loading maps...");
             
             availableMaps.Clear();
