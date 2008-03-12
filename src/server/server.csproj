@@ -53,6 +53,8 @@
     <Compile Include="IncommingMessages.cs" />
     <Compile Include="InPlaceBitConverter.cs" />
     <Compile Include="Items.cs" />
+    <Compile Include="Maps\IMapDefinitionEntry.cs" />
+    <Compile Include="Maps\IMapDefinitionReferncableEntry.cs" />
     <Compile Include="Maps\MapDefinition.cs" />
     <Compile Include="Maps\MapManager.cs" />
     <Compile Include="Maps\Pathfinder.cs" />

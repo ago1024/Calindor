@@ -18,48 +18,136 @@ namespace Calindor.Server.Maps
     public class MapDefinition : List<IMapDefinitonEntry>
     {
 
-        IMapDefinitonEntry tmpRoot;
+       
         private IMapDefinitonEntry GetElement(String name)
         {
-            return new TestElement();
+            //TODO 
+
+            if (name == "root")
+                return new Root();
+            if(name=="test")
+                return new TestElement();
+            if (name == "subItem")
+                return new TestRefElement();
+            return null;
         }
+
+        public void Fill()
+        {
+            this.objectsToSet.Fill(this.objectsCache);
+            this.objectsToSet.Clear();
+            this.objectsCache.Clear();
+        }
+
+        #region helpers
+
+        private Stack<IMapDefinitonEntry> tmpRoot = new Stack<IMapDefinitonEntry>();
+
+        private class ObjectsToSetCache : Dictionary<String, ToSet>
+        {
+            public ObjectsToSetCache()
+                : base()
+            {
+            }
+
+            public void Fill(ObjectsCache objects)
+            {
+                foreach (KeyValuePair<String, ToSet> entry in this)
+                {
+                    if (objects.ContainsKey(entry.Key))
+                    {
+                        IMapDefinitionReferencableEntry e = objects[entry.Key];
+                        entry.Value.SetValue(e);
+                    }
+                    else
+                    {
+                        //TODO Fill Error
+                    }
+                }
+            }
+        }
+
+        private class ObjectsCache : Dictionary<String, IMapDefinitionReferencableEntry>
+        {
+            public ObjectsCache()
+                : base()
+            {
+            }
+        }
+
+        private ObjectsToSetCache objectsToSet = new ObjectsToSetCache();
+
+        private ObjectsCache objectsCache = new ObjectsCache();
+
+        private class ToSet{
+            private PropertyInfo propertyInfo;
+            private IMapDefinitonEntry objectToSet;
+            public ToSet(PropertyInfo pi, IMapDefinitonEntry objectToSet){
+                this.propertyInfo = pi;
+                this.objectToSet = objectToSet;
+            }
+            public void SetValue(IMapDefinitionReferencableEntry value)
+            {
+                this.propertyInfo.SetValue(this.objectToSet, value, null);
+            }
+        }
+
+        #endregion
+
         private void NewElement(String name, Dictionary<String, String> attributes)
         {
             IMapDefinitonEntry e = this.GetElement(name);
+
+            
+            if (this.tmpRoot.Count != 0){
+                e.Father = this.tmpRoot.Peek();
+                //TODO - find and fill property in this.tmpRoot
+            }
+            this.tmpRoot.Push(e);
+
             System.Reflection.PropertyInfo[] ps = e.GetType().GetProperties();
             foreach (System.Reflection.PropertyInfo pi in ps)
             {
                 foreach (Object a in pi.GetCustomAttributes(typeof(PropertyNameAttribute), true))
                 {
-                    String pName = ((PropertyNameAttribute)a).Name;
-                    if (attributes.ContainsKey(pName))
-                    {
-                        pi.SetValue(e, Convert.ChangeType( attributes[pName].Trim(), pi.PropertyType), null);
+                    String pName = ((PropertyNameAttribute)a).Name.ToLower();
+                    if (attributes.ContainsKey(pName)){
+                        if (pi.PropertyType.IsSubclassOf(typeof(IMapDefinitionReferencableEntry))){
+                            this.objectsToSet.Add(attributes[pName], new ToSet(pi, e));
+                        }else{
+                            pi.SetValue(e, Convert.ChangeType(attributes[pName].Trim(), pi.PropertyType), null);
+                        }
+                    }else{
+                        //TODO parse error
                     }
                 }
             }
 
-            if (this.tmpRoot == null)
-                this.tmpRoot = e;
-            else
-            {
-                e.Father = this.tmpRoot;
-                //TODO - find and fill property in this.tmpRoot
+            if (e is IMapDefinitionReferencableEntry){
+                IMapDefinitionReferencableEntry re = (IMapDefinitionReferencableEntry)e;
+                this.objectsCache.Add(re.Id, re);
             }
+
+
         }
+
         private void EndElement()
         {
+            if(this.tmpRoot.Count>0)
+                this.tmpRoot.Pop();
         }
+
         private Dictionary<String, String> ParseAttributes(XmlTextReader reader)
         {
             Dictionary<String, String> att = new Dictionary<String,String>();
             if(!reader.MoveToFirstAttribute())
                 return att;
             do{
-                att.Add(reader.Name, reader.Value);
+                att.Add(reader.Name.ToLower(), reader.Value);
             }while(reader.MoveToNextAttribute());
             return att;
         }
+
         public void Read(System.IO.StreamReader input)
         {
             XmlTextReader r = new XmlTextReader(input);
@@ -180,12 +268,22 @@ namespace Calindor.Server.Maps
             set { this.useText = value; }
         }
     }*/
-    public class TestElement : IMapDefinitonEntry
+
+    #region test
+    public class Root : IMapDefinitonEntry
+    {
+        public override String GetTagName()
+        {
+            return "root";
+        }
+    }
+
+    public class TestRefElement : IMapDefinitionReferencableEntry
     {
         private String value;
         public override string GetTagName()
         {
-            return "test";
+            return "subItem";
         }
 
         [PropertyName("value")]
@@ -202,58 +300,35 @@ namespace Calindor.Server.Maps
         }
     }
 
-    public abstract class IMapDefinitonEntry
+    public class TestElement : IMapDefinitonEntry
     {
-        private List<IMapDefinitonEntry> children;
-        private IMapDefinitonEntry father;
-        public IMapDefinitonEntry()
+        private String value;
+        private TestRefElement subItem;
+
+        public override string GetTagName()
         {
-            this.children = new List<IMapDefinitonEntry>();
-        }
-        public abstract String GetTagName();
-        public void add(IMapDefinitonEntry entry)
-        {
-            this.children.Add(entry);
-        }
-        public List<IMapDefinitonEntry> Children
-        {
-            get { return this.children; }
-        }
-        
-        /// <summary>
-        /// Tag in which this element was declared (not refereced)
-        /// </summary>
-        public IMapDefinitonEntry Father
-        {
-            get { return this.father; }
-            set { 
-                this.father = value;
-                if (!this.father.ContainsChild(this))
-                    this.father.Children.Add(this);
-            }
-        }
-        public bool ContainsChild(IMapDefinitonEntry entry)
-        {
-            foreach (IMapDefinitonEntry e in this.children)
-                if (e == entry)
-                    return true;
-            return false;
+            return "test";
         }
 
-    }
-
-    public class PropertyNameAttribute : Attribute
-    {
-        private String name;
-        public PropertyNameAttribute(String name)
+        [PropertyName("value")]
+        public String Value
         {
-            this.name = name;
+            get { return this.value; }
+            set { this.value = value; }
         }
 
-        public String Name
+        [PropertyName("refId")]
+        public TestRefElement SubItem{
+            get { return this.subItem; }
+            set { this.subItem = value; }
+        }
+
+        public override string ToString()
         {
-            get { return this.name; }
-            set { this.name = value; }
+            if (this.value != null)
+                return this.value;
+            return "{unset}";
         }
     }
+    #endregion
 }
