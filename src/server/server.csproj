@@ -47,6 +47,7 @@
     <Compile Include="Actions.cs" />
     <Compile Include="AI.cs" />
     <Compile Include="AStarPathfinder.cs" />
+    <Compile Include="DefFileReader.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="CommunicationManager.cs" />
     <Compile Include="EntityImplementation.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="IncommingMessages.cs" />
     <Compile Include="InPlaceBitConverter.cs" />
     <Compile Include="Items.cs" />
+    <Compile Include="MapDefinitions.cs" />
     <Compile Include="MapManager.cs" />
     <Compile Include="OutgoingMessages.cs" />
     <Compile Include="Pathfinder.cs" />

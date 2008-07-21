@@ -80,6 +80,14 @@ namespace Calindor.Server.Maps
                 {
                     Map m = new Map(elmFile);
                     m.LoadMapData();
+                    try
+                    {
+                        m.LoadMapDefs();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(LogSource.Server, "Error while loading map defintions for " + elmFile, ex);
+                    }
                     AddMap(m);
                 }
             }
@@ -223,6 +231,12 @@ namespace Calindor.Server.Maps
         private int sizeY = 0;
         private byte[,] mapData = null;
 
+        private MapDefinition.MapEntry mapDefinition = null;
+        public MapDefinition.MapEntry MapDef
+        {
+            get { return mapDefinition; }
+        }
+
         // Pathfinder
         Pathfinder pathfinder = null;
         PathfinderParameters pathfinderParams = null;
@@ -252,6 +266,18 @@ namespace Calindor.Server.Maps
         public Map(string pathToMap)
         {
             this.pathToMap = pathToMap;
+        }
+
+        public bool LoadMapDefs()
+        {
+            this.mapDefinition = null;
+            if (this.pathToMap.EndsWith(".elm"))
+            {
+                string defpath = this.pathToMap;
+                defpath = defpath.Substring(0, defpath.Length - 4) + ".def";
+                this.mapDefinition = DefFileReader.readDefFile(defpath);
+            }
+            return this.mapDefinition != null;
         }
 
         public bool LoadMapData()
