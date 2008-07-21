@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -27,6 +27,11 @@ namespace Calindor.Server
     {
         private Thread innerThread = null;
         private bool isWorking = false;
+        private bool isRunning = true;
+        public bool IsRunning
+        {
+            get { return isRunning; }
+        }
 
         private ILogger logger = new DummyLogger();
         public ILogger Logger
@@ -41,7 +46,7 @@ namespace Calindor.Server
         // Maps
         private MapManager mapManager = null;
 
-        // Time based actions 
+        // Time based actions
         private TimeBasedActionsManager timeBasedActionsManager = null;
 
         // List of active players
@@ -67,15 +72,15 @@ namespace Calindor.Server
         // Dictionary of world entities by EntityID
         private EntityIDEntityDictionary worldEntitiesByEntityID =
             new EntityIDEntityDictionary();
-        
-        
+
+
 
         #region STARDARD REUSABLE MESSAGES
         /*
          * CAUTION: These messages will be used for a number of connection at once. They cannot be modified.
          */
         // Opening message
-        private RawTextOutgoingMessage msgStdOpeningMessage 
+        private RawTextOutgoingMessage msgStdOpeningMessage
             = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
 
         // Wrong client version
@@ -103,7 +108,7 @@ namespace Calindor.Server
 
             // Preparting wrong client version
             msgStdWrongClientVersion.Text =
-                string.Format("The protocol version of client is different than protocol version of Calindor ({0},{1}). The connection will be closed.", 
+                string.Format("The protocol version of client is different than protocol version of Calindor ({0},{1}). The connection will be closed.",
                 ProtocolVersion.FirstDigit, ProtocolVersion.SecondDigit);
             msgStdWrongClientVersion.Channel = PredefinedChannel.CHAT_SERVER;
             msgStdWrongClientVersion.Color = PredefinedColor.Red3;
@@ -132,7 +137,7 @@ namespace Calindor.Server
         public bool StartSimulation()
         {
             Logger.LogProgress(LogSource.World, "WorldSimulation starting");
-            
+
             // Check access to storage
             if (!pcAuthentication.IsStorageAccessible())
             {
@@ -166,12 +171,12 @@ namespace Calindor.Server
 
             // Adds server characters to the world
             addServerCharacters();
-            
+
             // Create execution loop profiler
-            ExecutionTimeProfiler execProf = 
+            ExecutionTimeProfiler execProf =
                 new ExecutionTimeProfiler("WorldSimulation", 30000);
-            
-            execProf.PeriodElapsed += 
+
+            execProf.PeriodElapsed +=
                 new PerformanceProfilerEventHandler(onPeriodElapsed);
 
             while (isWorking)
@@ -204,7 +209,7 @@ namespace Calindor.Server
                     pc.UpdateVisibleEntities();
                 foreach (ServerCharacter sc in activeServerCharacters)
                     sc.UpdateVisibleEntities();
-                
+
                 // Send - player
                 foreach (PlayerCharacter pc in activePlayerCharacters)
                     handleVisibilityChangeEvents(pc);
@@ -218,7 +223,7 @@ namespace Calindor.Server
                 // STEP2.7 AI
                 foreach (ServerCharacter sc in activeServerCharacters)
                     sc.AIExecute();
-                
+
                 // STEP3. Player events
                 IncommingMessage msg = null;
 
@@ -242,7 +247,7 @@ namespace Calindor.Server
                     if (pc.LoginState == PlayerCharacterLoginState.LoggingOff)
                         removedPlayers.Add(pc);
                 }
-               
+
                 // STEP4. Remove logged off players
                 if (removedPlayers.Count > 0)
                 {
@@ -265,7 +270,7 @@ namespace Calindor.Server
 
                 // STEP4.5 Execute time based actions
                 timeBasedActionsManager.ExecuteActions();
-                
+
                 // STEP5. Register new players
                 Monitor.TryEnter(newPlayers, 10);
 
@@ -279,14 +284,29 @@ namespace Calindor.Server
 
                     Monitor.Exit(newPlayers);
                 }
-                
+
                 execProf.StopCycle();
-                
+
                 // Sleep
                 Thread.Sleep(50);
             }
 
+            foreach (PlayerCharacter pc in activePlayerCharacters)
+            {
+                try
+                {
+                    pc.Serialize(pcSerializer); // Save state
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(LogSource.World, "Failed to serialize player " + pc.Name, ex);
+                }
+                pc.LoginState = PlayerCharacterLoginState.LoggingOff;
+                pc.CheckForLoggingOff();
+            }
+
             Logger.LogProgress(LogSource.World, "WorldSimulation stopping");
+            isRunning = false;
         }
 
         private void processMessage(PlayerCharacter pc, IncommingMessage msg)
@@ -427,7 +447,7 @@ namespace Calindor.Server
             {
                 if (loggedInPlayersByName.ContainsKey(enImpl.Name.ToLower()))
                     // This should not happen. It should be checked before making login successful
-                    throw new InvalidOperationException("Player is already in 'by name' dictionary!"); 
+                    throw new InvalidOperationException("Player is already in 'by name' dictionary!");
             }
 
             if (enImpl is ServerCharacter)
@@ -503,7 +523,7 @@ namespace Calindor.Server
             }
 
             if (enImpl is ServerCharacter)
-            { 
+            {
                 // Total server characters
                 activeServerCharacters.Remove(enImpl as ServerCharacter);
             }
@@ -657,7 +677,7 @@ namespace Calindor.Server
                 rabbit1.CreateApplyInitialState();
 
                 // AI
-                WonderingDumbNonAggresiveAIImplementation aiImpl = 
+                WonderingDumbNonAggresiveAIImplementation aiImpl =
                     new WonderingDumbNonAggresiveAIImplementation(locationRabbit.X, locationRabbit.Y, 30,3000);
                 rabbit1.AIAttach(aiImpl);
 
@@ -764,7 +784,7 @@ namespace Calindor.Server
             deer1.CreateApplyInitialState();
 
             // AI
-            WonderingDumbNonAggresiveAIImplementation aiImplDeer = 
+            WonderingDumbNonAggresiveAIImplementation aiImplDeer =
                 new WonderingDumbNonAggresiveAIImplementation(locationdeer.X, locationdeer.Y, 50, 5000);
             deer1.AIAttach(aiImplDeer);
 
@@ -788,10 +808,10 @@ namespace Calindor.Server
             beaver1.CreateSetRespawnTime(60000);
             beaver1.MaxCombatXP = 4000; // medium
             beaver1.CreateApplyInitialState();
-            
+
 
             // AI
-            WonderingDumbNonAggresiveAIImplementation aiImplbeaver = 
+            WonderingDumbNonAggresiveAIImplementation aiImplbeaver =
                 new WonderingDumbNonAggresiveAIImplementation(locationbeaver.X, locationbeaver.Y, 50, 5000);
             beaver1.AIAttach(aiImplbeaver);
 
@@ -816,7 +836,7 @@ namespace Calindor.Server
             armedSkell1.CreateSetRespawnTime(60000);
             armedSkell1.MaxCombatXP = 6000; // hard
             armedSkell1.CreateApplyInitialState();
-            
+
 
             // AI
             WonderingDumbNonAggresiveAIImplementation aiImplarmedSkell =
@@ -849,7 +869,7 @@ namespace Calindor.Server
             townperson.CreateSetRespawnTime(0);
             townperson.MaxCombatXP = 6000; // hard
             townperson.CreateApplyInitialState();
-            
+
 
             // AI
             WonderingDumbNonAggresiveAIImplementation aiImpltownperson =
@@ -861,17 +881,17 @@ namespace Calindor.Server
             townperson.LocationChangeMapAtEnterWorld();
 
         }
-        
+
         private void onPeriodElapsed(object o, PerformanceProfilerEventArgs args)
         {
             ExecutionTimeProfilerEventArgs sppArgs =
                 (ExecutionTimeProfilerEventArgs)args;
-            
+
             double avgMilisPerCycleLastPeriod = (double)sppArgs.AverageTicksPerCycleLastPeriod / 10000.0;
             double avgMilisPerCycleTotal = (double)sppArgs.AverageTicksPerCycleTotal / 10000.0;
-            
+
             Logger.LogProgress(LogSource.World,
-                string.Format("Profiler({0}): last period ({1:f2} ms), total ({2:f2} ms)", 
+                string.Format("Profiler({0}): last period ({1:f2} ms), total ({2:f2} ms)",
                 sppArgs.ProfilerName, avgMilisPerCycleLastPeriod, avgMilisPerCycleTotal));
 
             // TODO: Remove from here

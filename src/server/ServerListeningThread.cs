@@ -95,9 +95,17 @@ namespace Calindor.Server
             return true;
         }
 
+        public void StopListening()
+        {
+            Socket temp = serverSocket;
+            serverSocket = null;
+            innerThread.Abort();
+            temp.Close();
+        }
+
         protected void threadMain()
         {
-            while (true)
+            while (serverSocket != null)
             {
                 Socket newClientSocket = null;
 

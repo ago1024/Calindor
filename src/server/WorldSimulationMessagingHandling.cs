@@ -195,6 +195,11 @@ namespace Calindor.Server
                             pc.PutMessageIntoMyQueue(msgRawTextOut);
                             return;
                         }
+                        if ((msgRawText.Text.ToLower().IndexOf("#shutdown") != -1) && serverConfiguration.IsAdminUser(pc.Name))
+                        {
+                            StopSimulation();
+                            return;
+                        }
                         if ((msgRawText.Text.ToLower().IndexOf("#kick") != -1) && serverConfiguration.IsAdminUser(pc.Name))
                         {
                             string[] tokens = msgRawText.Text.Split(' ');

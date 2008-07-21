@@ -157,6 +157,15 @@ namespace Calindor.Server
             }
 
             logger.LogProgress(LogSource.Server, "Server started.");
+
+            while (worldSim.IsRunning)
+            {
+                Thread.Sleep(100);
+            }
+
+            worldSim.StopSimulation();
+            commManager.StopManager();
+            slThread.StopListening();
         }
     }
 
