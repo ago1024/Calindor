@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -38,7 +38,7 @@ namespace Calindor.Server.Maps
             this.x = x;
             this.y = y;
         }
-	
+
     }
 
     public class WalkPathItemList : List<WalkPathItem>
@@ -66,7 +66,7 @@ namespace Calindor.Server.Maps
             get { return state; }
             set { state = value; }
         }
-	
+
 
         public WalkPathItem GetNext()
         {
@@ -74,6 +74,14 @@ namespace Calindor.Server.Maps
                 return null;
             else
                 return walkPath[walkPathIndex++];
+        }
+
+        public WalkPathItem GetLast()
+        {
+            if (walkPath.Count <= 0)
+                return null;
+            else
+                return walkPath[walkPath.Count - 1];
         }
 
         public void Reset()
@@ -121,6 +129,30 @@ namespace Calindor.Server.Maps
             set { endY = value; }
         }
 
+        private short endX2;
+
+        public short EndX2
+        {
+            get { return endX2; }
+            set { endX2 = value; }
+        }
+
+        private short endY2;
+
+        public short EndY2
+        {
+            get { return endY2; }
+            set { endY2 = value; }
+        }
+
+        private bool endIsArea;
+
+        public bool EndIsArea
+        {
+            get { return endIsArea; }
+            set { endIsArea = value; }
+        }
+
         private int maxIterations;
 
         public int MaxIterations
@@ -128,9 +160,9 @@ namespace Calindor.Server.Maps
             get { return maxIterations; }
             set { maxIterations = value; }
         }
-	
-	
-	
+
+
+
     }
 
     /// <summary>
@@ -160,7 +192,7 @@ namespace Calindor.Server.Maps
             dynamicPathfinderMap = new byte[mapSizeX, mapSizeY];
         }
 
-        public WalkPath CalculatePath(PathfinderParameters _params)
+        public virtual WalkPath CalculatePath(PathfinderParameters _params)
         {
             WalkPath _return = new WalkPath();
 
@@ -241,7 +273,7 @@ namespace Calindor.Server.Maps
                     return _return;
                 }
             }
-            
+
             return _return;
         }
 

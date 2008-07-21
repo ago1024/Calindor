@@ -290,7 +290,7 @@ namespace Calindor.Server.Maps
                     for (int x = 0; x < sizeX; x++)
                         mapData[x, y] = temp[y * sizeX + x];
 
-                pathfinder = new Pathfinder(mapData);
+                pathfinder = new AStarPathfinder(mapData);
                 pathfinderParams = new PathfinderParameters();
             }
             finally
@@ -335,6 +335,25 @@ namespace Calindor.Server.Maps
             pathfinderParams.StartY = startY;
             pathfinderParams.EndX = endX;
             pathfinderParams.EndY = endY;
+            pathfinderParams.EndIsArea = false;
+            pathfinderParams.MaxIterations = 1000;
+
+            return pathfinder.CalculatePath(pathfinderParams);
+
+        }
+
+        public WalkPath CalculatePath(short startX, short startY, short endX, short endY, short endX2, short endY2)
+        {
+            if (pathfinder == null)
+                throw new InvalidOperationException("Pathfinder not created");
+
+            pathfinderParams.StartX = startX;
+            pathfinderParams.StartY = startY;
+            pathfinderParams.EndX = endX;
+            pathfinderParams.EndY = endY;
+            pathfinderParams.EndX2 = endX2;
+            pathfinderParams.EndY2 = endY2;
+            pathfinderParams.EndIsArea = true;
             pathfinderParams.MaxIterations = 1000;
 
             return pathfinder.CalculatePath(pathfinderParams);
