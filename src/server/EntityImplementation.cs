@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -13,6 +13,7 @@ using Calindor.Server.Items;
 using Calindor.Server.Messaging;
 using Calindor.Server.Maps;
 using Calindor.Server.TimeBasedActions;
+using Calindor.Server.SimpleActions;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Resources;
 using System;
@@ -50,50 +51,50 @@ namespace Calindor.Server
         {
             if (timeBasedActionsManager == null)
                 throw new NullReferenceException("timeBasedActionsManager");
-            
+
             timeBasedActionsManager.AddAction(actionToAdd);
         }
-        
+
         public void TimeBasedActionConnectToManager(TimeBasedActionsManager tbaManager)
         {
             timeBasedActionsManager = tbaManager;
         }
-        
+
         public void TimeBasedActionAddAffecting(ITimeBasedAction actionToAdd)
         {
             affectingTimeBasedActions.Add(actionToAdd);
-            
+
             // Additional handling for attack action
             if (actionToAdd is AttackTimeBasedAction)
                 attackersCount++;
         }
-        
+
         public void TimeBasedActionRemoveAffecting(ITimeBasedAction actionToRemove)
         {
             bool actionRemoved = affectingTimeBasedActions.Remove(actionToRemove);
-            
+
             // Additional handling for attack action
             if (actionRemoved && (actionToRemove is AttackTimeBasedAction))
                 attackersCount--;
-            
+
             // Failsafe
             if (attackersCount < 0)
                 throw new InvalidOperationException(
                     "Attacker count less than 0 for " + Name + "(" + EntityID + ")");
-            
+
         }
-        
+
         public void TimeBasedActionSetExecuted(ITimeBasedAction actionToExecute)
         {
             // Only one action can be executed at any time
             TimeBasedActionCancelExecuted();
-            
+
             executedTimeBasedAction = actionToExecute;
-            
+
             // Add action to manager (manager takes care of duplicated adds)
             timeBasedActionAddActionToManager(actionToExecute);
         }
-        
+
         public void TimeBasedActionRemoveExecuted()
         {
             executedTimeBasedAction = null;
@@ -208,6 +209,11 @@ namespace Calindor.Server
 
             return null;
         }
+
+        public Item InventoryGetItemAtSlot(byte slot)
+        {
+            return inventory.GetItemAtSlot(slot);
+        }
         #endregion
 
         #region Movement Handling
@@ -215,6 +221,11 @@ namespace Calindor.Server
         protected MapManager mapManager = null;
 
         public void LocationMoveTo(short x, short y)
+        {
+            LocationMoveToExecute(x, y, null);
+        }
+
+        public void LocationMoveToExecute(short x, short y, ISimpleAction action)
         {
             // Check if destination tile is walkable
             if (!location.CurrentMap.IsLocationWalkable(x, y))
@@ -224,11 +235,20 @@ namespace Calindor.Server
             WalkPath path =
                 location.CurrentMap.CalculatePath(location.X, location.Y, x, y);
 
+            LocationMoveToExecute(path, action);
+        }
+
+        public void LocationMoveToExecute(WalkPath path, ISimpleAction action)
+        {
             if (path.State != WalkPathState.VALID)
                 return;
 
             // Add walk time based action
-            WalkTimeBasedAction walk = new WalkTimeBasedAction(this, path);
+            WalkTimeBasedAction walk;
+            if (action == null)
+                walk = new WalkTimeBasedAction(this, path);
+            else
+                walk = new WalkToExecuteActionTimeBasedAction(this, path, action);
             walk.Activate();
 
 
@@ -243,11 +263,16 @@ namespace Calindor.Server
                     if (follower == null)
                         continue;
 
-                    // Calculate transition vectors
-                    xMoveToFollower = (short)(x + follower.LocationX - location.X);
-                    yMoveToFollower = (short)(y + follower.LocationY - location.Y);
+                    WalkPathItem item = path.GetLast();
 
-                    follower.LocationMoveTo(xMoveToFollower, yMoveToFollower);
+                    // Calculate transition vectors
+                    xMoveToFollower = (short)(item.X + follower.LocationX - location.X);
+                    yMoveToFollower = (short)(item.Y + follower.LocationY - location.Y);
+
+                    if (follower.location.CurrentMap.IsLocationWalkable(xMoveToFollower, yMoveToFollower))
+                        follower.LocationMoveTo(xMoveToFollower, yMoveToFollower);
+                    else
+                        follower.LocationMoveTo(item.X, item.Y);
                 }
             }
         }
@@ -317,32 +342,32 @@ namespace Calindor.Server
                 location.RotateBy(-45);
             }
         }
-        
+
         public PredefinedDirection LocationTurnToFace(short x, short y)
         {
             if (!location.IsSittingDown)
             {
                 PredefinedDirection dir = locationCalculateDirectionTo(x, y);
-                
+
                 if (dir != PredefinedDirection.NO_DIRECTION)
                     LocationTurnTo(dir);
-                
+
                 return dir;
             }
-            
+
             return PredefinedDirection.NO_DIRECTION;
         }
-        
+
         public void LocationTurnTo(PredefinedDirection dir)
         {
             if (!location.IsSittingDown)
             {
                 if (dir == PredefinedDirection.NO_DIRECTION)
                     return;
-                
+
                 PredefinedActorCommand command = PredefinedActorCommand.turn_n;
                 short rotation = 0;
-                
+
                 switch (dir)
                 {
                     case(PredefinedDirection.N):
@@ -387,18 +412,18 @@ namespace Calindor.Server
                 }
             }
         }
-        
+
         protected PredefinedDirection locationCalculateDirectionTo(short x, short y)
         {
             int xDiff = LocationX - x;
             int yDiff = LocationY - y;
-            
+
             if (xDiff != 0)
                 xDiff /= Math.Abs(xDiff);
-            
+
             if (yDiff != 0)
                 yDiff /= Math.Abs(yDiff);
-            
+
             if (xDiff == 0)
             {
                 if (yDiff == -1)
@@ -432,7 +457,7 @@ namespace Calindor.Server
                     return PredefinedDirection.NW;
 
             }
-            
+
             // x == 0 && y == 0
             return PredefinedDirection.NO_DIRECTION;
         }
@@ -447,26 +472,29 @@ namespace Calindor.Server
                     return PredefinedDirection.NO_DIRECTION;
 
                 PredefinedDirection dir = locationCalculateDirectionTo(x, y);
-                
+
                 if (dir != PredefinedDirection.NO_DIRECTION)
                     LocationTakeStep(dir);
-                
+
                 return dir;
             }
-            
+
             return PredefinedDirection.NO_DIRECTION;
         }
-        
+
         public void LocationTakeStep(PredefinedDirection dir)
         {
             if (!location.IsSittingDown)
             {
                 if (dir == PredefinedDirection.NO_DIRECTION)
                     return;
-                
+
                 AddActorCommandOutgoingMessage msgAddActorCommand =
                     (AddActorCommandOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.ADD_ACTOR_COMMAND);
                 msgAddActorCommand.EntityID = EntityID;
+
+                short oldX = location.X;
+                short oldY = location.Y;
 
                 switch (dir)
                 {
@@ -517,6 +545,28 @@ namespace Calindor.Server
                 }
 
                 PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
+
+                if (location.CurrentMap.MapDef != null)
+                {
+                    MapDefinition.TextArea textArea = location.CurrentMap.MapDef.getTextArea(LocationX, LocationY);
+                    if (textArea != null && !textArea.Contains(oldX, oldY))
+                    {
+                        RawTextOutgoingMessage msgToSender =
+                            (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                        msgToSender.Color = PredefinedColor.Grey1;
+                        msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
+                        msgToSender.Text = textArea.Text;
+                        PutMessageIntoMyQueue(msgToSender);
+                    }
+                    MapDefinition.TeleportPoint teleportPoint = location.CurrentMap.MapDef.getTeleportPoint(LocationX, LocationY);
+                    if (teleportPoint != null)
+                    {
+                        //if (teleportPoint.DestMap == -1)
+                            LocationChangeLocation(teleportPoint.DestX, teleportPoint.DestY);
+                        //else
+                        //    LocationChangeMap(null, teleportPoint.DestX, teleportPoint.DestY);
+                    }
+                }
             }
         }
 
@@ -600,7 +650,7 @@ namespace Calindor.Server
                 entityToFollow.removeFollower(this);
 
                 TimeBasedActionCancelExecuted();
-                
+
                 RawTextOutgoingMessage msgRawTextOut =
                                      (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
                 msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
@@ -650,7 +700,7 @@ namespace Calindor.Server
                 PutMessageIntoMyQueue(msgRawTextOutMe);
                 return;
             }
-                
+
             if (enImpl.isFollowingEntity)
             {
                 msgRawTextOutMe.Text = enImpl.Name + " can't follow anybody if you want to follow him/her...";
@@ -669,7 +719,7 @@ namespace Calindor.Server
                 msgRawTextOutMe.Text = "You start following " + enImpl.Name;
                 PutMessageIntoMyQueue(msgRawTextOutMe);
 
-                RawTextOutgoingMessage msgRawTextOutOther = 
+                RawTextOutgoingMessage msgRawTextOutOther =
                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
                 msgRawTextOutOther.Channel = PredefinedChannel.CHAT_LOCAL;
                 msgRawTextOutOther.Color = PredefinedColor.Blue1;
@@ -772,7 +822,7 @@ namespace Calindor.Server
         }
 
         public abstract void PutMessageIntoMyQueue(OutgoingMessage msg);
-        
+
         /// <summary>
         /// Sends a local chat message to the entity
         /// </summary>
@@ -783,7 +833,7 @@ namespace Calindor.Server
         /// A <see cref="PredefinedColor"/>
         /// </param>
         public abstract void SendLocalChatMessage(string message, PredefinedColor color);
-        
+
         /// <summary>
         /// Sends AddActorCommand to entity and all observers
         /// </summary>
@@ -867,7 +917,7 @@ namespace Calindor.Server
         #endregion
 
         #region Creation Handling
-        
+
         protected abstract bool isEntityImplementationInCreationPhase();
 
         public virtual void CreateSetInitialLocation(EntityLocation location)
@@ -888,7 +938,7 @@ namespace Calindor.Server
         {
             if (!isEntityImplementationInCreationPhase())
                 throw new InvalidOperationException("This method can only be used during creation!");
-            
+
             // TODO: Recalculate based on attributes/perks/items
             energies.SetMaxHealth(50);
 
@@ -905,7 +955,7 @@ namespace Calindor.Server
         #endregion
 
         #region Energies Handling
-        
+
         protected virtual void energiesEntityDied()
         {
             // Cancel current action
@@ -1011,7 +1061,7 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(msgSendBuff);
         }
         #endregion
-        
+
         #region Calendar Events Handling
         public virtual void CalendarNewMinute(ushort minuteOfTheDay)
         {
@@ -1019,9 +1069,9 @@ namespace Calindor.Server
             NewMinuteOutgoingMessage msg =
                     (NewMinuteOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NEW_MINUTE);
             msg.MinuteOfTheDay = minuteOfTheDay;
-            
+
             PutMessageIntoMyQueue(msg);
-            
+
             // Heal a bit
             if (energies.GetHealthDifference() != 0)
             {
@@ -1030,6 +1080,6 @@ namespace Calindor.Server
             }
         }
         #endregion
-        
+
     }
 }

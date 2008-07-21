@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -16,6 +16,7 @@ using Calindor.Misc.Predefines;
 using Calindor.Server.Items;
 using Calindor.Server;
 using Calindor.Server.Resources;
+using Calindor.Server.SimpleActions;
 using Calindor.Misc;
 
 namespace Calindor.Server.TimeBasedActions
@@ -33,7 +34,7 @@ namespace Calindor.Server.TimeBasedActions
             foreach (TimeBasedAction action in actionsToAdd)
                 activeActions.Add(action);
             actionsToAdd.Clear();
-            
+
             // Executing actions
             foreach (TimeBasedAction action in activeActions)
             {
@@ -58,12 +59,12 @@ namespace Calindor.Server.TimeBasedActions
             // Don't add existing action
             if (actionsSignatures.ContainsKey(action.GetHashCode()))
                 return;
-                
+
             actionsToAdd.Add(action);
             actionsSignatures.Add(action.GetHashCode(), null);
         }
     }
-    
+
     public interface ITimeBasedAction
     {
         /// <summary>
@@ -78,12 +79,12 @@ namespace Calindor.Server.TimeBasedActions
         /// Makes action active
         /// </summary>
         void Activate();
-        
+
         /// <summary>
         /// Makes action inactive
         /// </summary>
         void DeActivate();
-        
+
 
     }
 
@@ -100,7 +101,7 @@ namespace Calindor.Server.TimeBasedActions
         private bool immediateExecution = false;
         protected EntityImplementation executingEntity = null;
         protected EntityImplementation affectedEntity = null;
-        
+
 
         protected TimeBasedAction(EntityImplementation executing, uint actionDuration):base(actionDuration)
         {
@@ -109,7 +110,7 @@ namespace Calindor.Server.TimeBasedActions
 
             executingEntity = executing;
         }
-        
+
         // TODO: Maybe pass array of affected entities?
         protected TimeBasedAction(EntityImplementation executing,
             EntityImplementation affected, uint actionDuration):
@@ -132,21 +133,21 @@ namespace Calindor.Server.TimeBasedActions
 
             return PreconditionsResult.NO_EXECUTE;
         }
-        
+
         /// <summary>
-        /// Code to be execute on activation of action 
+        /// Code to be execute on activation of action
         /// </summary>
         protected virtual void onActivation()
         {
         }
-        
+
         /// <summary>
         /// Code to be executed on deactivation of action
         /// </summary>
         protected virtual void onDeActivation()
         {
         }
-        
+
         protected void setImmediateExecution()
         {
             immediateExecution = true;
@@ -171,28 +172,28 @@ namespace Calindor.Server.TimeBasedActions
             executingEntity.TimeBasedActionSetExecuted(this);
             if (affectedEntity != null)
                 affectedEntity.TimeBasedActionAddAffecting(this);
-            
+
             onActivation();
         }
-        
+
         public void DeActivate()
         {
             actionDeactivated = true;
             executingEntity.TimeBasedActionRemoveExecuted();
             if (affectedEntity != null)
                 affectedEntity.TimeBasedActionRemoveAffecting(this);
-            
+
             onDeActivation();
         }
         #endregion
     }
-    
+
     /*
      * -------------------------------------------------------------------------
      * IMPLEMENTATION
      * -------------------------------------------------------------------------
      */
-    
+
     public class WalkTimeBasedAction : TimeBasedAction
     {
         protected WalkPath walkPath = null;
@@ -205,23 +206,23 @@ namespace Calindor.Server.TimeBasedActions
 
             this.walkPath = walkPath;
             // Remove the first item (current location) from path
-            this.walkPath.GetNext(); 
-            
+            this.walkPath.GetNext();
+
             setImmediateExecution();
         }
-        
+
         protected override void onActivation()
         {
             // Stand up
-            executingEntity.LocationStandUp(true); 
+            executingEntity.LocationStandUp(true);
         }
 
         protected override void execute()
         {
             resetImmediateExecution();
-            
+
             WalkPathItem itm = null;
-            
+
             itm = walkPath.GetNext();
 
             if (itm == null)
@@ -231,7 +232,7 @@ namespace Calindor.Server.TimeBasedActions
             }
 
             // Check if location is not occupied
-            if (executingEntity.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y, 
+            if (executingEntity.LocationCurrentMap.IsLocationOccupied(itm.X, itm.Y,
                 executingEntity.LocationDimension))
             {
                 DeActivate();
@@ -239,7 +240,7 @@ namespace Calindor.Server.TimeBasedActions
             }
 
             // Move and check result
-            PredefinedDirection dir = 
+            PredefinedDirection dir =
                 executingEntity.LocationTakeStepTo(itm.X, itm.Y);
 
             if (dir == PredefinedDirection.NO_DIRECTION)
@@ -250,12 +251,37 @@ namespace Calindor.Server.TimeBasedActions
         }
     }
 
+    public class WalkToExecuteActionTimeBasedAction : WalkTimeBasedAction
+    {
+        protected ISimpleAction action = null;
+
+        public WalkToExecuteActionTimeBasedAction(EntityImplementation enImpl, WalkPath walkPath, ISimpleAction action):
+            base(enImpl, walkPath)
+        {
+            this.walkPath = walkPath;
+            this.action = action;
+        }
+
+        protected override void onDeActivation()
+        {
+            WalkPathItem item = null;
+
+            if (walkPath == null || (item = walkPath.GetLast()) == null)
+                return;
+
+            if (Math.Abs(executingEntity.LocationX - item.X) < 2 &&
+                Math.Abs(executingEntity.LocationY - item.Y) < 2 &&
+                action != null)
+                action.Execute();
+        }
+    }
+
     public class HarvestTimeBasedAction : TimeBasedAction
     {
         private HarvestableResourceDescriptor rscDef = null;
         private double successRate = 0.0;
 
-        public HarvestTimeBasedAction(EntityImplementation enImpl, 
+        public HarvestTimeBasedAction(EntityImplementation enImpl,
             HarvestableResourceDescriptor rscDef): base(enImpl,0)
         {
             if (rscDef == null)
@@ -282,7 +308,7 @@ namespace Calindor.Server.TimeBasedActions
         {
             if (WorldRNG.NextDouble() <= successRate)
                 executingEntity.HarvestItemHarvested(rscDef);
-            
+
             // After each harvest, recalculate
             calculateParameters();
         }
@@ -294,45 +320,45 @@ namespace Calindor.Server.TimeBasedActions
             base(enIml, milisToRespawn)
         {
         }
-            
+
         protected override void execute()
         {
             (executingEntity as ServerCharacter).EnergiesRespawn();
 
-            DeActivate();    
+            DeActivate();
         }
     }
-    
+
     public class AttackTimeBasedAction : TimeBasedAction
     {
         public AttackTimeBasedAction(EntityImplementation attacker, EntityImplementation defender):
             base(attacker, defender, 0)
         {
             // TODO: Maybe add immediate execution for 'backstab' attacks?
-            
+
             setMilisBetweenExecutions(executingEntity.CombatGetActionTime());
         }
-        
+
         public EntityImplementation Attacker
         {
             get { return executingEntity; }
         }
-        
+
         public EntityImplementation Defender
         {
             get { return affectedEntity; }
         }
-        
+
         protected override void execute()
-        {   
+        {
             if (!affectedEntity.EnergiesIsAlive)
             {
                 DeActivate();
                 return;
             }
-            
+
             rotateToFaceDefender();
-            
+
             // Calculate chance
             double hitChance = 0.0;
             if (!executingEntity.CombatGetHitChance(affectedEntity, out hitChance))
@@ -340,39 +366,39 @@ namespace Calindor.Server.TimeBasedActions
                 DeActivate();
                 return;
             }
-            
-            // Attack    
+
+            // Attack
             if (hitChance > WorldRNG.NextDouble())
                 executingEntity.CombatHitDefender(affectedEntity);
             else
                 affectedEntity.CombatEvadeAttacker(executingEntity);
-            
+
 
             if (!affectedEntity.EnergiesIsAlive)
             {
                 DeActivate();
                 return;
             }
-            
+
             // Get next attack time
             setMilisBetweenExecutions(executingEntity.CombatGetActionTime());
         }
-        
+
         protected override void onDeActivation()
         {
-            //TODO: Check if this is a last fight performed, if yes, 
+            //TODO: Check if this is a last fight performed, if yes,
             //      send animation frame
             executingEntity.SendAnimationCommand(
                 PredefinedActorCommand.leave_combat);
-            
+
             executingEntity.SendLocalChatMessage(
                 "You stopped attacking.", PredefinedColor.Blue1);
         }
-        
+
         private void rotateToFaceDefender()
         {
             executingEntity.LocationTurnToFace
-                (affectedEntity.LocationX, affectedEntity.LocationY);          
+                (affectedEntity.LocationX, affectedEntity.LocationY);
         }
 
         protected override void onActivation()

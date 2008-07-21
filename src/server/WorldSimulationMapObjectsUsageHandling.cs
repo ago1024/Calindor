@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -15,6 +15,7 @@ using Calindor.Server.Resources;
 using Calindor.Server.Items;
 using Calindor.Server.Actions;
 using Calindor.Server.Entities;
+using Calindor.Server.SimpleActions;
 
 namespace Calindor.Server
 {
@@ -28,6 +29,99 @@ namespace Calindor.Server
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
             {
                 UseMapObjectIncommingMessage msgUseMapObject = (UseMapObjectIncommingMessage)msg;
+
+                if (pc.LocationCurrentMap.MapDef != null)
+                {
+                    MapDefinition.UseArea useArea = pc.LocationCurrentMap.MapDef.getUseArea(msgUseMapObject.TargetObjectID);
+                    if (useArea != null)
+                    {
+                        bool tooFar = false;
+                        bool useSuccess = false;
+                        bool useWrongObject = false;
+
+                        int objectId = -1;
+                        if (msgUseMapObject.ObjectdUsedOnTarget != -1)
+                        {
+                            Item itm = pc.InventoryGetItemAtSlot((byte)msgUseMapObject.ObjectdUsedOnTarget);
+
+                            if (itm != null)
+                                objectId = itm.Definition.ID;
+                        }
+
+
+                        if (!useArea.IsClose(pc.LocationX, pc.LocationY))
+                        {
+                            tooFar = true;
+                        }
+                        else if (useArea.InvObjectId == -1 && objectId == -1)
+                        {
+                            useSuccess = true;
+                        }
+                        else if (useArea.InvObjectId == -1 && objectId != -1)
+                        {
+                            useWrongObject = true;
+                        }
+                        else if (useArea.InvObjectId != -1 && objectId == -1)
+                        {
+                            useSuccess = false;
+                        }
+                        else if (useArea.InvObjectId == objectId)
+                        {
+                            useSuccess = true;
+                        }
+                        else
+                        {
+                            useWrongObject = true;
+                        }
+
+                        if (tooFar)
+                        {
+                            if (useArea.TooFarText.Length > 0)
+                            {
+                                RawTextOutgoingMessage msgToSender =
+                                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                                msgToSender.Color = PredefinedColor.Red2;
+                                msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
+                                msgToSender.Text = useArea.TooFarText;
+                                pc.PutMessageIntoMyQueue(msgToSender);
+                            }
+                            return;
+                        }
+                        else if (useSuccess)
+                        {
+                            ISimpleAction action;
+
+                            if (useArea.TeleportX != -1 && useArea.TeleportY != -1)
+                                action = new TeleportAction(pc, useArea.TeleportX, useArea.TeleportY, null, useArea.UseText);
+                            else
+                                action = new SimpleActionImpl(pc, useArea.UseText);
+
+                            if (useArea.Contains(pc.LocationX, pc.LocationY))
+                                action.Execute();
+                            else
+                            {
+                                Maps.WalkPath path = pc.LocationCurrentMap.CalculatePath(pc.LocationX, pc.LocationY,
+                                    useArea.MinX, useArea.MinY, useArea.MaxX, useArea.MaxY);
+                                pc.LocationMoveToExecute(path, action);
+                            }
+                            return;
+                        }
+                        else if (useWrongObject)
+                        {
+                            if (useArea.WrongObjectText.Length > 0)
+                            {
+                                RawTextOutgoingMessage msgToSender =
+                                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                                msgToSender.Color = PredefinedColor.Red2;
+                                msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
+                                msgToSender.Text = useArea.WrongObjectText;
+                                pc.PutMessageIntoMyQueue(msgToSender);
+                            }
+                            return;
+                        }
+                    }
+                }
+
 
                 // Right now only handling for changing IP and IP insides maps!!!
                 switch (pc.LocationCurrentMap.Name)
@@ -226,6 +320,54 @@ namespace Calindor.Server
             }
         }
 
+        private void handleLookAtMapObject(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                LookAtMapObjectIncomingMessage msgLookAt = (LookAtMapObjectIncomingMessage)msg;
+
+                RawTextOutgoingMessage msgToSender =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgToSender.Color = PredefinedColor.Blue1;
+                msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgToSender.Text = String.Format("ObjectID: {0}", msgLookAt.ObjectID);
+                pc.PutMessageIntoMyQueue(msgToSender);
+
+
+                MapDefinition.ObjectName objectName;
+                if (pc.LocationCurrentMap.MapDef != null && (objectName = pc.LocationCurrentMap.MapDef.getObjectName(msgLookAt.ObjectID)) != null)
+                {
+                    msgToSender =
+                        (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                    msgToSender.Color = PredefinedColor.Blue1;
+                    msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
+                    msgToSender.Text = objectName.ObjectText;
+                    pc.PutMessageIntoMyQueue(msgToSender);
+                }
+                return;
+            }
+        }
+
+        private void handleLocateMe(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                string mapname = pc.LocationCurrentMap.Name;
+                string locinfo = "";
+                if (pc.LocationCurrentMap.MapDef != null)
+                {
+                }
+
+                RawTextOutgoingMessage msgToSender =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgToSender.Color = PredefinedColor.Blue1;
+                msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgToSender.Text = String.Format("you are in {0} {1} [{2},{3}]", mapname, locinfo, pc.LocationX, pc.LocationY);
+                pc.PutMessageIntoMyQueue(msgToSender);
+                return;
+            }
+        }
+
         private void handleHarvest(PlayerCharacter pc, IncommingMessage msg)
         {
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
@@ -241,7 +383,7 @@ namespace Calindor.Server
                                 case(138):
                                 case (139):
                                     {
-                                        
+
                                         ActionDescriptor actDesc = new HarvestActionDescriptor(2000, 1000);
                                         actDesc.AddExperienceDescriptor(new ExperienceDescriptor(EntitySkillType.HarvestingPlants, 3, 15));
                                         HarvestableResourceDescriptor rscDef =

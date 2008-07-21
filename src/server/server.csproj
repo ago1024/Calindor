@@ -72,6 +72,7 @@
     <Compile Include="ServerConfiguration.cs" />
     <Compile Include="ServerListeningThread.cs" />
     <Compile Include="ServerLogger.cs" />
+    <Compile Include="SimpleActions.cs" />
     <Compile Include="TimeBasedActions.cs" />
     <Compile Include="TimeBasedExecution.cs" />
     <Compile Include="WorldCalendar.cs" />

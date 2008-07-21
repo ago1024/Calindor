@@ -346,6 +346,12 @@ namespace Calindor.Server
                     case(IncommingMessageType.HARVEST):
                         handleHarvest(pc, msg);
                         break;
+                    case (IncommingMessageType.LOOK_AT_MAP_OBJECT):
+                        handleLookAtMapObject(pc, msg);
+                        break;
+                    case (IncommingMessageType.LOCATE_ME):
+                        handleLocateMe(pc, msg);
+                        break;
                     case(IncommingMessageType.TOUCH_PLAYER):
                         handleTouchPlayer(pc, msg);
                         break;
