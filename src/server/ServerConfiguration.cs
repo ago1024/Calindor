@@ -87,10 +87,22 @@ namespace Calindor.Server
         {
             get { return enableTestCommands; }
         }
-	
-	
-	
-	
+
+        private string[] adminUsers;
+        public string[] AdminUsers
+        {
+            get { return adminUsers; }
+        }
+
+        public bool IsAdminUser(string name)
+        {
+            foreach (string user in adminUsers)
+            {
+                if (user.ToLower() == name.ToLower())
+                    return true;
+            }
+            return false;
+        }
 
         public bool Load(string path)
         {
@@ -139,6 +151,12 @@ namespace Calindor.Server
 
                 XmlNode enableTestCommandsElement = doc.SelectSingleNode("/configuration/enableTestCommands");
                 enableTestCommands = Convert.ToBoolean(enableTestCommandsElement.Attributes["value"].Value);
+
+                XmlNode adminUsersElement = doc.SelectSingleNode("/configuration/adminUsers");
+                if (adminUsersElement != null)
+                    adminUsers = Convert.ToString(adminUsersElement.Attributes["value"].Value).Split(',');
+                else
+                    adminUsers = new string[0];
 
             }
             catch (Exception ex)
