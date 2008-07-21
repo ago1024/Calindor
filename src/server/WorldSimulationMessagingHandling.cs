@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -24,10 +24,10 @@ namespace Calindor.Server
             {
                 SendPMIncommingMessage msgSendPM = (SendPMIncommingMessage)msg;
                 PlayerCharacter sendToPlayer = getPlayerByName(msgSendPM.RecipientName);
-                
+
                 if (sendToPlayer == null)
                 {
-                    RawTextOutgoingMessage msgToSender = 
+                    RawTextOutgoingMessage msgToSender =
                         (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
                     msgToSender.Color = PredefinedColor.Blue1;
                     msgToSender.Channel = PredefinedChannel.CHAT_LOCAL;
@@ -97,7 +97,7 @@ namespace Calindor.Server
                             RawTextOutgoingMessage msgRawTextOut =
                                 (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
                             msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            
+
 
                             try
                             {
@@ -111,7 +111,7 @@ namespace Calindor.Server
                                 msgRawTextOut.Text = "Your page in Book of Life remains blank...";
                                 msgRawTextOut.Color = PredefinedColor.Red2;
                             }
-                            
+
                             pc.PutMessageIntoMyQueue(msgRawTextOut);
                             return;
                         }
@@ -122,6 +122,13 @@ namespace Calindor.Server
                             msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
                             msgRawTextOut.Color = PredefinedColor.Green3;
                             msgRawTextOut.Text = "Available commands: list_commands, save, follow, stop_following, release_followers, list_skills";
+                            pc.PutMessageIntoMyQueue(msgRawTextOut);
+
+                            msgRawTextOut =
+                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            msgRawTextOut.Color = PredefinedColor.Green3;
+                            msgRawTextOut.Text = "beam me, beam to x,y, beam to map, loc";
                             pc.PutMessageIntoMyQueue(msgRawTextOut);
                             return;
                         }
@@ -178,6 +185,127 @@ namespace Calindor.Server
                             pc.EnergiesResurrect();
                             return;
                         }
+                        if ((msgRawText.Text.ToLower().IndexOf("#loc") != -1))
+                        {
+                            RawTextOutgoingMessage msgRawTextOut =
+                                                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            msgRawTextOut.Color = PredefinedColor.Green3;
+                            msgRawTextOut.Text = String.Format("You are on {0},{1}", pc.LocationX, pc.LocationY);
+                            pc.PutMessageIntoMyQueue(msgRawTextOut);
+                            return;
+                        }
+                        if ((msgRawText.Text.ToLower().IndexOf("#kick") != -1) && serverConfiguration.IsAdminUser(pc.Name))
+                        {
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length != 2)
+                               return;
+
+                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+
+                            PlayerCharacter pcToKick = getPlayerByName(tokens[1]);
+                            if (pcToKick == null)
+                            {
+                                msgRawTextOut.Color = PredefinedColor.Blue1;
+                                msgRawTextOut.Text = "The player does not exist";
+                                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                return;
+                            }
+                            else
+                            {
+
+                                msgRawTextOut.Color = PredefinedColor.Red3;
+                                msgRawTextOut.Text = "You just got kicked by " + pc.Name;
+                                pcToKick.PutMessageIntoMyQueue(msgRawTextOut);
+                                pcToKick.LoginState = PlayerCharacterLoginState.LoggingOff;
+                            }
+
+                            return;
+                        }
+                        if ((msgRawText.Text.ToLower().IndexOf("#wall ") != -1) && serverConfiguration.IsAdminUser(pc.Name))
+                        {
+                            RawTextOutgoingMessage msgRawTextOut =
+                                                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            msgRawTextOut.Color = PredefinedColor.Red3;
+                            msgRawTextOut.Text = "Server message: " + msgRawText.Text.Substring(6);
+                            sendMessageToAllPlayers(msgRawTextOut);
+                            return;
+                        }
+                        if ((msgRawText.Text.ToLower().IndexOf("#beam me") != -1) &&
+                            serverConfiguration.EnableTestCommands)
+                        {
+                            pc.LocationChangeMap(
+                                serverConfiguration.StartingPoint.MapName,
+                                serverConfiguration.StartingPoint.StartX,
+                                serverConfiguration.StartingPoint.StartY);
+                            return;
+                        }
+                        if ((msgRawText.Text.ToLower().IndexOf("#beam to") != -1) &&
+                            serverConfiguration.EnableTestCommands)
+                        {
+                            RawTextOutgoingMessage msgRawTextOut =
+                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+
+                            string mapname;
+                            string coords;
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length == 3)
+                            {
+                                mapname = null;
+                                coords = tokens[2];
+                            }
+                            else if (tokens.Length == 4)
+                            {
+                                mapname = tokens[2];
+                                coords = tokens[3];
+                            }
+                            else if (tokens.Length == 5)
+                            {
+                                mapname = tokens[3];
+                                coords = tokens[4];
+                            }
+                            else
+                            {
+                                msgRawTextOut.Color = PredefinedColor.Red2;
+                                msgRawTextOut.Text = "use #beam to [mapname] x,y";
+                                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                return;
+                            }
+
+                            try
+                            {
+                                tokens = coords.Split(',');
+
+                                short newX = Convert.ToInt16(tokens[0]);
+                                short newY = Convert.ToInt16(tokens[1]);
+
+                                msgRawTextOut.Color = PredefinedColor.Green3;
+
+                                if (mapname == null)
+                                {
+                                    msgRawTextOut.Text = String.Format("Teleporting to {0},{1}", newX, newY);
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    pc.LocationChangeLocation(newX, newY);
+                                }
+                                else
+                                {
+                                    msgRawTextOut.Text = String.Format("Teleporting to map {2} {0},{1}", newX, newY, mapname);
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    pc.LocationChangeMap(mapname, newX, newY);
+                                }
+                                return;
+                            }
+                            catch
+                            {
+                                msgRawTextOut.Color = PredefinedColor.Red2;
+                                msgRawTextOut.Text = "use #beam to [mapname] x,y";
+                                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                            }
+                            return;
+                        }
 
                         if ((msgRawText.Text.ToLower().IndexOf("#add_item") != -1) &&
                             serverConfiguration.EnableTestCommands)
@@ -202,8 +330,36 @@ namespace Calindor.Server
                             pc.SkillsListSkills();
                         }
                         break;
+                    case (':'):
+                        {
+                            RawTextOutgoingMessage msgRawTextOut =
+                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            msgRawTextOut.Color = PredefinedColor.Grey1;
+                            msgRawTextOut.Text = pc.Name + " " + msgRawText.Text.Substring(1);
+                            sendMessageToAllPlayersNear(pc.LocationX, pc.LocationY, pc.LocationCurrentMap, msgRawTextOut);
+                            break;
+                        }
+                    case ('@'):
+                        {
+                            RawTextOutgoingMessage msgRawTextOut =
+                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            msgRawTextOut.Color = PredefinedColor.Grey1;
+                            msgRawTextOut.Text = String.Format("[{0} @ global]: {1}", pc.Name, msgRawText.Text.Substring(1));
+                            sendMessageToAllPlayers(msgRawTextOut);
+                            break;
+                        }
                     default:
-                        break;
+                        {
+                            RawTextOutgoingMessage msgRawTextOut =
+                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            msgRawTextOut.Color = PredefinedColor.Grey1;
+                            msgRawTextOut.Text = pc.Name + ": " + msgRawText.Text;
+                            sendMessageToAllPlayersNear(pc.LocationX, pc.LocationY, pc.LocationCurrentMap, msgRawTextOut);
+                            break;
+                        }
                 }
             }
         }

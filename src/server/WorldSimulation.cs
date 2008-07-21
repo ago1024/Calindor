@@ -395,6 +395,21 @@ namespace Calindor.Server
                 pc.PutMessageIntoMyQueue(msg);
         }
 
+        private void sendMessageToAllPlayersNear(short x, short y, Map map, OutgoingMessage msg)
+        {
+            foreach (PlayerCharacter pc in activePlayerCharacters)
+            {
+                if (pc.LocationCurrentMap == map)
+                {
+                    long distX = pc.LocationX - x;
+                    long distY = pc.LocationY - y;
+
+                    if (distX * distX + distY * distY <= 1000)
+                        pc.PutMessageIntoMyQueue(msg);
+                }
+            }
+        }
+
         private void addEntityImplementationToWorld(EntityImplementation enImpl)
         {
             // Basic implementation check
