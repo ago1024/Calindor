@@ -53,6 +53,34 @@ namespace Calindor.Server
             }
         }
 
+        private void handleServerStats(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Text = String.Format("Active players: {0}", activePlayerCharacters.Count);
+                msgRawTextOut.Color = PredefinedColor.Blue1;
+                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                return;
+            }
+        }
+
+        private void handleGetTime(PlayerCharacter pc, IncommingMessage msg)
+        {
+            if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Text = String.Format("Game Time: " + calendar.ToString());
+                msgRawTextOut.Color = PredefinedColor.Blue1;
+                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                return;
+            }
+        }
+
         private void handleRawText(PlayerCharacter pc, IncommingMessage msg)
         {
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)

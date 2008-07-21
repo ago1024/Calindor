@@ -355,6 +355,12 @@ namespace Calindor.Server
                     case(IncommingMessageType.ATTACK_SOMEONE):
                         handleAttackSomeone(pc, msg);
                         break;
+                    case(IncommingMessageType.SERVER_STATS):
+                        handleServerStats(pc, msg);
+                        break;
+                    case(IncommingMessageType.GET_TIME):
+                        handleGetTime(pc, msg);
+                        break;
                     default:
                         Logger.LogWarning(LogSource.World,
                             string.Format("Message {0} - no action taken", msg.ToString()), null);

@@ -25,6 +25,26 @@ namespace Calindor.Server
             get { return 10000000; } // TODO: Configurable?
         }
 
+        public UInt16 Second
+        {
+            get { return (UInt16)(secondOfTheDay % 60); }
+        }
+
+        public UInt16 Minute
+        {
+            get { return (UInt16)(secondOfTheDay / 60 % 60); }
+        }
+
+        public UInt16 Hour
+        {
+            get { return (UInt16)(secondOfTheDay / 3600); }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0:d02}:{1:d02}:{2:d02}", Hour, Minute, Second);
+        }
+
         /// <summary>
         /// In range (0,359)
         /// </summary>
