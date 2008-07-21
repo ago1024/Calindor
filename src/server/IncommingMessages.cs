@@ -27,16 +27,21 @@ namespace Calindor.Server.Messaging
         TURN_LEFT  = 11,
         TURN_RIGHT  = 12,
         HEART_BEAT = 14,
+        LOCATE_ME = 15,
         USE_MAP_OBJECT = 16,
         LOOK_AT_INVENTORY_ITEM = 19,
         MOVE_INVENTORY_ITEM = 20,
         HARVEST = 21,
         DROP_ITEM = 22,
+        LOOK_AT_MAP_OBJECT = 27,
         TOUCH_PLAYER = 28,
         RESPOND_TO_NPC = 29,
         ATTACK_SOMEONE = 40,
         LOG_IN = 140,
         CREATE_CHAR = 141,
+        GET_DATE = 230,
+        GET_TIME = 231,
+        SERVER_STATS = 232,
         UNKNOWN = 256 //THIS MESSAGE DOES NOT EXIST
     }
 
@@ -121,14 +126,19 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)IncommingMessageType.TURN_LEFT] = new TurnLeftIncommingMessage();
             knownMessages[(int)IncommingMessageType.TURN_RIGHT] = new TurnRightIncommingMessage();
             knownMessages[(int)IncommingMessageType.RAW_TEXT] = new RawTextIncommingMessage();
+            knownMessages[(int)IncommingMessageType.LOCATE_ME] = new LocateMeClientMessage();
             knownMessages[(int)IncommingMessageType.USE_MAP_OBJECT] = new UseMapObjectIncommingMessage();
             knownMessages[(int)IncommingMessageType.LOOK_AT_INVENTORY_ITEM] = new LookAtInventoryItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.DROP_ITEM] = new DropItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.MOVE_INVENTORY_ITEM] = new MoveInventoryItemIncommingMessage();
             knownMessages[(int)IncommingMessageType.HARVEST] = new HarvestIncommingMessage();
+            knownMessages[(int)IncommingMessageType.LOOK_AT_MAP_OBJECT] = new LookAtMapObjectIncomingMessage();
             knownMessages[(int)IncommingMessageType.TOUCH_PLAYER] = new TouchPlayerIncommingMessage();
             knownMessages[(int)IncommingMessageType.RESPOND_TO_NPC] = new RespondToNPCIncommingMessage();
             knownMessages[(int)IncommingMessageType.ATTACK_SOMEONE] = new AttackSomeoneClientMessage();
+            knownMessages[(int)IncommingMessageType.GET_DATE] = new GetDateClientMessage();
+            knownMessages[(int)IncommingMessageType.GET_TIME] = new GetTimeClientMessage();
+            knownMessages[(int)IncommingMessageType.SERVER_STATS] = new ServerStatsClientMessage();
         }
         
         /// <summary>
@@ -631,6 +641,35 @@ namespace Calindor.Server.Messaging
         }
     }
 
+    public class LookAtMapObjectIncomingMessage : IncommingMessage
+    {
+        private int objectID;
+        public int ObjectID
+        {
+            get { return objectID; }
+        }
+
+        public LookAtMapObjectIncomingMessage()
+        {
+            messageType = IncommingMessageType.LOOK_AT_MAP_OBJECT;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new LookAtMapObjectIncomingMessage();
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + "(" + objectID + ")";
+        }
+
+        protected override void deserializeSpecific(byte[] stream, int startIndex)
+        {
+            objectID = BitConverter.ToInt32(stream, startIndex + 3);
+        }
+    }
+
     public class LookAtInventoryItemIncommingMessage : IncommingMessage
     {
         private byte slot;
@@ -859,6 +898,58 @@ namespace Calindor.Server.Messaging
         protected override void deserializeSpecific(byte[] stream, int startIndex)
         {
             targetObjectID = BitConverter.ToInt32(stream, startIndex + 3);
+        }
+    }
+
+    public class ServerStatsClientMessage : IncommingMessage
+    {
+        public ServerStatsClientMessage()
+        {
+            messageType = IncommingMessageType.SERVER_STATS;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new ServerStatsClientMessage();
+        }
+    }
+
+    public class GetTimeClientMessage : IncommingMessage
+    {
+        public GetTimeClientMessage()
+        {
+            messageType = IncommingMessageType.GET_TIME;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new GetTimeClientMessage();
+        }
+    }
+
+    public class GetDateClientMessage : IncommingMessage
+    {
+        public GetDateClientMessage()
+        {
+            messageType = IncommingMessageType.GET_DATE;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new GetDateClientMessage();
+        }
+    }
+
+    public class LocateMeClientMessage : IncommingMessage
+    {
+        public LocateMeClientMessage()
+        {
+            messageType = IncommingMessageType.LOCATE_ME;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new LocateMeClientMessage();
         }
     }
 }
