@@ -99,7 +99,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy "$(ProjectDir)\server_config.xml" "$(TargetDir)\server_config.xml"</PostBuildEvent>
+    <PostBuildEvent>if not exist "$(TargetDir)\server_config.xml" copy "$(ProjectDir)\server_config.xml" "$(TargetDir)\server_config.xml"</PostBuildEvent>
     <ProjectGuid>{9B14DC47-A7A8-4F5D-9144-9F254BC9734E}</ProjectGuid>
     <RootNamespace>Calindor.Server</RootNamespace>
   </PropertyGroup>
