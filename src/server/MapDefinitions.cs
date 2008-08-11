@@ -333,6 +333,11 @@ namespace Calindor.Server.MapDefinition
             useAreas.Add(useArea);
         }
 
+        public ICollection getUseAreas()
+        {
+            return useAreas;
+        }
+
         public ObjectName getObjectName(int mapObjectId)
         {
             foreach (ObjectName objectName in objectNames)
