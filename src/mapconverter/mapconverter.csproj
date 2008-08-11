@@ -35,6 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ElmMapObjects.cs" />
+    <Compile Include="MapFactory.cs" />
     <Compile Include="MapObjects.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
