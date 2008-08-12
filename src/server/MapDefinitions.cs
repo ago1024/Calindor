@@ -297,12 +297,126 @@ namespace Calindor.Server.MapDefinition
         }
     }
 
+    public class AttributeArea : GenericArea
+    {
+        public enum AttributeType
+        {
+            NeedP2P,
+            MinLevel,
+            MaxLevel,
+            MinCombat,
+            MaxCombat,
+            AllowRain,
+            RainStartChance,
+            RainStopChance,
+            RainThunderChance,
+            DeathLossChance,
+            AllowCombat,
+            AllowMulticombat,
+            AllowBeam,
+            AllowTport,
+            AllowHarvesting,
+            AllowManufacturing,
+            AllowSummoning,
+            AllowSpellcasting,
+            AllowPotions,
+            TimedHeat,
+            TimedCold,
+            TimedPoison,
+            TimedCorrosion,
+            TimedDamage,
+            WalkHeat,
+            WalkCold,
+            WalkPoison,
+            WalkCorrosion,
+            TimedHeal,
+            TimedMana,
+            TimedFood,
+            ResearchRate
+        }
+
+        private static AttributeType getAttributeType(string typename)
+        {
+            switch (typename)
+            {
+                case "need_p2p": return AttributeType.NeedP2P;
+                case "min_level": return AttributeType.MinLevel;
+                case "max_level": return AttributeType.MaxLevel;
+                case "min_combat": return AttributeType.MinCombat;
+                case "max_combat": return AttributeType.MaxCombat;
+                case "allow_rain": return AttributeType.AllowRain;
+                case "rain_start_chance": return AttributeType.RainStartChance;
+                case "rain_stop_chance": return AttributeType.RainStopChance;
+                case "rain_thunder_chance": return AttributeType.RainThunderChance;
+                case "death_loss_chance": return AttributeType.DeathLossChance;
+                case "allow_combat": return AttributeType.AllowCombat;
+                case "allow_multicombat": return AttributeType.AllowMulticombat;
+                case "allow_beam": return AttributeType.AllowBeam;
+                case "allow_tport": return AttributeType.AllowTport;
+                case "allow_harvesting": return AttributeType.AllowHarvesting;
+                case "allow_manufacturing": return AttributeType.AllowManufacturing;
+                case "allow_summoning": return AttributeType.AllowSummoning;
+                case "allow_spellcasting": return AttributeType.AllowSpellcasting;
+                case "allow_potions": return AttributeType.AllowPotions;
+                case "timed_heat": return AttributeType.TimedHeat;
+                case "timed_cold": return AttributeType.TimedCold;
+                case "timed_poison": return AttributeType.TimedPoison;
+                case "timed_corrosion": return AttributeType.TimedCorrosion;
+                case "timed_damage": return AttributeType.TimedDamage;
+                case "walk_heat": return AttributeType.WalkHeat;
+                case "walk_cold": return AttributeType.WalkCold;
+                case "walk_poison": return AttributeType.WalkPoison;
+                case "walk_corrosion": return AttributeType.WalkCorrosion;
+                case "timed_heal": return AttributeType.TimedHeal;
+                case "timed_mana": return AttributeType.TimedMana;
+                case "timed_food": return AttributeType.TimedFood;
+                case "research_rate": return AttributeType.ResearchRate;
+            }
+            throw new Exception("Invalid attribute "+typename);
+        }
+
+        int value;
+        public int Value
+        {
+            get { return value; }
+        }
+
+        string text;
+        public string Text
+        {
+            get { return text; }
+        }
+
+        AttributeType type;
+        public AttributeType Type
+        {
+            get { return type; }
+        }
+
+        protected AttributeArea(IDictionary properties, string typename) : base(properties)
+        {
+            this.value = getInt(properties, "value");
+            this.text = getStringDefault(properties, "text", "");
+            this.type = getAttributeType(typename);
+        }
+
+        public static AttributeArea Create(IDictionary properties, string typename)
+        {
+            return new AttributeArea(properties, typename);
+        }
+    }
+
     public class MapEntry : GenericEntry
     {
         IList useAreas = new ArrayList();
         IList objectNames = new ArrayList();
         IList textAreas = new ArrayList();
         IList teleportPoints = new ArrayList();
+        IList attributeAreas = new ArrayList();
+        public ICollection AttributeAreas
+        {
+            get { return attributeAreas; }
+        }
 
         public MapEntry()
         {
@@ -381,6 +495,31 @@ namespace Calindor.Server.MapDefinition
         public void Add(TeleportPoint teleportPoint)
         {
             teleportPoints.Add(teleportPoint);
+        }
+
+        public AttributeArea getAttributeArea(short x, short y)
+        {
+            foreach (AttributeArea attributeArea in attributeAreas)
+            {
+                if (attributeArea.Contains(x, y))
+                    return attributeArea;
+            }
+            return null;
+        }
+
+        public AttributeArea getAttributeArea(short x, short y, AttributeArea.AttributeType attributeType)
+        {
+            foreach (AttributeArea attributeArea in attributeAreas)
+            {
+                if (attributeArea.Contains(x, y) && attributeArea.Type == attributeType)
+                    return attributeArea;
+            }
+            return null;
+        }
+
+        public void Add(AttributeArea attributeArea)
+        {
+            attributeAreas.Add(attributeArea);
         }
     }
 }

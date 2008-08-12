@@ -161,6 +161,7 @@ namespace Calindor.Server
                                 if (Int16.Parse((string)sectionProperties["min_y"]) >= Int16.Parse((string)sectionProperties["max_y"]))
                                     throw new Exception(String.Format("Misplaced min/max value ({0},{1}) in line {2} section {3}", Int16.Parse((string)sectionProperties["min_y"]), Int16.Parse((string)sectionProperties["max_y"]), lineNo, sectionName));
 
+                            ret.Add(MapDefinition.AttributeArea.Create(sectionProperties, sectionName));
 
                             state = StateType.Attributes;
                             sectionName = "attributes";
