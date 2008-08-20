@@ -88,7 +88,23 @@ namespace Calindor.Misc.Predefines
         DRAEGONI_MALE = 42,
         ARMED_SKELETON = 59,
         SPIDER_SMALL_1 = 64,
-
+        DRAGON_1 = 78,
+        PENGUIN_GENTOO = 79,
+        PENGUIN_KING = 80,
+        PENGUIN_CHINSTRAP = 81,
+        HAWK = 82,
+        FALCON = 83,
+        LION = 84,
+        DRAGON_2 = 85,
+        COCKATRICE = 86,
+        DRAGON_3 = 87,
+        DRAGON_2_BLUE = 88,
+        DRAGON_2_GRAY = 89,
+        DRAGON_2_PINK = 90,
+        PHOENIX = 91,
+        MULE_BLACK = 92,
+        MULE_BROWN = 93,
+        MULE_GRAY = 94
     }
 
     public enum PredefinedModelSkin
