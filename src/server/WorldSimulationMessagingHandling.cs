@@ -172,7 +172,8 @@ namespace Calindor.Server
 
                             return;
                         }
-                        if ((msgRawText.Text.ToLower().IndexOf("#change_health") != -1) &&
+                        if ((msgRawText.Text.ToLower().IndexOf("#change_health") != -1 ||
+                            msgRawText.Text.ToLower().IndexOf("#restore") != -1) &&
                             serverConfiguration.EnableTestCommands)
                         {
                             string[] tokens = msgRawText.Text.Split(' ');
