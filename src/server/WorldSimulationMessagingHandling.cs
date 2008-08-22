@@ -9,6 +9,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Items;
@@ -228,6 +229,62 @@ namespace Calindor.Server
 
                             return;
                         }
+                        if ((msgRawText.Text.ToLower().IndexOf("#shapeshift") != -1))
+                        {
+                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            PlayerCharacter pcToChange = pc;
+                            string shape = null;
+
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length == 3 && serverConfiguration.IsAdminUser(pc.Name))
+                            {
+                                pcToChange = getPlayerByName(tokens[1]);
+                                if (pcToChange == null)
+                                {
+                                    msgRawTextOut.Color = PredefinedColor.Red1;
+                                    msgRawTextOut.Text = "The player does not exist";
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    return;
+                                }
+                                shape = tokens[2];
+                            }
+                            else if (tokens.Length == 2)
+                            {
+                                shape = tokens[1];
+                            }
+                            else
+                            {
+                                return;
+                            }
+
+                            PredefinedModelType type;
+                            int num;
+                            if (Int32.TryParse(shape, out num))
+                            {
+                                type = (PredefinedModelType)num;
+                                if (!playerModels.hasModel(type))
+                                {
+                                    msgRawTextOut.Color = PredefinedColor.Red1;
+                                    msgRawTextOut.Text = "Invalid shape";
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    return;
+                                }
+                            } else
+                            {
+                                shape = shape.ToLower();
+                                if (!playerModels.hasModel(shape))
+                                {
+                                    msgRawTextOut.Color = PredefinedColor.Red1;
+                                    msgRawTextOut.Text = "Invalid shape";
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    return;
+                                }
+                                type = playerModels.getType(shape);
+                            }
+                            pcToChange.Appearance.Type = type;
+                            pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
+                        }
                         if ((msgRawText.Text.ToLower().IndexOf("#wall ") != -1) && serverConfiguration.IsAdminUser(pc.Name))
                         {
                             RawTextOutgoingMessage msgRawTextOut =
@@ -369,5 +426,167 @@ namespace Calindor.Server
             }
         }
 
+        private class PlayerModels
+        {
+            private Dictionary<string, PredefinedModelType> models = new Dictionary<string, PredefinedModelType>();
+
+            public PlayerModels()
+            {
+                models.Add("human_female", (PredefinedModelType)0);
+                models.Add("human_male", (PredefinedModelType)1);
+                models.Add("elf_female", (PredefinedModelType)2);
+                models.Add("elf_male", (PredefinedModelType)3);
+                models.Add("dwarf_female", (PredefinedModelType)4);
+                models.Add("dwarf_male", (PredefinedModelType)5);
+                models.Add("wraith", (PredefinedModelType)6);
+                models.Add("cyclops", (PredefinedModelType)7);
+                models.Add("beaver", (PredefinedModelType)8);
+                models.Add("rat", (PredefinedModelType)9);
+                models.Add("goblin_male_2", (PredefinedModelType)10);
+                models.Add("armed_male_goblin", (PredefinedModelType)10);
+                models.Add("goblin_female_1", (PredefinedModelType)11);
+                models.Add("female_goblin", (PredefinedModelType)11);
+                models.Add("deer", (PredefinedModelType)15);
+                models.Add("bear_1", (PredefinedModelType)16);
+                models.Add("grizzly", (PredefinedModelType)16);
+                models.Add("grizzly_bear", (PredefinedModelType)16);
+                models.Add("wolf", (PredefinedModelType)17);
+                models.Add("white_rabbit", (PredefinedModelType)18);
+                models.Add("brown_rabbit", (PredefinedModelType)19);
+                models.Add("boar", (PredefinedModelType)20);
+                models.Add("bear_2", (PredefinedModelType)21);
+                models.Add("black_bear", (PredefinedModelType)21);
+                models.Add("snake_1", (PredefinedModelType)22);
+                models.Add("green_snake", (PredefinedModelType)22);
+                models.Add("snake_2", (PredefinedModelType)23);
+                models.Add("red_snake", (PredefinedModelType)23);
+                models.Add("snake_3", (PredefinedModelType)24);
+                models.Add("brown_snake", (PredefinedModelType)24);
+                models.Add("snake_4", (PredefinedModelType)76);
+                models.Add("sslessar", (PredefinedModelType)76);
+                models.Add("fox", (PredefinedModelType)25);
+                models.Add("puma", (PredefinedModelType)26);
+                models.Add("ogre_male_1", (PredefinedModelType)27);
+                models.Add("ogre", (PredefinedModelType)27);
+                models.Add("goblin_male_1", (PredefinedModelType)28);
+                models.Add("male_goblin", (PredefinedModelType)28);
+                models.Add("orc_male_1", (PredefinedModelType)29);
+                models.Add("male_orc", (PredefinedModelType)29);
+                models.Add("orc_female_1", (PredefinedModelType)30);
+                models.Add("female_orc", (PredefinedModelType)30);
+                models.Add("skeleton", (PredefinedModelType)31);
+                models.Add("gargoyle_1", (PredefinedModelType)32);
+                models.Add("medium_gargoyle", (PredefinedModelType)32);
+                models.Add("gargoyle_2", (PredefinedModelType)33);
+                models.Add("tall_gargoyle", (PredefinedModelType)33);
+                models.Add("gargoyle_3", (PredefinedModelType)34);
+                models.Add("small_gargoyle", (PredefinedModelType)34);
+                models.Add("troll", (PredefinedModelType)35);
+                models.Add("chimeran_mountain_wolf", (PredefinedModelType)36);
+                models.Add("mountain_chim", (PredefinedModelType)36);
+                models.Add("gnome_female", (PredefinedModelType)37);
+                models.Add("gnome_male", (PredefinedModelType)38);
+                models.Add("orchan_female", (PredefinedModelType)39);
+                models.Add("orchan_male", (PredefinedModelType)40);
+                models.Add("draegoni_female", (PredefinedModelType)41);
+                models.Add("draegoni_male", (PredefinedModelType)42);
+                models.Add("skunk_1", (PredefinedModelType)43);
+                models.Add("skunk", (PredefinedModelType)43);
+                models.Add("racoon_1", (PredefinedModelType)44);
+                models.Add("racoon", (PredefinedModelType)44);
+                models.Add("unicorn_1", (PredefinedModelType)45);
+                models.Add("unicorn", (PredefinedModelType)45);
+                models.Add("chimeran_desert_wolf", (PredefinedModelType)46);
+                models.Add("desert_chim", (PredefinedModelType)46);
+                models.Add("chimeran_forest_wolf", (PredefinedModelType)47);
+                models.Add("forest_chim", (PredefinedModelType)47);
+                models.Add("chimeran_arctic_wolf", (PredefinedModelType)54);
+                models.Add("arctic_chim", (PredefinedModelType)54);
+                models.Add("bear_3", (PredefinedModelType)48);
+                models.Add("polar_bear", (PredefinedModelType)48);
+                models.Add("bear_4", (PredefinedModelType)49);
+                models.Add("panda_bear", (PredefinedModelType)49);
+                models.Add("panther", (PredefinedModelType)50);
+                models.Add("leopard_1", (PredefinedModelType)52);
+                models.Add("leopard", (PredefinedModelType)52);
+                models.Add("leopard_2", (PredefinedModelType)53);
+                models.Add("snow_leopard", (PredefinedModelType)53);
+                models.Add("feran", (PredefinedModelType)51);
+                models.Add("tiger_1", (PredefinedModelType)55);
+                models.Add("tiger", (PredefinedModelType)55);
+                models.Add("tiger_2", (PredefinedModelType)56);
+                models.Add("snow_tiger", (PredefinedModelType)56);
+                models.Add("armed_female_orc", (PredefinedModelType)57);
+                models.Add("armed_male_orc", (PredefinedModelType)58);
+                models.Add("armed_skeleton", (PredefinedModelType)59);
+                models.Add("phantom_warrior", (PredefinedModelType)60);
+                models.Add("imp", (PredefinedModelType)61);
+                models.Add("brownie", (PredefinedModelType)62);
+                models.Add("spider_big_1", (PredefinedModelType)67);
+                models.Add("large_spider", (PredefinedModelType)67);
+                models.Add("spider_big_2", (PredefinedModelType)68);
+                models.Add("spider_big_3", (PredefinedModelType)69);
+                models.Add("spider_big_4", (PredefinedModelType)71);
+                models.Add("spider_small_1", (PredefinedModelType)64);
+                models.Add("small_spider", (PredefinedModelType)64);
+                models.Add("spider_small_2", (PredefinedModelType)65);
+                models.Add("spider_small_3", (PredefinedModelType)66);
+                models.Add("spider_small_4", (PredefinedModelType)72);
+                models.Add("wood_sprite", (PredefinedModelType)70);
+                models.Add("leprechaun", (PredefinedModelType)63);
+                models.Add("giant_1", (PredefinedModelType)73);
+                models.Add("giant", (PredefinedModelType)73);
+                models.Add("hobgoblin", (PredefinedModelType)74);
+                models.Add("yeti", (PredefinedModelType)75);
+                models.Add("feros", (PredefinedModelType)77);
+                models.Add("dragon1", (PredefinedModelType)78);
+                models.Add("red_dragon", (PredefinedModelType)78);
+                models.Add("dragon2", (PredefinedModelType)85);
+                models.Add("black_dragon", (PredefinedModelType)85);
+                models.Add("dragon3", (PredefinedModelType)87);
+                models.Add("ice_dragon", (PredefinedModelType)87);
+                models.Add("hawk", (PredefinedModelType)82);
+                models.Add("falcon", (PredefinedModelType)83);
+                models.Add("lion", (PredefinedModelType)84);
+                models.Add("cockatrice", (PredefinedModelType)86);
+                models.Add("chinstrap_penguin", (PredefinedModelType)81);
+                models.Add("gentoo_penguin", (PredefinedModelType)79);
+                models.Add("king_penguin", (PredefinedModelType)80);
+                models.Add("bird_phoenix", (PredefinedModelType)91);
+                models.Add("phoenix", (PredefinedModelType)91);
+                models.Add("dragon2_blue", (PredefinedModelType)88);
+                models.Add("blue_dragon", (PredefinedModelType)88);
+                models.Add("dragon2_gray", (PredefinedModelType)89);
+                models.Add("gray_dragon", (PredefinedModelType)89);
+                models.Add("dragon2_pink", (PredefinedModelType)90);
+                models.Add("pink_dragon", (PredefinedModelType)90);
+                models.Add("mule1_black", (PredefinedModelType)92);
+                models.Add("black_mule", (PredefinedModelType)92);
+                models.Add("mule1_brown", (PredefinedModelType)93);
+                models.Add("brown_mule", (PredefinedModelType)93);
+                models.Add("mule", (PredefinedModelType)93);
+                models.Add("mule1_gray", (PredefinedModelType)94);
+                models.Add("gray_mule", (PredefinedModelType)94);
+            }
+
+            public PredefinedModelType getType(string name)
+            {
+                if (hasModel(name))
+                    return models[name];
+
+                return PredefinedModelType.HUMAN_FEMALE;
+            }
+
+            public bool hasModel(string name)
+            {
+                return models.ContainsKey(name);
+            }
+
+            public bool hasModel(PredefinedModelType type)
+            {
+                return models.ContainsValue(type);
+            }
+        }
+        private PlayerModels playerModels = new PlayerModels();
     }
 }

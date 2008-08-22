@@ -116,6 +116,10 @@ namespace Calindor.Server.Entities
 
         #region Appearance
         protected EntityAppearance appearance = new EntityAppearance(PredefinedModelType.HUMAN_FEMALE);
+        public EntityAppearance Appearance
+        {
+            get { return appearance; }
+        }
         #endregion
 
         #region Location
@@ -282,6 +286,7 @@ namespace Calindor.Server.Entities
         public PredefinedModelType Type
         {
             get { return (PredefinedModelType)innerData[5]; }
+            set { innerData[5] = (byte)value; }
         }
 
         public PredefinedModelSkin Skin
