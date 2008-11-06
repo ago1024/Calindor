@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -56,7 +56,7 @@ namespace Calindor.Server.Messaging
     {
         protected OutgoingMessageType messageType = OutgoingMessageType.RAW_TEXT;
         protected UInt16 length = 0;
-        
+
         public OutgoingMessageType MessageType
         {
             get { return messageType; }
@@ -155,7 +155,7 @@ namespace Calindor.Server.Messaging
              * usage, and putting in into network stream would signal stop of
              * usage.
              */
-            
+
             OutgoingMessage _return = null;
 
             if (knownMessages[(int)type] != null)
@@ -217,7 +217,7 @@ namespace Calindor.Server.Messaging
             _return[3] = (byte)Channel;
 
             // Add color
-            _return[4] = (byte)(127 + Color); 
+            _return[4] = (byte)(127 + Color);
 
             // Add string
             InPlaceBitConverter.GetBytes(Text, _return, 5);
@@ -464,11 +464,33 @@ namespace Calindor.Server.Messaging
             get { return entityName; }
         }
 
+        protected UInt16 entityScale = 0x4000;
+        public UInt16 EntityScale
+        {
+            get { return entityScale; }
+        }
+
+        private bool hasAttachment = false;
+        public bool HasAttachment
+        {
+            get { return hasAttachment; }
+        }
+
+        protected byte attachmentType = (byte)PredefinedModelType.HORSE;
+        public byte AttachmentType
+        {
+            get { return attachmentType; }
+        }
+
+
         public override UInt16 Length
         {
             get
             {
-                return (UInt16)(32 + EntityName.Length); /*31 + name + 1*/ 
+                if (HasAttachment)
+                    return (UInt16)(35 + EntityName.Length); /*34 + name + 1*/
+                else
+                    return (UInt16)(34 + EntityName.Length); /*33 + name + 1*/
             }
         }
 
@@ -487,11 +509,14 @@ namespace Calindor.Server.Messaging
             entityID = enImpl.EntityID;
             entityName = enImpl.Name;
             kindOfEntityImplementation = (byte)enImpl.EntityImplementationKind;
+            entityScale = (UInt16)(0x4000 * enImpl.Scale);
+            hasAttachment = enImpl.IsAttached;
+            attachmentType = (byte)enImpl.AttachmentType;
         }
 
         public void FromAppearance(EntityAppearance appearance)
         {
-            // Appearance 
+            // Appearance
             // TODO:What if wielding items?
             innerDataAppearance[0] = (byte)appearance.Skin;
             innerDataAppearance[1] = (byte)appearance.Hair;
@@ -530,7 +555,7 @@ namespace Calindor.Server.Messaging
             // X
             InPlaceBitConverter.GetBytes(innerDataLocation[0], _return, 5);
 
-            if ((innerDataAppearance[7] & 0x01) == 0x01)            
+            if ((innerDataAppearance[7] & 0x01) == 0x01)
                 _return[6] |= 0x08; // is transparent
 
             // Y
@@ -597,7 +622,7 @@ namespace Calindor.Server.Messaging
 
             // cur health
             InPlaceBitConverter.GetBytes(innerDataEnergies[1], _return, 28);
-            
+
             // kind of actor
             _return[30] = kindOfEntityImplementation;
 
@@ -609,8 +634,15 @@ namespace Calindor.Server.Messaging
 
             // Add null terminator
             _return[31 + EntityName.Length] = 0x00;
+
+            //
+            InPlaceBitConverter.GetBytes(EntityScale, _return, 32 + EntityName.Length);
+
+            //
+            if (HasAttachment && _return.Length > 34 + EntityName.Length)
+                _return[34 + EntityName.Length] = AttachmentType;
         }
-        
+
         public override OutgoingMessage CreateNew()
         {
             return new AddNewEnhancedActorOutgoingMessage();
@@ -744,7 +776,7 @@ namespace Calindor.Server.Messaging
         {
             // X
             InPlaceBitConverter.GetBytes(X, _return, 3);
-            
+
             // Y
             InPlaceBitConverter.GetBytes(Y, _return, 5);
         }
@@ -806,8 +838,8 @@ namespace Calindor.Server.Messaging
             get { return command; }
             set { command = value; }
         }
-	
-	
+
+
         public AddActorCommandOutgoingMessage()
         {
             messageType = OutgoingMessageType.ADD_ACTOR_COMMAND;
@@ -817,7 +849,7 @@ namespace Calindor.Server.Messaging
         {
             return new AddActorCommandOutgoingMessage();
         }
-        
+
         protected override void serializeSpecific(byte[] _return)
         {
             InPlaceBitConverter.GetBytes(EntityID, _return, 3);
@@ -866,8 +898,8 @@ namespace Calindor.Server.Messaging
         {
             if (inv == null)
                 throw new ArgumentNullException("pc is null");
-                
-            itemsCount = inv.FilledSlotsCount; 
+
+            itemsCount = inv.FilledSlotsCount;
 
             itemsBuffer = new byte[itemsCount * 8];
             byte itemsCopied = 0;
@@ -889,7 +921,7 @@ namespace Calindor.Server.Messaging
 
                 itemsCopied++;
             }
-            
+
         }
 
     }
@@ -897,7 +929,7 @@ namespace Calindor.Server.Messaging
     public class GetNewInventoryItemOutgoingMessage : OutgoingMessage
     {
         protected byte[] itemBuffer = new byte[8];
- 
+
         public GetNewInventoryItemOutgoingMessage()
         {
             messageType = OutgoingMessageType.GET_NEW_INVENTORY_ITEM;
@@ -939,7 +971,7 @@ namespace Calindor.Server.Messaging
             get { return slot; }
             set { slot = value; }
         }
-	
+
         public RemoveItemFromInventoryOutgoingMessage()
         {
             messageType = OutgoingMessageType.REMOVE_ITEM_FROM_INVENTORY;
@@ -975,7 +1007,7 @@ namespace Calindor.Server.Messaging
                 return (ushort)(3 + Text.Length);
             }
         }
-        
+
         public InventoryItemTextOutgoingMessage()
         {
             messageType = OutgoingMessageType.INVENTORY_ITEM_TEXT;
@@ -1053,7 +1085,7 @@ namespace Calindor.Server.Messaging
             get { return portrait; }
             set { portrait = value; }
         }
-	
+
         public SendNPCInfoOutgoingMessage()
         {
             messageType = OutgoingMessageType.SEND_NPC_INFO;
@@ -1094,7 +1126,7 @@ namespace Calindor.Server.Messaging
             get { return npcEntityID; }
             set { npcEntityID = value; }
         }
-	
+
         public override ushort Length
         {
             get
@@ -1123,7 +1155,7 @@ namespace Calindor.Server.Messaging
                 optionsBuffeSize += (7 + option.Text.Length);
 
             optionsBuffer = new byte[optionsBuffeSize];
-            
+
             // Copy data
             int currentIndex = 0;
             foreach (NPCOption option in options.Options)
@@ -1137,7 +1169,7 @@ namespace Calindor.Server.Messaging
                 InPlaceBitConverter.GetBytes(NPCEntityID, optionsBuffer, currentIndex);
                 currentIndex += 2;
             }
-            
+
         }
 
         protected override void serializeSpecific(byte[] _return)
@@ -1267,12 +1299,32 @@ namespace Calindor.Server.Messaging
         {
             return new SendPartialStatOutgoingMessage();
         }
-	
+
     }
 
 
     public class AddNewActorOutgoingMessage : OutgoingMessage
     {
+        /*
+        struct wire_protocol
+        {
+            char message_type;      //  0:
+            short message_length;   //  1:
+            short actor_id;         //  3:
+            short x_pos;            //  5: additional buffs are encoded in the last 5 bits
+            short y_pos;            //  7: additional buffs are encoded in the last 5 bits
+            short buffs;            //  9:
+            short z_rot;            // 11:
+            char actor_type;        // 13:
+            char animation_frame;   // 14:
+            short max_health;       // 15:
+            short cur_health;       // 17:
+            char kind_of_actor;     // 19:
+            string name;            // 20: null terminated
+            short scale;            // 20 + name.Length + 1
+            char attachment_type;   // 20 + name.Length + 3
+        };
+        */
 
         protected UInt16 entityID = 0;
         public UInt16 EntityID
@@ -1286,11 +1338,32 @@ namespace Calindor.Server.Messaging
             get { return entityName; }
         }
 
+        protected UInt16 entityScale = 0x4000;
+        public UInt16 EntityScale
+        {
+            get { return entityScale; }
+        }
+
+        private bool hasAttachment = false;
+        public bool HasAttachment
+        {
+            get { return hasAttachment; }
+        }
+
+        protected byte attachmentType = (byte)PredefinedModelType.MULE_BLACK;
+        public byte AttachmentType
+        {
+            get { return attachmentType; }
+        }
+
         public override UInt16 Length
         {
             get
             {
-                return (UInt16)(21 + EntityName.Length); /*20 + name + 1*/
+                if (HasAttachment)
+                    return (UInt16)(24 + EntityName.Length); /*23 + name + 1*/
+                else
+                    return (UInt16)(23 + EntityName.Length); /*22 + name + 1*/
             }
         }
 
@@ -1392,6 +1465,14 @@ namespace Calindor.Server.Messaging
 
             // Add null terminator
             _return[20 + EntityName.Length] = 0x00;
+
+            // Scale
+            InPlaceBitConverter.GetBytes(EntityScale, _return, 21 + EntityName.Length);
+
+            // Attachment
+            if (HasAttachment && _return.Length > 23 + EntityName.Length)
+                _return[23 + EntityName.Length] = AttachmentType;
+
         }
 
         public override OutgoingMessage CreateNew()

@@ -14,6 +14,7 @@ using Calindor.Server.Messaging;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Items;
 using Calindor.Server.Entities;
+using Calindor.Server.AI;
 
 namespace Calindor.Server
 {
@@ -284,6 +285,31 @@ namespace Calindor.Server
                                 type = playerModels.getType(shape);
                             }
                             pcToChange.Appearance.Type = type;
+                            pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
+                        }
+                        if ((msgRawText.Text.ToLower().IndexOf("#attach") != -1))
+                        {
+                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            PlayerCharacter pcToChange = pc;
+
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length == 2 && serverConfiguration.IsAdminUser(pc.Name))
+                            {
+                                pcToChange = getPlayerByName(tokens[1]);
+                                if (pcToChange == null)
+                                {
+                                    msgRawTextOut.Color = PredefinedColor.Red1;
+                                    msgRawTextOut.Text = "The player does not exist";
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    return;
+                                }
+                            }
+
+                            if (pcToChange.IsAttached)
+                                pcToChange.UnAttach();
+                            else
+                                pcToChange.AttachTo(PredefinedModelType.HORSE);
                             pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
                         }
                         if ((msgRawText.Text.ToLower().IndexOf("#wall ") != -1) && serverConfiguration.IsAdminUser(pc.Name))

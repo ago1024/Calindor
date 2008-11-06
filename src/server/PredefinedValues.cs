@@ -104,7 +104,8 @@ namespace Calindor.Misc.Predefines
         PHOENIX = 91,
         MULE_BLACK = 92,
         MULE_BROWN = 93,
-        MULE_GRAY = 94
+        MULE_GRAY = 94,
+        HORSE = 200
     }
 
     public enum PredefinedModelSkin

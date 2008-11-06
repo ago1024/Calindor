@@ -403,6 +403,18 @@ namespace Calindor.Server
 
         #endregion
 
+        #region Attachment
+        public void UnAttach()
+        {
+            isAttached = false;
+        }
+
+        public void AttachTo(PredefinedModelType type)
+        {
+            attachmentType = type;
+            isAttached = true;
+        }
+        #endregion
     }
 
     public class PlayerCharacterList : List<PlayerCharacter>

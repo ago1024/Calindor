@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -157,6 +157,28 @@ namespace Calindor.Server.Entities
         }
         #endregion
 
+        #region Attachment
+        protected bool isAttached = false;
+        public bool IsAttached
+        {
+            get { return isAttached; }
+        }
+
+        protected PredefinedModelType attachmentType = PredefinedModelType.HORSE;
+        public PredefinedModelType AttachmentType
+        {
+            get { return attachmentType; }
+        }
+        #endregion
+
+        #region Scale
+        protected double scale = 1.0;
+        public double Scale
+        {
+            get { return scale; }
+        }
+        #endregion
+
         #region Inventory
         protected EntityInventory inventory = new EntityInventory();
         #endregion
@@ -183,7 +205,7 @@ namespace Calindor.Server.Entities
         public void UpdateVisibleEntities()
         {
             entitiesVisibleNow.Clear();
-            
+
             double distance = Double.MaxValue;
             DistanceCalculationResult result = DistanceCalculationResult.CALC_OK;
 
@@ -203,7 +225,7 @@ namespace Calindor.Server.Entities
                     result = getDistanceToEntity(testedEntity, out distance);
                     if (result != DistanceCalculationResult.CALC_OK)
                         continue;
-                    
+
                     // TODO: For now just a simple condition, change for future
                     if (distance < 35.0)
                     {
@@ -238,7 +260,7 @@ namespace Calindor.Server.Entities
                     entitiesVisibleAdded.Add(en);
 
         }
-         
+
         private void addObserverEntity(Entity en)
         {
             if (!entitiesObservers.Contains(en))
@@ -566,7 +588,7 @@ namespace Calindor.Server.Entities
         private ushort precalculatedBaseLevel = 0; // not serialized
         public ushort BaseLevel
         {
-            get { return precalculatedBaseLevel; } 
+            get { return precalculatedBaseLevel; }
         }
 
         private string name = "Undefined";
@@ -574,7 +596,7 @@ namespace Calindor.Server.Entities
         {
             get { return name; }
         }
-	
+
 
         private EntitySkill()
         {
@@ -694,7 +716,7 @@ namespace Calindor.Server.Entities
                 sr.WriteValue((byte)skill.Type);
                 sr.WriteValue(skill.XP);
             }
-                
+
         }
 
         public virtual void Deserialize(IDeserializer dsr)
@@ -726,8 +748,8 @@ namespace Calindor.Server.Entities
         {
             get { return currentHealth; }
         }
-	
-	
+
+
 
         public void Serialize(ISerializer sr)
         {
@@ -750,7 +772,7 @@ namespace Calindor.Server.Entities
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="updValue"></param>
         /// <returns>Actual change value</returns>
