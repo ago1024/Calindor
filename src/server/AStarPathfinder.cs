@@ -392,7 +392,7 @@ namespace Calindor.Server.Maps
                     _return.State = WalkPathState.NON_WALKABLE_END_LOCATION;
                     return _return;
                 }
-                if (GetCluster(_params.StartX, _params.StartY) != cluster)
+                if (GetCluster(_params.EndX, _params.EndY) != cluster)
                 {
                     _return.State = WalkPathState.INVALID_NO_PATH_EXISTS;
                     return _return;
