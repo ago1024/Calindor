@@ -58,8 +58,8 @@ namespace Calindor.Server
             new PlayerCharacterList();
 
         // List of players to be removed from active ones
-        private PlayerCharacterList removedPlayers =
-            new PlayerCharacterList();
+        private EntityImplementationList removedCharacters =
+            new EntityImplementationList();
 
         // List of active server characters
         private ServerCharacterList activeServerCharacters =
@@ -245,27 +245,37 @@ namespace Calindor.Server
                     // If logged off -> add to remove list
                     // TODO: Add local grue event
                     if (pc.LoginState == PlayerCharacterLoginState.LoggingOff)
-                        removedPlayers.Add(pc);
+                        removedCharacters.Add(pc);
+                }
+
+                foreach (ServerCharacter sc in activeServerCharacters)
+                {
+                    if (!sc.EnergiesIsAlive && sc.IsNoRespawn)
+                        removedCharacters.Add(sc);
                 }
 
                 // STEP4. Remove logged off players
-                if (removedPlayers.Count > 0)
+                if (removedCharacters.Count > 0)
                 {
-                    foreach (PlayerCharacter pc in removedPlayers)
+                    foreach (EntityImplementation en in removedCharacters)
                     {
-                        try
+                        if (en is PlayerCharacter)
                         {
-                            pc.Serialize(pcSerializer); // Save state
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogError(LogSource.World, "Failed to serialize player " + pc.Name, ex);
+                            PlayerCharacter pc = en as PlayerCharacter;
+                            try
+                            {
+                                pc.Serialize(pcSerializer); // Save state
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(LogSource.World, "Failed to serialize player " + pc.Name, ex);
+                            }
                         }
 
-                        removeEntityImplementationFromWorld(pc);
+                        removeEntityImplementationFromWorld(en);
                     }
 
-                    removedPlayers.Clear();
+                    removedCharacters.Clear();
                 }
 
                 // STEP4.5 Execute time based actions

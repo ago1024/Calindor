@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -24,7 +24,7 @@ namespace Calindor.Server
     {
         // TEMPORARY FIELD! TODO: REMOVE WHEN SCRIPTS AVAILABLE
         public int MaxCombatXP = 1;
-        
+
         public ServerCharacter(PredefinedEntityImplementationKind kind) : base(kind)
         {
 
@@ -52,12 +52,13 @@ namespace Calindor.Server
         #region Creation Handling
         protected EntityLocation templateLocation = null;
         protected uint milisToRespawn = 0;
+        protected bool noRespawn = false;
 
         protected override bool isEntityImplementationInCreationPhase()
         {
             return true;
         }
-        
+
         public override void CreateRecalculateInitialEnergies()
         {
             if (!isEntityImplementationInCreationPhase())
@@ -72,10 +73,10 @@ namespace Calindor.Server
         public override void CreateSetInitialLocation(EntityLocation location)
         {
             base.CreateSetInitialLocation(location);
-            
+
             // Build template
             templateLocation = this.location.CreateCopy();
-            
+
         }
 
         public void CreateApplyTemplates()
@@ -89,7 +90,7 @@ namespace Calindor.Server
             CreateRecalculateInitialEnergies();
 
             LocationChangeDimension((PredefinedDimension)location.Dimension);
-            
+
             // TODO: Move to separate method
             // Set random fighting skills
             skills.GetSkill(EntitySkillType.AttackUnarmed).AddXP((uint)WorldRNG.Next(0, MaxCombatXP));
@@ -98,7 +99,18 @@ namespace Calindor.Server
 
         public void CreateSetRespawnTime(uint milisToRespawn)
         {
+            this.noRespawn = false;
             this.milisToRespawn = milisToRespawn;
+        }
+
+        public void CreateSetNoRespawn()
+        {
+            this.noRespawn = true;
+        }
+
+        public bool IsNoRespawn
+        {
+            get { return this.noRespawn; }
         }
         #endregion
 
@@ -157,7 +169,7 @@ namespace Calindor.Server
 
         protected void sendConversationPage(PlayerCharacterConversationState pcConv)
         {
-            NPCTextOutgoingMessage msgNPCText = 
+            NPCTextOutgoingMessage msgNPCText =
                 (NPCTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NPC_TEXT);
             NPCOptionsListOutgoingMessage msgNPCOptionsList =
                 (NPCOptionsListOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.NPC_OPTIONS_LIST);
@@ -388,10 +400,17 @@ namespace Calindor.Server
             msgAddActorCommand.Command = PredefinedActorCommand.die1;
             PutMessageIntoMyAndObserversQueue(msgAddActorCommand);
 
-            // Respawn
-            RespawnTimeBasedAction respawn = new RespawnTimeBasedAction(this, milisToRespawn);
-            respawn.Activate();
-            
+            if (this.noRespawn)
+            {
+
+            }
+            else
+            {
+
+                // Respawn
+                RespawnTimeBasedAction respawn = new RespawnTimeBasedAction(this, milisToRespawn);
+                respawn.Activate();
+            }
         }
 
         public void EnergiesRespawn()
@@ -415,7 +434,7 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
         }
         #endregion
-        
+
         #region Calendar Events Handling
         public override void CalendarNewMinute(ushort minuteOfTheDay)
         {
@@ -452,7 +471,7 @@ namespace Calindor.Server
             get { return state; }
             set { state = value; }
         }
-	
+
     }
 
     public class PlayerCharacterConversationStateList : List<PlayerCharacterConversationState>

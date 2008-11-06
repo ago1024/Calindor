@@ -17,6 +17,7 @@ using Calindor.Server.SimpleActions;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Resources;
 using System;
+using System.Collections.Generic;
 
 namespace Calindor.Server
 {
@@ -1082,4 +1083,9 @@ namespace Calindor.Server
         #endregion
 
     }
+
+    public class EntityImplementationList : List<EntityImplementation>
+    {
+    }
+
 }

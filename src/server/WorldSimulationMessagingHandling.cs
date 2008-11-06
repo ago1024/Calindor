@@ -312,6 +312,94 @@ namespace Calindor.Server
                                 pcToChange.AttachTo(PredefinedModelType.HORSE);
                             pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
                         }
+                        if ((msgRawText.Text.ToLower().IndexOf("#spawn") != -1) && serverConfiguration.IsAdminUser(pc.Name))
+                        {
+                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                            string shape = null;
+                            string count = null;
+
+                            string[] tokens = msgRawText.Text.Split(' ');
+                            if (tokens.Length == 3)
+                            {
+                                count = tokens[1];
+                                shape = tokens[2];
+                            }
+                            else
+                            {
+                                msgRawTextOut.Color = PredefinedColor.Red1;
+                                msgRawTextOut.Text = "Usage: #spawn number shape";
+                                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                return;
+                            }
+
+                            PredefinedModelType type;
+                            int num;
+                            if (Int32.TryParse(shape, out num))
+                            {
+                                type = (PredefinedModelType)num;
+                                if (!playerModels.hasModel(type))
+                                {
+                                    msgRawTextOut.Color = PredefinedColor.Red1;
+                                    msgRawTextOut.Text = "Invalid shape";
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                shape = shape.ToLower();
+                                if (!playerModels.hasModel(shape))
+                                {
+                                    msgRawTextOut.Color = PredefinedColor.Red1;
+                                    msgRawTextOut.Text = "Invalid shape";
+                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                    return;
+                                }
+                                type = playerModels.getType(shape);
+                            }
+                            if (!Int32.TryParse(count, out num) || num <= 0)
+                            {
+                                msgRawTextOut.Color = PredefinedColor.Red1;
+                                msgRawTextOut.Text = "Invalid number of critters";
+                                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                                return;
+                            }
+
+                            Random rnd = new Random();
+                            for (int i = 0; i < num; i++)
+                            {
+                                // create critter
+                                ServerCharacter critter = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
+                                critter.CreateSetInitialAppearance(new EntityAppearance(type));
+                                critter.Name = shape;
+                                EntityLocation locationCritter = new EntityLocation();
+                                locationCritter.CurrentMap = pc.LocationCurrentMap;
+                                locationCritter.Z = 0;
+                                int dist = num / 2;
+                                do
+                                {
+                                    locationCritter.X = (short)(pc.LocationX + rnd.Next(dist * 2 + 1) - dist);
+                                    locationCritter.Y = (short)(pc.LocationY + rnd.Next(dist * 2 + 1) - dist);
+                                    dist++;
+                                } while (!pc.LocationCurrentMap.IsLocationWalkable(locationCritter.X, locationCritter.Y) ||
+                                    pc.LocationCurrentMap.IsLocationOccupied(locationCritter.X, locationCritter.Y, locationCritter.Dimension));
+                                locationCritter.Rotation = 180;
+                                locationCritter.IsSittingDown = false;
+                                critter.CreateSetInitialLocation(locationCritter);
+                                critter.CreateSetNoRespawn();
+                                critter.MaxCombatXP = 1000; // medium
+                                critter.CreateApplyInitialState();
+
+                                // AI
+                                WonderingDumbNonAggresiveAIImplementation aiImpl = new WonderingDumbNonAggresiveAIImplementation(locationCritter.X, locationCritter.Y, 100, 3000);
+                                critter.AIAttach(aiImpl);
+
+                                // add rabbit to the world
+                                addEntityImplementationToWorld(critter);
+                                critter.LocationChangeMapAtEnterWorld();
+                            }
+                        }
                         if ((msgRawText.Text.ToLower().IndexOf("#wall ") != -1) && serverConfiguration.IsAdminUser(pc.Name))
                         {
                             RawTextOutgoingMessage msgRawTextOut =
