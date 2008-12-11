@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -22,6 +22,7 @@ namespace Calindor.Server.Messaging
         MOVE_TO = 1,
         SEND_PM = 2,
         SIT_DOWN = 7,
+        SEND_ME_MY_ACTORS = 8,
         SEND_OPENING_SCREEN = 9,
         SEND_VERSION = 10,
         TURN_LEFT  = 11,
@@ -139,8 +140,9 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)IncommingMessageType.GET_DATE] = new GetDateClientMessage();
             knownMessages[(int)IncommingMessageType.GET_TIME] = new GetTimeClientMessage();
             knownMessages[(int)IncommingMessageType.SERVER_STATS] = new ServerStatsClientMessage();
+            knownMessages[(int)IncommingMessageType.SEND_ME_MY_ACTORS] = new SendMeMyActorsClientMessage();
         }
-        
+
         /// <summary>
         /// Deserializes message from stream. Throws/passes a number of exception which need to be caugh at upper level.
         /// </summary>
@@ -157,9 +159,9 @@ namespace Calindor.Server.Messaging
              * weather it is used or not. 'Deserializing' a object would start it
              * usage, and processing a message would signal stop of usage.
              */
-            
+
             IncommingMessage _return = null;
-            
+
             byte type = IncommingMessage.GetMessageType(stream, startIndex);
 
             if (knownMessages[type] != null)
@@ -234,13 +236,13 @@ namespace Calindor.Server.Messaging
         {
             protocolVersionFirstDigit = BitConverter.ToUInt16(stream, 3);
             protocolVersionSecondDigit = BitConverter.ToUInt16(stream, 5);
-            
+
             for (int i = 0; i < 4; i++)
             {
                 clientVersion[i] = stream[7 + i];
                 hostIP[i] = stream[11 + i];
             }
-            
+
             hostPort = (UInt16)(stream[15] << 8);
             hostPort += stream[16];
         }
@@ -364,7 +366,7 @@ namespace Calindor.Server.Messaging
         {
             get { return pants; }
         }
-        
+
         private PredefinedModelBoots boots = PredefinedModelBoots.BOOTS_BLACK;
         public PredefinedModelBoots Boots
         {
@@ -383,7 +385,7 @@ namespace Calindor.Server.Messaging
         {
             get { return password; }
         }
-        
+
         public CreateCharIncommingMessage()
         {
             messageType = IncommingMessageType.CREATE_CHAR;
@@ -437,8 +439,8 @@ namespace Calindor.Server.Messaging
         {
             get { return y; }
         }
-	
-	
+
+
         public MoveToIncommingMessage()
         {
             messageType = IncommingMessageType.MOVE_TO;
@@ -474,7 +476,7 @@ namespace Calindor.Server.Messaging
         {
             get { return text; }
         }
-	
+
         public SendPMIncommingMessage()
         {
             messageType = IncommingMessageType.SEND_PM;
@@ -577,7 +579,7 @@ namespace Calindor.Server.Messaging
         {
             get { return text; }
         }
-	
+
         public RawTextIncommingMessage()
         {
             messageType = IncommingMessageType.RAW_TEXT;
@@ -677,7 +679,7 @@ namespace Calindor.Server.Messaging
         {
             get { return slot; }
         }
-	
+
         public LookAtInventoryItemIncommingMessage()
         {
             messageType = IncommingMessageType.LOOK_AT_INVENTORY_ITEM;
@@ -712,7 +714,7 @@ namespace Calindor.Server.Messaging
         {
             get { return quantity; }
         }
-	
+
 
         public DropItemIncommingMessage()
         {
@@ -749,7 +751,7 @@ namespace Calindor.Server.Messaging
 	    {
 	        get { return newSlot;}
 	    }
-	
+
 
         public MoveInventoryItemIncommingMessage()
         {
@@ -847,7 +849,7 @@ namespace Calindor.Server.Messaging
         {
             get { return (ushort)optionID; }
         }
-	
+
 
         public RespondToNPCIncommingMessage()
         {
@@ -950,6 +952,19 @@ namespace Calindor.Server.Messaging
         public override IncommingMessage CreateNew()
         {
             return new LocateMeClientMessage();
+        }
+    }
+
+    public class SendMeMyActorsClientMessage : IncommingMessage
+    {
+        public SendMeMyActorsClientMessage()
+        {
+            messageType = IncommingMessageType.SEND_ME_MY_ACTORS;
+        }
+
+        public override IncommingMessage CreateNew()
+        {
+            return new SendMeMyActorsClientMessage();
         }
     }
 }

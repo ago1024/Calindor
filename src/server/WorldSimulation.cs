@@ -396,6 +396,12 @@ namespace Calindor.Server
                         break;
                     case(IncommingMessageType.GET_TIME):
                         handleGetTime(pc, msg);
+                        pc.LocationChangeLocation(pc.LocationX, pc.LocationY);
+                        pc.VisibilityResyncVisibleEntities();
+                        break;
+                    case(IncommingMessageType.SEND_ME_MY_ACTORS):
+                        pc.LocationChangeLocation(pc.LocationX, pc.LocationY);
+                        pc.VisibilityResyncVisibleEntities();
                         break;
                     default:
                         Logger.LogWarning(LogSource.World,

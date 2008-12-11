@@ -637,6 +637,7 @@ namespace Calindor.Server
             }
 
             location.Dimension = (int)dimension;
+            PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
 
         }
         #endregion
@@ -897,6 +898,17 @@ namespace Calindor.Server
             }
         }
 
+        public void VisibilityResyncVisibleEntities()
+        {
+            foreach (Entity en in entitiesVisibleNow)
+            {
+                if (en is EntityImplementation)
+                {
+                    PutMessageIntoMyQueue((en as EntityImplementation).visibilityDisplayEntityImplementation());
+                }
+            }
+        }
+
         protected virtual OutgoingMessage visibilityDisplayEntityImplementation()
         {
             if (appearance.IsEnhancedModel)
@@ -914,6 +926,12 @@ namespace Calindor.Server
                 return msgAddNewActor;
             }
         }
+
+        public virtual EntityList VisibleEntities
+        {
+            get { return entitiesVisibleNow; }
+        }
+
 
         #endregion
 
