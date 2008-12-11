@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -9,6 +9,7 @@
  */
 using System;
 using Calindor.Misc;
+using Calindor.Server.Entities;
 
 namespace Calindor.Server.AI
 {
@@ -24,7 +25,7 @@ namespace Calindor.Server.AI
         {
             me = sc;
         }
-        
+
         private AIImplementation():base(0)
         {
         }
@@ -45,7 +46,7 @@ namespace Calindor.Server.AI
         }
 
         public WonderingDumbNonAggresiveAIImplementation(
-            short habitationRegionCenterX, short habitationRegionCenterY, ushort habitationRegionDiameter, 
+            short habitationRegionCenterX, short habitationRegionCenterY, ushort habitationRegionDiameter,
             uint milisBetweenDecisions):base(milisBetweenDecisions)
         {
             this.habitationRegionCenterX = habitationRegionCenterX;
@@ -63,7 +64,7 @@ namespace Calindor.Server.AI
             else
                 return true;
         }
-        
+
         protected void moveSomewhere()
         {
             // Move to new location (try up to 5 times / lame)
@@ -71,7 +72,7 @@ namespace Calindor.Server.AI
             {
                 short newX = (short)(me.LocationX + WorldRNG.Next(-maxAxisMove, maxAxisMove));
                 short newY = (short)(me.LocationY + WorldRNG.Next(-maxAxisMove, maxAxisMove));
-                
+
                 // is walkable
                 if (!me.LocationCurrentMap.IsLocationWalkable(newX, newY))
                     continue;
@@ -82,9 +83,9 @@ namespace Calindor.Server.AI
                     me.LocationMoveTo(newX, newY);
                     break;
                 }
-            }      
+            }
         }
-        
+
         protected void maybeMove()
         {
             // Make decision
@@ -95,18 +96,18 @@ namespace Calindor.Server.AI
             else
             {
                 // Stay at current location
-            }      
+            }
         }
-        
+
         protected void shouldIFight()
         {
             // TODO: Run if low morale (requires morale implementation)
-            
+
             // If not attacking anyone, attack any attacker
             if (!me.CombatIsAttacking)
-                me.CombatInitiateAttackOnAnyAttacker();           
+                me.CombatInitiateAttackOnAnyAttacker();
         }
-        
+
         protected override void execute()
         {
             if (me == null)
@@ -125,7 +126,68 @@ namespace Calindor.Server.AI
                 // Peace mode
                 maybeMove();
             }
-            
+
+        }
+    }
+
+    public class AggresiveAIImplementation : WonderingDumbNonAggresiveAIImplementation
+    {
+        public AggresiveAIImplementation(
+            short habitationRegionCenterX, short habitationRegionCenterY, ushort habitationRegionDiameter,
+            uint milisBetweenDecisions)
+            : base(habitationRegionCenterX, habitationRegionCenterY, habitationRegionDiameter, milisBetweenDecisions)
+        {
+        }
+
+        protected override void execute()
+        {
+            if (me == null)
+                throw new InvalidOperationException("Server character not attached");
+
+            if (!me.EnergiesIsAlive)
+                return; // Only for living entities
+
+            if (me.CombatGetNumberOfAttackers() > 0)
+            {
+                // Combat mode
+                shouldIFight();
+            }
+            else
+            {
+                EntityImplementation closest = null;
+                int distance = 0;
+                foreach (Entity entity in me.VisibleEntities)
+                {
+                    if (me == entity)
+                        continue;
+
+                    if (entity is PlayerCharacter)
+                    {
+                        if (!(entity as PlayerCharacter).EnergiesIsAlive)
+                            continue;
+                        int dx = me.LocationX - entity.LocationX;
+                        int dy = me.LocationY - entity.LocationY;
+                        int d = dx * dx + dy * dy;
+                        if (closest == null || d < distance)
+                        {
+                            distance = d;
+                            closest = entity as PlayerCharacter;
+                        }
+                    }
+                }
+
+                if (closest != null)
+                {
+                    if (me.CombatIsInDistanceToAttack(closest))
+                        me.CombatInitiateAttack(closest);
+                    else
+                        me.LocationMoveTo(closest.LocationX, closest.LocationY);
+                    return;
+                }
+
+                // Peace mode
+                maybeMove();
+            }
         }
     }
 }

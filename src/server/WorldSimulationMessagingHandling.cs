@@ -392,7 +392,7 @@ namespace Calindor.Server
                                 critter.CreateApplyInitialState();
 
                                 // AI
-                                WonderingDumbNonAggresiveAIImplementation aiImpl = new WonderingDumbNonAggresiveAIImplementation(locationCritter.X, locationCritter.Y, 100, 3000);
+                                WonderingDumbNonAggresiveAIImplementation aiImpl = new AggresiveAIImplementation(locationCritter.X, locationCritter.Y, 100, 3000);
                                 critter.AIAttach(aiImpl);
 
                                 // add rabbit to the world
@@ -466,6 +466,7 @@ namespace Calindor.Server
                                     msgRawTextOut.Text = String.Format("Teleporting to {0},{1}", newX, newY);
                                     pc.PutMessageIntoMyQueue(msgRawTextOut);
                                     pc.LocationChangeLocation(newX, newY);
+                                    pc.VisibilityUpdateVisibleEntities();
                                 }
                                 else
                                 {

@@ -185,7 +185,7 @@ namespace Calindor.Server
             }
             
             // Check distance
-            if (!combatIsInDistanceToAttack(defender))
+            if (!CombatIsInDistanceToAttack(defender))
             {
                 SendLocalChatMessage("You need to get closer to attack...", 
                                      PredefinedColor.Red2);
@@ -206,7 +206,7 @@ namespace Calindor.Server
             }
         }
         
-        private bool combatIsInDistanceToAttack(EntityImplementation defender)
+        public bool CombatIsInDistanceToAttack(EntityImplementation defender)
         {
             double distance = Double.MaxValue;
             DistanceCalculationResult result = getDistanceToEntity(defender, out distance);
@@ -240,7 +240,7 @@ namespace Calindor.Server
         {
             chance = 0.0;
             
-            if (!combatIsInDistanceToAttack(defender))
+            if (!CombatIsInDistanceToAttack(defender))
                 return false;
             
             // TODO: Use attack/defense descriptors in final implementation
@@ -272,7 +272,7 @@ namespace Calindor.Server
         protected PredefinedActorCommand combatGetAnimationForAttack()
         {
             // TODO: Implement
-            return PredefinedActorCommand.attack_up_1;
+            return PredefinedActorCommand.attack_up_2;
         }
         
         /// <summary>
@@ -286,9 +286,7 @@ namespace Calindor.Server
             // Send attacker animation frame
             SendAnimationCommand(combatGetAnimationForAttack());            
             
-            // If defender is not attacking, send 'pain' command
-            if (!defender.CombatIsAttacking)
-                defender.SendAnimationCommand(PredefinedActorCommand.pain1);
+            defender.SendAnimationCommand(PredefinedActorCommand.pain1);
          
             // TODO: Use attack/defense descriptors in final implementation
             
