@@ -83,6 +83,440 @@ namespace Calindor.Server
             }
         }
 
+        private bool handleAdminCommands(PlayerCharacter pc, RawTextIncommingMessage msgRawText, String command)
+        {
+            if (command == "#shutdown" && serverConfiguration.IsAdminUser(pc.Name))
+            {
+                StopSimulation();
+                return true;
+            }
+            if (command == "#kick" && serverConfiguration.IsAdminUser(pc.Name))
+            {
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length != 2)
+                    return true;
+
+                RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+
+                PlayerCharacter pcToKick = getPlayerByName(tokens[1]);
+                if (pcToKick == null)
+                {
+                    msgRawTextOut.Color = PredefinedColor.Blue1;
+                    msgRawTextOut.Text = "The player does not exist";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                    return true;
+                }
+                else
+                {
+
+                    msgRawTextOut.Color = PredefinedColor.Red3;
+                    msgRawTextOut.Text = "You just got kicked by " + pc.Name;
+                    pcToKick.PutMessageIntoMyQueue(msgRawTextOut);
+                    pcToKick.LoginState = PlayerCharacterLoginState.LoggingOff;
+                }
+
+                return true;
+            }
+            if (command == "#spawn" && serverConfiguration.IsAdminUser(pc.Name))
+            {
+                RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                string shape = null;
+                string count = null;
+
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length == 3)
+                {
+                    count = tokens[1];
+                    shape = tokens[2];
+                }
+                else
+                {
+                    msgRawTextOut.Color = PredefinedColor.Red1;
+                    msgRawTextOut.Text = "Usage: #spawn number shape";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                    return true;
+                }
+
+                PredefinedModelType type;
+                int num;
+                if (Int32.TryParse(shape, out num))
+                {
+                    type = (PredefinedModelType)num;
+                    if (!playerModels.hasModel(type))
+                    {
+                        msgRawTextOut.Color = PredefinedColor.Red1;
+                        msgRawTextOut.Text = "Invalid shape";
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        return true;
+                    }
+                }
+                else
+                {
+                    shape = shape.ToLower();
+                    if (!playerModels.hasModel(shape))
+                    {
+                        msgRawTextOut.Color = PredefinedColor.Red1;
+                        msgRawTextOut.Text = "Invalid shape";
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        return true;
+                    }
+                    type = playerModels.getType(shape);
+                }
+                if (!Int32.TryParse(count, out num) || num <= 0)
+                {
+                    msgRawTextOut.Color = PredefinedColor.Red1;
+                    msgRawTextOut.Text = "Invalid number of critters";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                    return true;
+                }
+
+                Random rnd = new Random();
+                for (int i = 0; i < num; i++)
+                {
+                    // create critter
+                    ServerCharacter critter = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
+                    critter.CreateSetInitialAppearance(new EntityAppearance(type));
+                    critter.Name = shape;
+                    EntityLocation locationCritter = new EntityLocation();
+                    locationCritter.CurrentMap = pc.LocationCurrentMap;
+                    locationCritter.Z = 0;
+                    int dist = num / 2;
+                    do
+                    {
+                        locationCritter.X = (short)(pc.LocationX + rnd.Next(dist * 2 + 1) - dist);
+                        locationCritter.Y = (short)(pc.LocationY + rnd.Next(dist * 2 + 1) - dist);
+                        dist++;
+                    } while (!pc.LocationCurrentMap.IsLocationWalkable(locationCritter.X, locationCritter.Y) ||
+                        pc.LocationCurrentMap.IsLocationOccupied(locationCritter.X, locationCritter.Y, locationCritter.Dimension));
+                    locationCritter.Rotation = 180;
+                    locationCritter.IsSittingDown = false;
+                    critter.CreateSetInitialLocation(locationCritter);
+                    critter.CreateSetNoRespawn();
+                    critter.MaxCombatXP = 1000; // medium
+                    critter.CreateApplyInitialState();
+
+                    // AI
+                    WonderingDumbNonAggresiveAIImplementation aiImpl = new AggresiveAIImplementation(locationCritter.X, locationCritter.Y, 100, 3000);
+                    critter.AIAttach(aiImpl);
+
+                    // add rabbit to the world
+                    addEntityImplementationToWorld(critter);
+                    critter.LocationChangeMapAtEnterWorld();
+                }
+                return true;
+            }
+            if (command == "#wall" && serverConfiguration.IsAdminUser(pc.Name))
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                                                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Red3;
+                msgRawTextOut.Text = "Server message: " + msgRawText.Text.Substring(6);
+                sendMessageToAllPlayers(msgRawTextOut);
+                return true;
+            }
+            return false;
+        }
+
+        private bool handleFollowCommands(PlayerCharacter pc, RawTextIncommingMessage msgRawText, String command)
+        {
+            if (command == "#stop_following")
+            {
+                pc.FollowingStopFollowing();
+                return true;
+            }
+            if (command == "#release_followers")
+            {
+                pc.FollowingReleaseFollowers();
+                return true;
+            }
+            if (command == "#follow")
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length != 2)
+                {
+                    msgRawTextOut.Color = PredefinedColor.Red2;
+                    msgRawTextOut.Text = "You are replied by silence...";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                    return true;
+                }
+
+                // Does character exist
+                PlayerCharacter pcTakenByHand = getPlayerByName(tokens[1]);
+                if (pcTakenByHand == null)
+                {
+                    msgRawTextOut.Color = PredefinedColor.Blue1;
+                    msgRawTextOut.Text = "The one you seek is not here...";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                    return true;
+                }
+
+                pc.FollowingFollow(pcTakenByHand);
+                return true;
+            }
+            return false;
+        }
+
+        private bool handleCommandText(PlayerCharacter pc, RawTextIncommingMessage msgRawText, String command)
+        {
+            if (command == "#save")
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+
+
+                try
+                {
+                    pc.Serialize(pcSerializer);
+                    msgRawTextOut.Text = "Another page in Book of Life is filled...";
+                    msgRawTextOut.Color = PredefinedColor.Blue1;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(LogSource.World, "Failed to serialize player " + pc.Name, ex);
+                    msgRawTextOut.Text = "Your page in Book of Life remains blank...";
+                    msgRawTextOut.Color = PredefinedColor.Red2;
+                }
+
+                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                return true;
+            }
+            if (command == "#list_commands")
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Green3;
+                msgRawTextOut.Text = "Available commands: list_commands, save, follow, stop_following, release_followers, list_skills";
+                pc.PutMessageIntoMyQueue(msgRawTextOut);
+
+                msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Green3;
+                msgRawTextOut.Text = "beam me, beam to x,y, beam to map, loc";
+                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                return true;
+            }
+            if ((command == "#change_health" || command == "#restore") && serverConfiguration.EnableTestCommands)
+            {
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length < 2)
+                    return true;
+                short changeVal = Convert.ToInt16(tokens[1]);
+                pc.EnergiesUpdateHealth(changeVal);
+                return true;
+            }
+            if (command == "#resurrect" && serverConfiguration.EnableTestCommands)
+            {
+                pc.EnergiesResurrect();
+                return true;
+            }
+            if (command == "#loc")
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                                                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                msgRawTextOut.Color = PredefinedColor.Green3;
+                msgRawTextOut.Text = String.Format("You are on {0},{1}", pc.LocationX, pc.LocationY);
+                pc.PutMessageIntoMyQueue(msgRawTextOut);
+                return true;
+            }
+            if (command == "#shapeshift")
+            {
+                RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                PlayerCharacter pcToChange = pc;
+                string shape = null;
+
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length == 3 && serverConfiguration.IsAdminUser(pc.Name))
+                {
+                    pcToChange = getPlayerByName(tokens[1]);
+                    if (pcToChange == null)
+                    {
+                        msgRawTextOut.Color = PredefinedColor.Red1;
+                        msgRawTextOut.Text = "The player does not exist";
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        return true;
+                    }
+                    shape = tokens[2];
+                }
+                else if (tokens.Length == 2)
+                {
+                    shape = tokens[1];
+                }
+                else
+                {
+                    return false;
+                }
+
+                PredefinedModelType type;
+                int num;
+                if (Int32.TryParse(shape, out num))
+                {
+                    type = (PredefinedModelType)num;
+                    if (!playerModels.hasModel(type))
+                    {
+                        msgRawTextOut.Color = PredefinedColor.Red1;
+                        msgRawTextOut.Text = "Invalid shape";
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        return true;
+                    }
+                }
+                else
+                {
+                    shape = shape.ToLower();
+                    if (!playerModels.hasModel(shape))
+                    {
+                        msgRawTextOut.Color = PredefinedColor.Red1;
+                        msgRawTextOut.Text = "Invalid shape";
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        return true;
+                    }
+                    type = playerModels.getType(shape);
+                }
+                pcToChange.Appearance.Type = type;
+                pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
+                return true;
+            }
+            if (command == "#attach")
+            {
+                RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+                PlayerCharacter pcToChange = pc;
+
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length == 2 && serverConfiguration.IsAdminUser(pc.Name))
+                {
+                    pcToChange = getPlayerByName(tokens[1]);
+                    if (pcToChange == null)
+                    {
+                        msgRawTextOut.Color = PredefinedColor.Red1;
+                        msgRawTextOut.Text = "The player does not exist";
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        return true;
+                    }
+                }
+
+                if (pcToChange.IsAttached)
+                    pcToChange.UnAttach();
+                else
+                    pcToChange.AttachTo(PredefinedModelType.HORSE);
+                pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
+                return true;
+            }
+            if (msgRawText.Text.ToLower().StartsWith("#beam me") && serverConfiguration.EnableTestCommands)
+            {
+                pc.LocationChangeMap(
+                    serverConfiguration.StartingPoint.MapName,
+                    serverConfiguration.StartingPoint.StartX,
+                    serverConfiguration.StartingPoint.StartY);
+                pc.VisibilityUpdateVisibleEntities();
+                pc.VisibilityResyncVisibleEntities();
+                return true;
+            }
+            if (msgRawText.Text.ToLower().StartsWith("#beam to ") && serverConfiguration.EnableTestCommands)
+            {
+                RawTextOutgoingMessage msgRawTextOut =
+                    (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
+                msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
+
+                string mapname;
+                string coords;
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length == 3)
+                {
+                    mapname = null;
+                    coords = tokens[2];
+                }
+                else if (tokens.Length == 4)
+                {
+                    mapname = tokens[2];
+                    coords = tokens[3];
+                }
+                else if (tokens.Length == 5)
+                {
+                    mapname = tokens[3];
+                    coords = tokens[4];
+                }
+                else
+                {
+                    msgRawTextOut.Color = PredefinedColor.Red2;
+                    msgRawTextOut.Text = "use #beam to [mapname] x,y";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                    return true;
+                }
+
+                try
+                {
+                    tokens = coords.Split(',');
+
+                    short newX = Convert.ToInt16(tokens[0]);
+                    short newY = Convert.ToInt16(tokens[1]);
+
+                    msgRawTextOut.Color = PredefinedColor.Green3;
+
+                    if (mapname == null)
+                    {
+                        msgRawTextOut.Text = String.Format("Teleporting to {0},{1}", newX, newY);
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        pc.LocationChangeLocation(newX, newY);
+                        pc.VisibilityUpdateVisibleEntities();
+                        pc.VisibilityResyncVisibleEntities();
+                    }
+                    else
+                    {
+                        msgRawTextOut.Text = String.Format("Teleporting to map {2} {0},{1}", newX, newY, mapname);
+                        pc.PutMessageIntoMyQueue(msgRawTextOut);
+                        pc.LocationChangeMap(mapname, newX, newY);
+                        pc.VisibilityUpdateVisibleEntities();
+                        pc.VisibilityResyncVisibleEntities();
+                    }
+                    return true;
+                }
+                catch
+                {
+                    msgRawTextOut.Color = PredefinedColor.Red2;
+                    msgRawTextOut.Text = "use #beam to [mapname] x,y";
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
+                }
+                return true;
+            }
+
+            if (command == "#add_item" && serverConfiguration.EnableTestCommands)
+            {
+                string[] tokens = msgRawText.Text.Split(' ');
+                if (tokens.Length != 3)
+                    return true;
+
+                ushort itemID = Convert.ToUInt16(tokens[1]);
+                int quantity = Convert.ToInt32(tokens[2]);
+
+                ItemDefinition itmDef = ItemDefinitionCache.GetItemDefinitionByID(itemID);
+                if (itmDef == null)
+                    return true;
+                Item itm = new Item(itmDef);
+                itm.Quantity = quantity;
+                pc.InventoryUpdateItem(itm);
+                return true;
+
+            }
+            if (command == "#list_skills")
+            {
+                pc.SkillsListSkills();
+                return true;
+            }
+            return false;
+        }
+
         private void handleRawText(PlayerCharacter pc, IncommingMessage msg)
         {
             if (pc.LoginState == PlayerCharacterLoginState.LoginSuccesfull)
@@ -94,424 +528,10 @@ namespace Calindor.Server
                 switch (msgRawText.Text[0])
                 {
                     case('#'):
-                        if (msgRawText.Text.ToLower() == "#save")
-                        {
-                            RawTextOutgoingMessage msgRawTextOut =
-                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-
-
-                            try
-                            {
-                                pc.Serialize(pcSerializer);
-                                msgRawTextOut.Text = "Another page in Book of Life is filled...";
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.LogError(LogSource.World, "Failed to serialize player " + pc.Name, ex);
-                                msgRawTextOut.Text = "Your page in Book of Life remains blank...";
-                                msgRawTextOut.Color = PredefinedColor.Red2;
-                            }
-
-                            pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            return;
-                        }
-                        if (msgRawText.Text.ToLower() == "#list_commands")
-                        {
-                            RawTextOutgoingMessage msgRawTextOut =
-                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            msgRawTextOut.Color = PredefinedColor.Green3;
-                            msgRawTextOut.Text = "Available commands: list_commands, save, follow, stop_following, release_followers, list_skills";
-                            pc.PutMessageIntoMyQueue(msgRawTextOut);
-
-                            msgRawTextOut =
-                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            msgRawTextOut.Color = PredefinedColor.Green3;
-                            msgRawTextOut.Text = "beam me, beam to x,y, beam to map, loc";
-                            pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            return;
-                        }
-                        if (msgRawText.Text.ToLower() == "#stop_following")
-                        {
-                            pc.FollowingStopFollowing();
-                            return;
-                        }
-                        if (msgRawText.Text.ToLower() == "#release_followers")
-                        {
-                            pc.FollowingReleaseFollowers();
-                            return;
-                        }
-                        if (msgRawText.Text.ToLower().IndexOf("#follow") == 0)
-                        {
-                            RawTextOutgoingMessage msgRawTextOut =
-                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length != 2)
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Red2;
-                                msgRawTextOut.Text = "You are replied by silence...";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            // Does character exist
-                            PlayerCharacter pcTakenByHand = getPlayerByName(tokens[1]);
-                            if (pcTakenByHand == null)
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                msgRawTextOut.Text = "The one you seek is not here...";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            pc.FollowingFollow(pcTakenByHand);
-
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#change_health") != -1 ||
-                            msgRawText.Text.ToLower().IndexOf("#restore") != -1) &&
-                            serverConfiguration.EnableTestCommands)
-                        {
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            short changeVal = Convert.ToInt16(tokens[1]);
-                            pc.EnergiesUpdateHealth(changeVal);
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#resurrect") != -1) &&
-                            serverConfiguration.EnableTestCommands)
-                        {
-                            pc.EnergiesResurrect();
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#loc") != -1))
-                        {
-                            RawTextOutgoingMessage msgRawTextOut =
-                                                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            msgRawTextOut.Color = PredefinedColor.Green3;
-                            msgRawTextOut.Text = String.Format("You are on {0},{1}", pc.LocationX, pc.LocationY);
-                            pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#shutdown") != -1) && serverConfiguration.IsAdminUser(pc.Name))
-                        {
-                            StopSimulation();
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#kick") != -1) && serverConfiguration.IsAdminUser(pc.Name))
-                        {
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length != 2)
-                               return;
-
-                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-
-                            PlayerCharacter pcToKick = getPlayerByName(tokens[1]);
-                            if (pcToKick == null)
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Blue1;
-                                msgRawTextOut.Text = "The player does not exist";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-                            else
-                            {
-
-                                msgRawTextOut.Color = PredefinedColor.Red3;
-                                msgRawTextOut.Text = "You just got kicked by " + pc.Name;
-                                pcToKick.PutMessageIntoMyQueue(msgRawTextOut);
-                                pcToKick.LoginState = PlayerCharacterLoginState.LoggingOff;
-                            }
-
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#shapeshift") != -1))
-                        {
-                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            PlayerCharacter pcToChange = pc;
-                            string shape = null;
-
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length == 3 && serverConfiguration.IsAdminUser(pc.Name))
-                            {
-                                pcToChange = getPlayerByName(tokens[1]);
-                                if (pcToChange == null)
-                                {
-                                    msgRawTextOut.Color = PredefinedColor.Red1;
-                                    msgRawTextOut.Text = "The player does not exist";
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    return;
-                                }
-                                shape = tokens[2];
-                            }
-                            else if (tokens.Length == 2)
-                            {
-                                shape = tokens[1];
-                            }
-                            else
-                            {
-                                return;
-                            }
-
-                            PredefinedModelType type;
-                            int num;
-                            if (Int32.TryParse(shape, out num))
-                            {
-                                type = (PredefinedModelType)num;
-                                if (!playerModels.hasModel(type))
-                                {
-                                    msgRawTextOut.Color = PredefinedColor.Red1;
-                                    msgRawTextOut.Text = "Invalid shape";
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    return;
-                                }
-                            } else
-                            {
-                                shape = shape.ToLower();
-                                if (!playerModels.hasModel(shape))
-                                {
-                                    msgRawTextOut.Color = PredefinedColor.Red1;
-                                    msgRawTextOut.Text = "Invalid shape";
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    return;
-                                }
-                                type = playerModels.getType(shape);
-                            }
-                            pcToChange.Appearance.Type = type;
-                            pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#attach") != -1))
-                        {
-                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            PlayerCharacter pcToChange = pc;
-
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length == 2 && serverConfiguration.IsAdminUser(pc.Name))
-                            {
-                                pcToChange = getPlayerByName(tokens[1]);
-                                if (pcToChange == null)
-                                {
-                                    msgRawTextOut.Color = PredefinedColor.Red1;
-                                    msgRawTextOut.Text = "The player does not exist";
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    return;
-                                }
-                            }
-
-                            if (pcToChange.IsAttached)
-                                pcToChange.UnAttach();
-                            else
-                                pcToChange.AttachTo(PredefinedModelType.HORSE);
-                            pcToChange.LocationChangeLocation(pcToChange.LocationX, pcToChange.LocationY);
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#spawn") != -1) && serverConfiguration.IsAdminUser(pc.Name))
-                        {
-                            RawTextOutgoingMessage msgRawTextOut = (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            string shape = null;
-                            string count = null;
-
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length == 3)
-                            {
-                                count = tokens[1];
-                                shape = tokens[2];
-                            }
-                            else
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Red1;
-                                msgRawTextOut.Text = "Usage: #spawn number shape";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            PredefinedModelType type;
-                            int num;
-                            if (Int32.TryParse(shape, out num))
-                            {
-                                type = (PredefinedModelType)num;
-                                if (!playerModels.hasModel(type))
-                                {
-                                    msgRawTextOut.Color = PredefinedColor.Red1;
-                                    msgRawTextOut.Text = "Invalid shape";
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                shape = shape.ToLower();
-                                if (!playerModels.hasModel(shape))
-                                {
-                                    msgRawTextOut.Color = PredefinedColor.Red1;
-                                    msgRawTextOut.Text = "Invalid shape";
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    return;
-                                }
-                                type = playerModels.getType(shape);
-                            }
-                            if (!Int32.TryParse(count, out num) || num <= 0)
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Red1;
-                                msgRawTextOut.Text = "Invalid number of critters";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            Random rnd = new Random();
-                            for (int i = 0; i < num; i++)
-                            {
-                                // create critter
-                                ServerCharacter critter = new ServerCharacter(PredefinedEntityImplementationKind.ENTITY);
-                                critter.CreateSetInitialAppearance(new EntityAppearance(type));
-                                critter.Name = shape;
-                                EntityLocation locationCritter = new EntityLocation();
-                                locationCritter.CurrentMap = pc.LocationCurrentMap;
-                                locationCritter.Z = 0;
-                                int dist = num / 2;
-                                do
-                                {
-                                    locationCritter.X = (short)(pc.LocationX + rnd.Next(dist * 2 + 1) - dist);
-                                    locationCritter.Y = (short)(pc.LocationY + rnd.Next(dist * 2 + 1) - dist);
-                                    dist++;
-                                } while (!pc.LocationCurrentMap.IsLocationWalkable(locationCritter.X, locationCritter.Y) ||
-                                    pc.LocationCurrentMap.IsLocationOccupied(locationCritter.X, locationCritter.Y, locationCritter.Dimension));
-                                locationCritter.Rotation = 180;
-                                locationCritter.IsSittingDown = false;
-                                critter.CreateSetInitialLocation(locationCritter);
-                                critter.CreateSetNoRespawn();
-                                critter.MaxCombatXP = 1000; // medium
-                                critter.CreateApplyInitialState();
-
-                                // AI
-                                WonderingDumbNonAggresiveAIImplementation aiImpl = new AggresiveAIImplementation(locationCritter.X, locationCritter.Y, 100, 3000);
-                                critter.AIAttach(aiImpl);
-
-                                // add rabbit to the world
-                                addEntityImplementationToWorld(critter);
-                                critter.LocationChangeMapAtEnterWorld();
-                            }
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#wall ") != -1) && serverConfiguration.IsAdminUser(pc.Name))
-                        {
-                            RawTextOutgoingMessage msgRawTextOut =
-                                                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-                            msgRawTextOut.Color = PredefinedColor.Red3;
-                            msgRawTextOut.Text = "Server message: " + msgRawText.Text.Substring(6);
-                            sendMessageToAllPlayers(msgRawTextOut);
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#beam me") != -1) &&
-                            serverConfiguration.EnableTestCommands)
-                        {
-                            pc.LocationChangeMap(
-                                serverConfiguration.StartingPoint.MapName,
-                                serverConfiguration.StartingPoint.StartX,
-                                serverConfiguration.StartingPoint.StartY);
-                            pc.VisibilityUpdateVisibleEntities();
-                            pc.VisibilityResyncVisibleEntities();
-                            return;
-                        }
-                        if ((msgRawText.Text.ToLower().IndexOf("#beam to") != -1) &&
-                            serverConfiguration.EnableTestCommands)
-                        {
-                            RawTextOutgoingMessage msgRawTextOut =
-                                (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
-                            msgRawTextOut.Channel = PredefinedChannel.CHAT_LOCAL;
-
-                            string mapname;
-                            string coords;
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length == 3)
-                            {
-                                mapname = null;
-                                coords = tokens[2];
-                            }
-                            else if (tokens.Length == 4)
-                            {
-                                mapname = tokens[2];
-                                coords = tokens[3];
-                            }
-                            else if (tokens.Length == 5)
-                            {
-                                mapname = tokens[3];
-                                coords = tokens[4];
-                            }
-                            else
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Red2;
-                                msgRawTextOut.Text = "use #beam to [mapname] x,y";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                return;
-                            }
-
-                            try
-                            {
-                                tokens = coords.Split(',');
-
-                                short newX = Convert.ToInt16(tokens[0]);
-                                short newY = Convert.ToInt16(tokens[1]);
-
-                                msgRawTextOut.Color = PredefinedColor.Green3;
-
-                                if (mapname == null)
-                                {
-                                    msgRawTextOut.Text = String.Format("Teleporting to {0},{1}", newX, newY);
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    pc.LocationChangeLocation(newX, newY);
-                                    pc.VisibilityUpdateVisibleEntities();
-                                    pc.VisibilityResyncVisibleEntities();
-                                }
-                                else
-                                {
-                                    msgRawTextOut.Text = String.Format("Teleporting to map {2} {0},{1}", newX, newY, mapname);
-                                    pc.PutMessageIntoMyQueue(msgRawTextOut);
-                                    pc.LocationChangeMap(mapname, newX, newY);
-                                    pc.VisibilityUpdateVisibleEntities();
-                                    pc.VisibilityResyncVisibleEntities();
-                                }
-                                return;
-                            }
-                            catch
-                            {
-                                msgRawTextOut.Color = PredefinedColor.Red2;
-                                msgRawTextOut.Text = "use #beam to [mapname] x,y";
-                                pc.PutMessageIntoMyQueue(msgRawTextOut);
-                            }
-                            return;
-                        }
-
-                        if ((msgRawText.Text.ToLower().IndexOf("#add_item") != -1) &&
-                            serverConfiguration.EnableTestCommands)
-                        {
-                            string[] tokens = msgRawText.Text.Split(' ');
-                            if (tokens.Length != 3)
-                                return;
-
-                            ushort itemID = Convert.ToUInt16(tokens[1]);
-                            int quantity = Convert.ToInt32(tokens[2]);
-
-                            ItemDefinition itmDef = ItemDefinitionCache.GetItemDefinitionByID(itemID);
-                            if (itmDef == null)
-                                return;
-                            Item itm = new Item(itmDef);
-                            itm.Quantity = quantity;
-                            pc.InventoryUpdateItem(itm);
-
-                        }
-                        if (msgRawText.Text.ToLower() == "#list_skills")
-                        {
-                            pc.SkillsListSkills();
-                        }
+                        string[] commands = msgRawText.Text.ToLower().Split(' ');
+                        bool ret = handleCommandText(pc, msgRawText, commands[0]) ||
+                            handleFollowCommands(pc, msgRawText, commands[0]) ||
+                            handleAdminCommands(pc, msgRawText, commands[0]);
                         break;
                     case (':'):
                         {
