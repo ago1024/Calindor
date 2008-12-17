@@ -417,6 +417,8 @@ namespace Calindor.Server
                                 serverConfiguration.StartingPoint.MapName,
                                 serverConfiguration.StartingPoint.StartX,
                                 serverConfiguration.StartingPoint.StartY);
+                            pc.VisibilityUpdateVisibleEntities();
+                            pc.VisibilityResyncVisibleEntities();
                             return;
                         }
                         if ((msgRawText.Text.ToLower().IndexOf("#beam to") != -1) &&
@@ -467,12 +469,15 @@ namespace Calindor.Server
                                     pc.PutMessageIntoMyQueue(msgRawTextOut);
                                     pc.LocationChangeLocation(newX, newY);
                                     pc.VisibilityUpdateVisibleEntities();
+                                    pc.VisibilityResyncVisibleEntities();
                                 }
                                 else
                                 {
                                     msgRawTextOut.Text = String.Format("Teleporting to map {2} {0},{1}", newX, newY, mapname);
                                     pc.PutMessageIntoMyQueue(msgRawTextOut);
                                     pc.LocationChangeMap(mapname, newX, newY);
+                                    pc.VisibilityUpdateVisibleEntities();
+                                    pc.VisibilityResyncVisibleEntities();
                                 }
                                 return;
                             }
