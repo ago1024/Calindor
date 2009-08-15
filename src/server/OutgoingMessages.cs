@@ -43,6 +43,9 @@ namespace Calindor.Server.Messaging
         GET_ACTOR_HEAL = 48,
         SEND_PARTIAL_STAT = 49,
         ADD_NEW_ENHANCED_ACTOR = 51,
+        GET_3D_OBJ_LIST = 74,
+        GET_3D_OBJ = 75,
+        REMOVE_3D_OBJ = 76,
         SEND_BUFFS = 78,
         UPGRADE_TOO_OLD = 241,
         YOU_DONT_EXIST = 249,
@@ -142,6 +145,9 @@ namespace Calindor.Server.Messaging
             knownMessages[(int)OutgoingMessageType.SEND_PARTIAL_STAT] = new SendPartialStatOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.ADD_NEW_ACTOR] = new AddNewActorOutgoingMessage();
             knownMessages[(int)OutgoingMessageType.SEND_BUFFS] = new SendBuffsOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.GET_3D_OBJ_LIST] = new Get3dObjListOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.GET_3D_OBJ] = new Get3dObjOutgoingMessage();
+            knownMessages[(int)OutgoingMessageType.REMOVE_3D_OBJ] = new Remove3dObjOutgoingMessage();
         }
 
         public static OutgoingMessage Create(OutgoingMessageType type)
@@ -1526,6 +1532,134 @@ namespace Calindor.Server.Messaging
         {
             InPlaceBitConverter.GetBytes(EntityID, _return, 3);
             _return[5] = buffs;
+        }
+    }
+
+    public class Get3dObjOutgoingMessage : OutgoingMessage
+    {
+
+        public struct MapObj3D
+        {
+            public UInt16 ObjX;
+            public UInt16 ObjY;
+            public Single RotX;
+            public Single RotY;
+            public Single RotZ;
+            public UInt16 Id;
+            public String E3DFile;
+        }
+
+        public MapObj3D Obj;
+
+        public override ushort Length
+        {
+            get {
+                return (ushort)(3 + 18 + Obj.E3DFile.Length + 1);
+            }
+        }
+
+
+        public Get3dObjOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.GET_3D_OBJ;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new Get3dObjOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(Obj.ObjX, _return, 3);
+            InPlaceBitConverter.GetBytes(Obj.ObjY, _return, 5);
+            InPlaceBitConverter.GetBytes(Obj.RotX, _return, 7);
+            InPlaceBitConverter.GetBytes(Obj.RotY, _return, 11);
+            InPlaceBitConverter.GetBytes(Obj.RotZ, _return, 15);
+            InPlaceBitConverter.GetBytes(Obj.Id, _return, 19);
+            InPlaceBitConverter.GetBytes(Obj.E3DFile, _return, 21);
+        }
+    }
+
+    public class Get3dObjListOutgoingMessage : OutgoingMessage
+    {
+        public struct MapObj3D
+        {
+            public UInt16 ObjX;
+            public UInt16 ObjY;
+            public Single RotX;
+            public Single RotY;
+            public Single RotZ;
+            public UInt16 Id;
+            public String E3DFile;
+        }
+
+        private IList<MapObj3D> objs;
+        public IList<MapObj3D> Objs
+        {
+            get { return objs; }
+        }
+
+
+        public override ushort Length
+        {
+            get
+            {
+                int length = 4;
+                foreach (MapObj3D obj in Objs)
+                    length += 18 + obj.E3DFile.Length + 1;
+                return (ushort)length;
+            }
+        }
+
+        public Get3dObjListOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.GET_3D_OBJ_LIST;
+            objs = new List<MapObj3D>();
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new Get3dObjListOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            int offset = 4;
+            _return[3] = (byte)Objs.Count;
+
+            foreach (MapObj3D obj in Objs)
+            {
+                InPlaceBitConverter.GetBytes(obj.ObjX, _return, offset + 0);
+                InPlaceBitConverter.GetBytes(obj.ObjY, _return, offset + 2);
+                InPlaceBitConverter.GetBytes(obj.RotX, _return, offset + 4);
+                InPlaceBitConverter.GetBytes(obj.RotY, _return, offset + 8);
+                InPlaceBitConverter.GetBytes(obj.RotZ, _return, offset + 12);
+                InPlaceBitConverter.GetBytes(obj.Id, _return, offset + 16);
+                InPlaceBitConverter.GetBytes(obj.E3DFile, _return, offset + 18);
+                offset += 18 + obj.E3DFile.Length + 1;
+            }
+        }
+    }
+
+    public class Remove3dObjOutgoingMessage : OutgoingMessage
+    {
+        public Int16 Id;
+
+        public Remove3dObjOutgoingMessage()
+        {
+            messageType = OutgoingMessageType.REMOVE_3D_OBJ;
+            length = 5;
+        }
+
+        public override OutgoingMessage CreateNew()
+        {
+            return new Remove3dObjOutgoingMessage();
+        }
+
+        protected override void serializeSpecific(byte[] _return)
+        {
+            InPlaceBitConverter.GetBytes(Id, _return, 3);
         }
     }
 
