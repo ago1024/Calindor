@@ -44,5 +44,14 @@ namespace Calindor.Misc
             for (int i = 0; i < value.Length; i++)
                 outputBuffer[startIndex + i] = (byte)value[i];
         }
+
+        public static void GetBytes(Single value, byte[] outputBuffer, int startIndex)
+        {
+            byte[] bytes = BitConverter.GetBytes(value);
+            outputBuffer[startIndex] = bytes[0];
+            outputBuffer[startIndex + 1] = bytes[1];
+            outputBuffer[startIndex + 2] = bytes[2];
+            outputBuffer[startIndex + 3] = bytes[3];
+        }
     }
 }
