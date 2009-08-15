@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007 Krzysztof 'DeadwooD' Smiechowicz
  * Original project page: http://sourceforge.net/projects/calindor/
- * 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -64,7 +64,7 @@ namespace Calindor.Server
             get { return logger; }
             set { logger = value; }
         }
-        
+
         protected bool logNornalOperation = false;
         public bool LogNormalOperation
         {
@@ -77,13 +77,13 @@ namespace Calindor.Server
         {
             get { return clientIP; }
         }
-        
+
         protected int clientPort = 65536;
         public int ClientPort
         {
             get { return clientPort;}
         }
-        
+
         public ServerClientConnection(Socket toClientSocket) : this(toClientSocket, 8192)
         {
         }
@@ -207,9 +207,9 @@ namespace Calindor.Server
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogError(LogSource.Communication, 
+                        Logger.LogError(LogSource.Communication,
                             "Exception while deserializing stream for message (" + type + ") from client " + ClientIP, ex);
-                        
+
                         continue;
                     }
                     finally
@@ -240,7 +240,7 @@ namespace Calindor.Server
                         Logger.LogWarning(LogSource.Communication,
                             string.Format("Unrecognized message type ({0}) from client {1}", type, ClientIP), null);
                     }
-                    
+
                 }
             }
         }
@@ -264,7 +264,7 @@ namespace Calindor.Server
 
                     updateLastCommunicationTime();
                 }
-                
+
             }
             catch (SocketException ex)
             {
@@ -337,7 +337,7 @@ namespace Calindor.Server
             {
                 return null; // Simulate: No Messages
             }
-            
+
         }
 
         public void Shutdown()
@@ -352,7 +352,7 @@ namespace Calindor.Server
             }
         }
     }
-    
+
     public class ConnectionBrokenException : ApplicationException
     {
         public ConnectionBrokenException(Exception innerException):
