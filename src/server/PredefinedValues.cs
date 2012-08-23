@@ -105,7 +105,21 @@ namespace Calindor.Misc.Predefines
         MULE_BLACK = 92,
         MULE_BROWN = 93,
         MULE_GRAY = 94,
-        HORSE = 200
+        NENOROCIT = 95,
+        NASPARLIU = 96,
+        TARGET = 97,
+        FROSTTROLL = 98,
+        DRAGON_4 = 99,
+        BULANGIU = 100,
+        BULANGIUMARE = 101,
+        CASTELLAN = 102,
+        HORSE = 200,
+        HORSE2 = 201,
+        HORSE3 = 202,
+        HORSE4 = 203,
+        HORSE5 = 204,
+        HORSE6 = 205,
+        HORSE7 = 206
     }
 
     public enum PredefinedModelSkin

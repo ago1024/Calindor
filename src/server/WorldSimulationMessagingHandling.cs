@@ -708,6 +708,14 @@ namespace Calindor.Server
                 models.Add("mule", (PredefinedModelType)93);
                 models.Add("mule1_gray", (PredefinedModelType)94);
                 models.Add("gray_mule", (PredefinedModelType)94);
+                models.Add("nenorocit", (PredefinedModelType)95);
+                models.Add("nasparliu", (PredefinedModelType)96);
+                models.Add("target", (PredefinedModelType)97);
+                models.Add("frosttroll", (PredefinedModelType)98);
+                models.Add("dragon4", (PredefinedModelType)99);
+                models.Add("bulangiu", (PredefinedModelType)100);
+                models.Add("bulangiumare", (PredefinedModelType)101);
+                models.Add("castellan", (PredefinedModelType)102);
             }
 
             public PredefinedModelType getType(string name)
