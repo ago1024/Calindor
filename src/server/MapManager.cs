@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Calindor.Server;
 using System.IO;
 using Calindor.Server.Entities;
+using Calindor.PathFinder;
 
 namespace Calindor.Server.Maps
 {
@@ -244,17 +245,17 @@ namespace Calindor.Server.Maps
 
         public string Name
         {
-            get { return Path.GetFileName(pathToMap).ToLower() ; }
+            get { return System.IO.Path.GetFileName(pathToMap).ToLower() ; }
         }
 
         public string ServerFileName
         {
-            get { return Path.GetFileName(pathToMap); }
+            get { return System.IO.Path.GetFileName(pathToMap); }
         }
 
         public string ClientFileName
         {
-            get { return "./maps/" + Path.GetFileName(pathToMap) ; }
+            get { return "./maps/" + System.IO.Path.GetFileName(pathToMap); }
         }
 
         private EntityList entitiesOnMap = new EntityList();

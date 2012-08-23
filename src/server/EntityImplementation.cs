@@ -16,6 +16,7 @@ using Calindor.Server.TimeBasedActions;
 using Calindor.Server.SimpleActions;
 using Calindor.Misc.Predefines;
 using Calindor.Server.Resources;
+using Calindor.PathFinder;
 using System;
 using System.Collections.Generic;
 
@@ -219,7 +220,7 @@ namespace Calindor.Server
 
         #region Movement Handling
 
-        protected MapManager mapManager = null;
+        protected Maps.MapManager mapManager = null;
 
         public void LocationMoveTo(short x, short y)
         {
@@ -607,7 +608,7 @@ namespace Calindor.Server
             PutMessageIntoMyAndObserversQueue(visibilityDisplayEntityImplementation());
         }
 
-        public void LocationSetMapManager(MapManager mapMngr)
+        public void LocationSetMapManager(Maps.MapManager mapMngr)
         {
             mapManager = mapMngr;
         }

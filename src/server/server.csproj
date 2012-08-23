@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="Actions.cs" />
     <Compile Include="AI.cs" />
-    <Compile Include="AStarPathfinder.cs" />
     <Compile Include="DefFileReader.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="CommunicationManager.cs" />
@@ -58,7 +57,6 @@
     <Compile Include="MapDefinitions.cs" />
     <Compile Include="MapManager.cs" />
     <Compile Include="OutgoingMessages.cs" />
-    <Compile Include="Pathfinder.cs" />
     <Compile Include="PlayerCharacter.cs" />
     <Compile Include="PlayerCharacterDataStoreAccess.cs" />
     <Compile Include="PredefinedValues.cs" />
@@ -89,6 +87,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="server_config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\el-tools\PathFinder\PathFinder.csproj">
+      <Project>{0DD6FF57-3FA6-46FD-B263-4921E41C356D}</Project>
+      <Name>PathFinder</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

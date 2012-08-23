@@ -16,6 +16,7 @@ using Calindor.Server.Items;
 using Calindor.Server.Actions;
 using Calindor.Server.Entities;
 using Calindor.Server.SimpleActions;
+using Calindor.PathFinder;
 
 namespace Calindor.Server
 {
@@ -100,7 +101,7 @@ namespace Calindor.Server
                                 action.Execute();
                             else
                             {
-                                Maps.WalkPath path = pc.LocationCurrentMap.CalculatePath(pc.LocationX, pc.LocationY,
+                                WalkPath path = pc.LocationCurrentMap.CalculatePath(pc.LocationX, pc.LocationY,
                                     useArea.MinX, useArea.MinY, useArea.MaxX, useArea.MaxY);
                                 pc.LocationMoveToExecute(path, action);
                             }
