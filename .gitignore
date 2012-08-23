@@ -1,0 +1,6 @@
+*.suo
+obj
+debug
+release
+storage
+
