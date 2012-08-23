@@ -13,6 +13,8 @@ cd..
 cd..
 xcopy data\* setup\%dest_dir%\data\ /E
 copy release\calindor.exe setup\%dest_dir%\
+copy release\MapManager.dll setup\%dest_dir%\
+copy release\PathFinder.dll setup\%dest_dir%\
 copy release\csu.exe setup\%dest_dir%\
 copy setup\server_config_default.xml setup\%dest_dir%\server_config.xml
 copy "doc\release-notes\calindor-%calindor_version%-release-notes.txt" setup\%dest_dir%\
