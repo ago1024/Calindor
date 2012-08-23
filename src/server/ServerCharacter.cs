@@ -391,7 +391,8 @@ namespace Calindor.Server
         #region Energies Handling
 
         protected override void energiesEntityDied()
-        {            base.energiesEntityDied();
+        {
+            base.energiesEntityDied();
 
             // Animate death
             AddActorCommandOutgoingMessage msgAddActorCommand =
