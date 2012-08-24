@@ -77,7 +77,7 @@ namespace Calindor.Server
 
                         if (tooFar)
                         {
-                            if (useArea.TooFarText.Length > 0)
+                            if (useArea.TooFarText != null && useArea.TooFarText.Length > 0)
                             {
                                 RawTextOutgoingMessage msgToSender =
                                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);
@@ -109,7 +109,7 @@ namespace Calindor.Server
                         }
                         else if (useWrongObject)
                         {
-                            if (useArea.WrongObjectText.Length > 0)
+                            if (useArea.WrongObjectText != null && useArea.WrongObjectText.Length > 0)
                             {
                                 RawTextOutgoingMessage msgToSender =
                                     (RawTextOutgoingMessage)OutgoingMessagesFactory.Create(OutgoingMessageType.RAW_TEXT);

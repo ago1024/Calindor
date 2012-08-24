@@ -256,9 +256,9 @@ namespace Calindor.Server.MapDefinition
             this.mapObjectId = getInt(properties, "map_object_id");
             this.invObjectId = getIntDefault(properties, "inv_object_id", -1);
             this.sendSparks = getShortDefault(properties, "send_sparks", 0) != 0;
-            this.tooFarText = getString(properties, "too_far_text");
-            this.wrongObjectText = getString(properties, "wrong_object_text");
-            this.useText = getString(properties, "use_text");
+            this.tooFarText = getStringDefault(properties, "too_far_text", "Too far");
+            this.wrongObjectText = getStringDefault(properties, "wrong_object_text", "Wrong object");
+            this.useText = getStringDefault(properties, "use_text", null);
             this.openBook = getShortDefault(properties, "open_book", -1);
         }
 
