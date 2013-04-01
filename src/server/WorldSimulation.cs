@@ -170,7 +170,8 @@ namespace Calindor.Server
             createStandardMessages();
 
             // Adds server characters to the world
-            addServerCharacters();
+            if(serverConfiguration.SpawnMonsters)
+                addServerCharacters();
 
             // Create execution loop profiler
             ExecutionTimeProfiler execProf =
