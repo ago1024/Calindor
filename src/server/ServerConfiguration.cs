@@ -104,6 +104,15 @@ namespace Calindor.Server
             return false;
         }
 
+        private bool spawnMonsters = true;
+
+        public bool SpawnMonsters
+        {
+            get { return spawnMonsters; }
+            set { spawnMonsters = value; }
+        }
+
+
         public bool Load(string path)
         {
             logger.LogProgress(LogSource.Server, "Loading configuration...");
@@ -158,6 +167,11 @@ namespace Calindor.Server
                 else
                     adminUsers = new string[0];
 
+                XmlNode spawnMonstersElement = doc.SelectSingleNode("/configuration/spawnMonsters");
+                if (spawnMonstersElement != null)
+                {
+                    spawnMonsters = Convert.ToBoolean(spawnMonstersElement.Attributes["value"].Value);
+                }
             }
             catch (Exception ex)
             {
