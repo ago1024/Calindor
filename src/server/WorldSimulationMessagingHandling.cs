@@ -355,6 +355,9 @@ namespace Calindor.Server
                 }
                 else
                 {
+                    msgRawTextOut.Text = "Available Models:";
+                    msgRawTextOut.Text += playerModels.availableModels();
+                    pc.PutMessageIntoMyQueue(msgRawTextOut);
                     return false;
                 }
 
@@ -734,6 +737,17 @@ namespace Calindor.Server
             public bool hasModel(PredefinedModelType type)
             {
                 return models.ContainsValue(type);
+            }
+
+            public string availableModels()
+            {
+                string _strModels = null;
+                foreach(KeyValuePair<string,PredefinedModelType> _foo in models)
+                {
+                    _strModels += _foo.Key + Environment.NewLine;
+                }
+                return _strModels;
+
             }
         }
         private PlayerModels playerModels = new PlayerModels();
