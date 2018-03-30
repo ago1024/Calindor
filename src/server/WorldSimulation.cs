@@ -177,8 +177,8 @@ namespace Calindor.Server
             ExecutionTimeProfiler execProf =
                 new ExecutionTimeProfiler("WorldSimulation", 30000);
 
-            execProf.PeriodElapsed +=
-                new PerformanceProfilerEventHandler(onPeriodElapsed);
+            //execProf.PeriodElapsed +=
+            //    new PerformanceProfilerEventHandler(onPeriodElapsed);
 
             while (isWorking)
             {
