@@ -373,6 +373,12 @@ namespace Calindor.Server.Messaging
             get { return boots; }
         }
 
+        private PredefinedModelEyes eyes = PredefinedModelEyes.EYES_BROWN;
+        public PredefinedModelEyes Eyes
+        {
+            get { return eyes;  }
+        }
+
         private string userName = "";
         private string password = "";
 
@@ -396,26 +402,30 @@ namespace Calindor.Server.Messaging
             userName = "";
             password = "";
 
-            for (int i = startIndex + 3; i < startIndex + Length - 7; i++)
+            int namePassLength = Length - 8;
+
+            for (int i = startIndex + 3; i < startIndex + namePassLength; i++)
             {
                 // Find first space
                 if (stream[i] == 32)
                 {
                     for (int j = startIndex + 3; j < i; j++)
                         userName += (char)stream[j];
-                    for (int j = i + 1; j < startIndex + Length - 8/*Without \0*/; j++)
+                    for (int j = i + 1; j < startIndex + namePassLength - 1/*Without \0*/; j++)
                         password += (char)stream[j];
                     break;
                 }
             }
 
-            skin = (PredefinedModelSkin)stream[startIndex + Length - 7];
-            hair = (PredefinedModelHair)stream[startIndex + Length - 6];
-            shirt = (PredefinedModelShirt)stream[startIndex + Length - 5];
-            pants = (PredefinedModelPants)stream[startIndex + Length - 4];
-            boots = (PredefinedModelBoots)stream[startIndex + Length - 3];
-            type = (PredefinedModelType)stream[startIndex + Length - 2];
-            head = (PredefinedModelHead)stream[startIndex + Length - 1];
+            int pos = startIndex + namePassLength;
+            skin = (PredefinedModelSkin)stream[pos++];
+            hair = (PredefinedModelHair)stream[pos++];
+            shirt = (PredefinedModelShirt)stream[pos++];
+            pants = (PredefinedModelPants)stream[pos++];
+            boots = (PredefinedModelBoots)stream[pos++];
+            type = (PredefinedModelType)stream[pos++];
+            head = (PredefinedModelHead)stream[pos++];
+            eyes = (PredefinedModelEyes)stream[pos++];
         }
 
         public override IncommingMessage CreateNew()

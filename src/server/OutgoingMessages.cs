@@ -493,14 +493,11 @@ namespace Calindor.Server.Messaging
         {
             get
             {
-                if (HasAttachment)
-                    return (UInt16)(35 + EntityName.Length); /*34 + name + 1*/
-                else
-                    return (UInt16)(34 + EntityName.Length); /*33 + name + 1*/
+                return (UInt16)(37 + EntityName.Length); /*31 + name + 1 + 5*/
             }
         }
 
-        protected byte [] innerDataAppearance = new byte[8];
+        protected byte [] innerDataAppearance = new byte[9];
         protected short[] innerDataLocation = new short[5];
         protected short[] innerDataEnergies = new short[3];
         protected byte kindOfEntityImplementation = 0;
@@ -534,6 +531,7 @@ namespace Calindor.Server.Messaging
             innerDataAppearance[7] = 0;
             if (appearance.IsTransparent)
                 innerDataAppearance[7] |= 0x01;
+            innerDataAppearance[8] = (byte)appearance.Eyes;
         }
 
         public void FromEnergies(EntityEnergies energies)
@@ -641,12 +639,20 @@ namespace Calindor.Server.Messaging
             // Add null terminator
             _return[31 + EntityName.Length] = 0x00;
 
-            //
-            InPlaceBitConverter.GetBytes(EntityScale, _return, 32 + EntityName.Length);
+            // scale
+            InPlaceBitConverter.GetBytes(EntityScale, _return, 31 + EntityName.Length + 1);
 
-            //
-            if (HasAttachment && _return.Length > 34 + EntityName.Length)
-                _return[34 + EntityName.Length] = AttachmentType;
+            // attachment type
+            if (HasAttachment)
+                _return[31 + EntityName.Length + 3] = AttachmentType;
+            else
+                _return[31 + EntityName.Length + 3] = 0xff;
+
+            // eyes
+            _return[31 + EntityName.Length + 4] = innerDataAppearance[8];
+
+            // neck
+            _return[31 + EntityName.Length + 5] = 0;
         }
 
         public override OutgoingMessage CreateNew()

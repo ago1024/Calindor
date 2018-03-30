@@ -10,6 +10,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Calindor.Server.Maps;
 using Calindor.Server.Items;
@@ -297,7 +298,7 @@ namespace Calindor.Server.Entities
     #region Entity Appearance
     public class EntityAppearance
     {
-        private byte[] innerData = new byte[8];
+        private byte[] innerData = new byte[9];
 
         public PredefinedModelHead Head
         {
@@ -339,6 +340,12 @@ namespace Calindor.Server.Entities
         {
             get { return (PredefinedModelBoots)innerData[4]; }
             set { innerData[4] = (byte)value; }
+        }
+
+        public PredefinedModelEyes Eyes
+        {
+            get { return (PredefinedModelEyes)innerData[8]; }
+            set { innerData[8] = (byte)value; }
         }
 
         public virtual void Serialize(ISerializer sr)

@@ -114,7 +114,7 @@ namespace Calindor.Server
                 // Appearance
                 try
                 {
-                    sr.Start(Name, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0);
+                    sr.Start(Name, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_2_0);
                     sr.WriteValue(this.Name);
                     appearance.Serialize(sr);
                 }
@@ -175,7 +175,7 @@ namespace Calindor.Server
             // Appearance
             try
             {
-                dsr.Start(Name, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0);
+                dsr.Start(Name, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_2_0);
                 this.Name = dsr.ReadString();
                 appearance.Deserialize(dsr);
             }

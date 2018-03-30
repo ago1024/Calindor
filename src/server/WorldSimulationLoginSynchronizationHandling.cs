@@ -113,6 +113,7 @@ namespace Calindor.Server
                 appearance.Shirt = msgCreateChar.Shirt;
                 appearance.Pants = msgCreateChar.Pants;
                 appearance.Boots = msgCreateChar.Boots;
+                appearance.Eyes = msgCreateChar.Eyes;
                 pc.Name = msgCreateChar.UserName;
                 pc.CreateSetInitialAppearance(appearance);
 

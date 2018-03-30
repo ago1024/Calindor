@@ -482,4 +482,68 @@ namespace Calindor.StorageUpdater
         }
     }
 
+    public class ServerVersion0_6_0 : ServerVersion
+    {
+        public override string ServerVersionString
+        {
+            get { return "0.6.0"; }
+        }
+
+        public ServerVersion0_6_0()
+        {
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_2_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCLocation, FileVersion.VER_1_2_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCEnergies, FileVersion.VER_1_0_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCInventory, FileVersion.VER_1_0_0));
+            thisVersionFileVersions.Add(new PlayerCharacterFileVersion(PlayerCharacterDataType.PCSkills, FileVersion.VER_1_0_0));
+        }
+
+        protected override void upgradeToThisVersionImplementation(string playerName)
+        {
+            string string_data = "";
+            byte[] byteBuffer = new byte[10];
+
+            // Appearance - add eyes byte
+            try
+            {
+                pcDsr.Start(playerName, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_1_0);
+                // Read name
+                string_data = pcDsr.ReadString();
+                // Read binary
+                for (int i = 0; i < 8; i++)
+                    byteBuffer[i] = pcDsr.ReadByte();
+            }
+            finally
+            {
+                pcDsr.End();
+            }
+
+            try
+            {
+                pcSer.Start(playerName, PlayerCharacterDataType.PCAppearance, FileVersion.VER_1_2_0);
+                pcSer.WriteValue(string_data);
+                for (int i = 0; i < 8; i++)
+                    pcSer.WriteValue(byteBuffer[i]);
+                pcSer.WriteValue((byte)0); //NEW VALUE
+            }
+            finally
+            {
+                pcSer.End();
+            }
+            // Location - no changes
+            // Energies - no changes
+            // Inventory - no changes
+            // Skills - no changes
+        }
+
+        protected override void downgradeToPreviousVersionImplementation(string playerName)
+        {
+            // Appearance - no changes
+            // Location - no changes
+            // Energies - no changes
+            // Inventory - no changes
+            // Skills - no changes
+        }
+    }
+
 }

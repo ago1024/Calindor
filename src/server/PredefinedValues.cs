@@ -197,6 +197,22 @@ namespace Calindor.Misc.Predefines
         BOOTS_ORANGE = 5,
     }
 
+    public enum PredefinedModelEyes
+    {
+        EYES_BROWN = 0,
+        EYES_DARK_BROWN = 1,
+        EYES_BROWN_RED = 2,
+        EYES_LIGHT_BLUE = 3,
+        EYES_BLUE = 4,
+        EYES_DARK_BLUE = 5,
+        EYES_LIGHT_GREEN = 6,
+        EYES_GREEN = 7,
+        EYES_DARK_GREEN = 8,
+        EYES_LAVENDER = 9,
+        EYES_VIOLET = 10,
+        EYES_GOLD = 11,
+    }
+
     public enum PredefinedActorCommand
     {
         nothing = 0,
