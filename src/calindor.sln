@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server", "server\server.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mapconverter", "mapconverter\mapconverter.csproj", "{91E35DA6-C3E6-4177-9CE9-77A514C339EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathFinder", "..\el-tools\PathFinder\PathFinder.csproj", "{0DD6FF57-3FA6-46FD-B263-4921E41C356D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapManager", "..\el-tools\MapManager\MapManager.csproj", "{FFDB4C81-1230-4AAF-8006-A5788E68C98C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{91E35DA6-C3E6-4177-9CE9-77A514C339EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91E35DA6-C3E6-4177-9CE9-77A514C339EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91E35DA6-C3E6-4177-9CE9-77A514C339EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DD6FF57-3FA6-46FD-B263-4921E41C356D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DD6FF57-3FA6-46FD-B263-4921E41C356D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DD6FF57-3FA6-46FD-B263-4921E41C356D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DD6FF57-3FA6-46FD-B263-4921E41C356D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
