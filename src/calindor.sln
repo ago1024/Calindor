@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathFinder", "..\el-tools\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapManager", "..\el-tools\MapManager\MapManager.csproj", "{FFDB4C81-1230-4AAF-8006-A5788E68C98C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PathFinderTests", "..\el-tools\PathFinderTests\PathFinderTests.csproj", "{771D1985-26EA-4B69-A2F7-5FCDF9D6CFBE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFDB4C81-1230-4AAF-8006-A5788E68C98C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{771D1985-26EA-4B69-A2F7-5FCDF9D6CFBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{771D1985-26EA-4B69-A2F7-5FCDF9D6CFBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{771D1985-26EA-4B69-A2F7-5FCDF9D6CFBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{771D1985-26EA-4B69-A2F7-5FCDF9D6CFBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
